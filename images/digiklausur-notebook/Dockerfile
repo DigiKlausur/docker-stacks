@@ -1,0 +1,103 @@
+FROM ubuntu:18.04
+
+ENV APP_DIR /srv/app
+ENV PATH ${APP_DIR}/venv/bin:$PATH
+
+ENV TZ=Europe/Berlin
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update && \
+    apt-get install --yes \
+            python3.7 \
+            python3.7-venv \
+            python3.7-dev \
+            build-essential \
+            tar \
+            git \
+            wget \
+            npm \
+            nodejs \
+            locales \
+            vim \
+            # for nbconvert
+            pandoc \
+            texlive-xetex \
+            texlive-fonts-recommended \
+            texlive-generic-recommended \
+            texlive-generic-extra
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+# Set this to be on container storage, rather than under $HOME
+ENV IPYTHONDIR ${APP_DIR}/venv/etc/ipython
+
+RUN adduser --disabled-password --gecos "Default Jupyter user" jovyan
+
+RUN install -d -o jovyan -g jovyan ${APP_DIR}
+
+WORKDIR /home/jovyan
+
+RUN apt-get install --yes python3-venv
+
+USER jovyan
+RUN python3.7 -m venv ${APP_DIR}/venv
+
+RUN export PIP_DEFAULT_TIMEOUT=100
+
+COPY requirements.txt /tmp/requirements.txt
+
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+RUN pip install --no-cache-dir jupyterhub==1.1.0
+
+RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix && \
+    jupyter serverextension enable --py jupyterlab --sys-prefix
+
+# nbresuse to show users memory usage
+RUN pip install nbresuse==0.3.3
+
+# interact notebook extension
+RUN pip install nbgitpuller==0.8.0
+
+# Install nbzip
+RUN pip install nbzip==0.1.0 && \
+    jupyter serverextension enable  --sys-prefix --py nbzip && \
+    jupyter nbextension     install --sys-prefix --py nbzip && \
+    jupyter nbextension     enable  --sys-prefix --py nbzip
+
+# Install RISE for presentation
+RUN pip install RISE==5.6.1 && \
+    jupyter-nbextension install rise --py --sys-prefix
+
+# Install codefolding and google translate
+RUN pip install jupyter-contrib-nbextensions==0.5.1 && \
+    jupyter contrib nbextension install --sys-prefix && \
+    jupyter nbextension enable --sys-prefix codefolding/main && \
+    jupyter nbextension enable --sys-prefix nbTranslate/main && \
+    jupyter nbextension enable --sys-prefix collapsible_headings/main
+
+# Install drawio
+#RUN jupyter labextension install jupyterlab-drawio
+
+# Install jupyterlab-latex
+#RUN pip install jupyterlab_latex==0.4.1 && \
+#    jupyter labextension install @jupyterlab/latex
+
+ADD ipython_config.py ${IPYTHONDIR}/ipython_config.py
+
+#Add H-BRS DigiKlausur nbextension
+USER jovyan
+RUN cd /tmp && \
+    git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
+    cd /tmp/Jupyter-Extensions/nbextensions && \
+    jupyter nbextension install task_button --sys-prefix && \
+    jupyter nbextension enable task_button/main --sys-prefix
+
+RUN jupyter nbextension list
+#RUN less /srv/app/venv/etc/jupyter/nbconfig/notebook.json
+
+EXPOSE 8888
