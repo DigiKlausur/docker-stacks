@@ -24,5 +24,6 @@ ilias2nbgrader
 spacy
 nltk
 gensim
+imageio
 #pytorch
 #torchvision
