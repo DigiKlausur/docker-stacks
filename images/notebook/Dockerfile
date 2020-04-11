@@ -52,7 +52,7 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN pip install --no-cache-dir jupyterhub==1.1.0
+RUN pip install -I --no-cache-dir jupyterhub==1.0.*
 
 RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix && \
     jupyter serverextension enable --py jupyterlab --sys-prefix
@@ -89,7 +89,22 @@ RUN pip install jupyter-contrib-nbextensions==0.5.1 && \
 
 ADD ipython_config.py ${IPYTHONDIR}/ipython_config.py
 
-#Add H-BRS DigiKlausur nbextension
+USER root
+
+#limit /tmp
+#RUN mount -t tmpfs -o size=256M tmpfs /tmp
+#RUN mount --bind -o remount,size=256M /tmp/
+
+#Install nbgrader and H-BRS DigiKlausur nbextension
+RUN pip install -I git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
+#RUN cd /tmp &&\
+#    git clone https://github.com/DigiKlausur/nbgrader.git &&\
+#    cd /tmp/nbgrader && pip install . &&\
+RUN jupyter serverextension enable --system --py nbgrader &&\
+    jupyter nbextension install --system --py nbgrader --overwrite &&\
+    jupyter nbextension enable --sys-prefix assignment_list/main --section=tree &&\
+    jupyter serverextension enable --sys-prefix nbgrader.server_extensions.assignment_list
+
 USER jovyan
 RUN cd /tmp && \
     git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
@@ -98,6 +113,7 @@ RUN cd /tmp && \
     jupyter nbextension enable task_button/main --sys-prefix
 
 RUN jupyter nbextension list
+
 #RUN less /srv/app/venv/etc/jupyter/nbconfig/notebook.json
 
 EXPOSE 8888
