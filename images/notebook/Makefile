@@ -1,7 +1,7 @@
-VERSION=1.0.0
+VERSION=$(shell git rev-parse --short HEAD)
 IMAGE=digiklausur/notebook
 
-#release: VERSION=$(shell  git tag -l --points-at HEAD)
+release: VERSION=$(shell  git tag -l --points-at HEAD)
 
 build:
 	docker build -t $(IMAGE):$(VERSION) .
