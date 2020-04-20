@@ -9,6 +9,7 @@ services:
   - docker
 
 script:
+  - env
   - echo "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
   - VERSION=$(git rev-parse --short HEAD)
   - cd ./images/notebook
