@@ -8,7 +8,13 @@ sudo: required
 services:
   - docker
 
-before_install:
-  - docker build -t digiklausur/notebook:1.0.0 ./images/notebook
-  - docker run -p 8888:8888 digiklausur/notebook:1.0.0
+script:
+  - env | grep DOCKER
+  - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
+  - VERSION=$(git rev-parse --short HEAD)
+  - cd ./images/notebook
+  - make build
+  - docker run -p 8888:8888 digiklausur/notebook:$VERSION
   - docker ps -a
+  - make push
+  #- docker build -t digiklausur/notebook:1.0.0 ./images/notebook

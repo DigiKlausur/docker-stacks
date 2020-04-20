@@ -92,28 +92,18 @@ RUN pip install jupyter-contrib-nbextensions==0.5.1 && \
 
 ADD ipython_config.py ${IPYTHONDIR}/ipython_config.py
 
-USER root
-
-#limit /tmp
-#RUN mount -t tmpfs -o size=256M tmpfs /tmp
-#RUN mount --bind -o remount,size=256M /tmp/
-
 #Install nbgrader and H-BRS DigiKlausur nbextension
 RUN pip install -I git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
-#RUN cd /tmp &&\
-#    git clone https://github.com/DigiKlausur/nbgrader.git &&\
-#    cd /tmp/nbgrader && pip install . &&\
-RUN jupyter serverextension enable --system --py nbgrader &&\
-    jupyter nbextension install --system --py nbgrader --overwrite &&\
+RUN jupyter serverextension enable --sys-prefix --py nbgrader &&\
+    jupyter nbextension install --sys-prefix --py nbgrader --overwrite &&\
     jupyter nbextension enable --sys-prefix assignment_list/main --section=tree &&\
     jupyter serverextension enable --sys-prefix nbgrader.server_extensions.assignment_list
 
-USER jovyan
 RUN cd /tmp && \
     git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
-    cd /tmp/Jupyter-Extensions/nbextensions && \
-    jupyter nbextension install task_button --sys-prefix && \
-    jupyter nbextension enable task_button/main --sys-prefix
+    cd /tmp/Jupyter-Extensions/nbextensions/exam_extensions && \
+    jupyter nbextension install exam_view/assignment_view --sys-prefix && \
+    jupyter nbextension enable exam_view/assignment_view/main --sys-prefix
 
 RUN jupyter nbextension list
 
