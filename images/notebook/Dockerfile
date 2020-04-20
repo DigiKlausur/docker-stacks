@@ -99,8 +99,8 @@ RUN jupyter serverextension enable --sys-prefix --py nbgrader &&\
 RUN cd /tmp && \
     git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
     cd /tmp/Jupyter-Extensions/nbextensions/exam_extensions && \
-    jupyter nbextension install exam_extensions/assignment_view --sys-prefix && \
-    jupyter nbextension enable exam_extensions/main --sys-prefix
+    jupyter nbextension install exam_view/assignment_view --sys-prefix && \
+    jupyter nbextension enable exam_view/main --sys-prefix
 
 RUN jupyter nbextension list
 
