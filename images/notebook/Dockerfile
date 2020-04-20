@@ -1,5 +1,7 @@
 FROM ubuntu:18.04
 
+LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
+
 ENV APP_DIR /srv/app
 ENV PATH ${APP_DIR}/venv/bin:$PATH
 
@@ -32,7 +34,8 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
-# Set this to be on container storage, rather than under $HOME
+
+# Container storage
 ENV IPYTHONDIR ${APP_DIR}/venv/etc/ipython
 
 RUN adduser --disabled-password --gecos "Default Jupyter user" jovyan
@@ -103,7 +106,5 @@ RUN cd /tmp && \
     jupyter nbextension enable exam_extensions/main --sys-prefix
 
 RUN jupyter nbextension list
-
-#RUN less /srv/app/venv/etc/jupyter/nbconfig/notebook.json
 
 EXPOSE 8888
