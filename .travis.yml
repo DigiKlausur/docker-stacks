@@ -9,6 +9,11 @@ services:
   - docker
 
 before_install:
-  - docker build -t digiklausur/notebook:1.0.0 ./images/notebook
-  - docker run -p 8888:8888 digiklausur/notebook:1.0.0
+  - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_TOKEN
+  - VERSION=$(git rev-parse --short HEAD)
+  - cd ./images/notebook
+  - make build
+  - docker run -p 8888:8888 digiklausur/notebook:$VERSION
   - docker ps -a
+  - make push
+  #- docker build -t digiklausur/notebook:1.0.0 ./images/notebook
