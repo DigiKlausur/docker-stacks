@@ -16,5 +16,5 @@ script:
   - make build
   - docker run -p 8888:8888 digiklausur/notebook:$VERSION
   - docker ps -a
-  - make push
+  #- make push
   #- docker build -t digiklausur/notebook:1.0.0 ./images/notebook
