@@ -1,4 +1,5 @@
-language: generic
+dist: bionic
+language: python
 
 notifications:
   email: false
@@ -12,9 +13,10 @@ script:
   - env | grep DOCKER
   - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
   - VERSION=$(git rev-parse --short HEAD)
-  - cd ./images/notebook
-  - make build
+  - make -C notebook build
   - docker run -p 8888:8888 digiklausur/notebook:$VERSION
+  - make -C restricted-notebook build
+  - docker run -p 8889:8888 digiklausur/restricted-notebook:$VERSION
   - docker ps -a
-  - make push
+  #- make push
   #- docker build -t digiklausur/notebook:1.0.0 ./images/notebook
