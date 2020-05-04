@@ -80,9 +80,11 @@ RUN jupyter serverextension enable --sys-prefix --py nbgrader &&\
 
 RUN cd /tmp && \
     git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
-    cd /tmp/Jupyter-Extensions/nbextensions && \
-    jupyter nbextension install assignment_view --sys-prefix && \
-    jupyter nbextension enable assignment_view/main --sys-prefix
+    cd /tmp/Jupyter-Extensions/nbextensions/exam_extensions && \
+    jupyter nbextension install restricted_tree --sys-prefix &&\
+    jupyter nbextension enable restricted_tree/main --section=tree &&\
+    jupyter nbextension install exam_view --sys-prefix &&\
+    jupyter nbextension enable exam_view/main    
 
 RUN jupyter nbextension list
 
