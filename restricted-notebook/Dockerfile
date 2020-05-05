@@ -46,7 +46,6 @@ WORKDIR /home/jovyan
 
 RUN apt-get install --yes python3-venv
 
-USER jovyan
 RUN python3.7 -m venv ${APP_DIR}/venv
 
 RUN export PIP_DEFAULT_TIMEOUT=100
@@ -57,35 +56,25 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 RUN pip install --no-cache-dir jupyterhub==1.0.*
 
-# nbresuse to show users memory usage
-RUN pip install nbresuse==0.3.3
-
-# interact notebook extension
-RUN pip install nbgitpuller==0.8.0
-
-# Install nbzip
-RUN pip install nbzip==0.1.0 && \
-    jupyter serverextension enable  --sys-prefix --py nbzip && \
-    jupyter nbextension     install --sys-prefix --py nbzip && \
-    jupyter nbextension     enable  --sys-prefix --py nbzip
-
-ADD ipython_config.py ${IPYTHONDIR}/ipython_config.py
-
 #Install nbgrader and H-BRS DigiKlausur nbextension
 RUN pip install -I git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
-RUN jupyter serverextension enable --sys-prefix --py nbgrader &&\
-    jupyter nbextension install --sys-prefix --py nbgrader --overwrite &&\
-    jupyter nbextension enable --sys-prefix assignment_list/main --section=tree &&\
-    jupyter serverextension enable --sys-prefix nbgrader.server_extensions.assignment_list
+RUN jupyter serverextension enable --system --py nbgrader &&\
+    jupyter nbextension install --system --py nbgrader --overwrite &&\
+    jupyter nbextension enable --system assignment_list/main --section=tree &&\
+    jupyter serverextension enable --system nbgrader.server_extensions.assignment_list
 
 RUN cd /tmp && \
     git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
     cd /tmp/Jupyter-Extensions/nbextensions/exam_extensions && \
-    jupyter nbextension install restricted_tree --sys-prefix &&\
-    jupyter nbextension enable restricted_tree/main --section=tree &&\
-    jupyter nbextension install exam_view --sys-prefix &&\
-    jupyter nbextension enable exam_view/main    
+    jupyter nbextension install --system restricted_tree &&\
+    jupyter nbextension enable --system restricted_tree/main --section=tree &&\
+    jupyter nbextension install --system exam_view &&\
+    jupyter nbextension enable --system exam_view/main &&\
+    rm -rf /tmp/Jupyter-Extensions
 
+ADD ipython_config.py ${IPYTHONDIR}/ipython_config.py
+
+USER jovyan
 RUN jupyter nbextension list
 
 EXPOSE 8888
