@@ -1,5 +1,6 @@
 OWNER=digiklausur
-VERSION=$(shell git rev-parse --short HEAD)
+#VERSION=$(shell git rev-parse --short HEAD)
+VERSION=latest
 IMAGE=$(OWNER)/restricted-notebook
 
 build:

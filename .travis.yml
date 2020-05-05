@@ -14,9 +14,9 @@ script:
   - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
   - VERSION=$(git rev-parse --short HEAD)
   - make -C notebook build
-  - docker run -p 8888:8888 digiklausur/notebook:$VERSION
   - make -C restricted-notebook build
-  - docker run -p 8889:8888 digiklausur/restricted-notebook:$VERSION
+  - docker run -p 8888:8888 digiklausur/notebook:latest
+  - docker run -p 8889:8888 digiklausur/restricted-notebook:latest
   - docker ps -a
-  #- make push
-  #- docker build -t digiklausur/notebook:1.0.0 ./images/notebook
+  - make push -C notebook push
+  - make push -C restricted-notebook push
