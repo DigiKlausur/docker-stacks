@@ -3,7 +3,6 @@
 #
 tornado
 notebook
-jupyterlab
 nbresuse==0.3.3
 nbgitpuller==0.8.0
 matplotlib==3.2.1
