@@ -25,5 +25,6 @@ spacy
 nltk
 gensim
 imageio
+wikipedia-api==0.5.4
 #pytorch
 #torchvision
