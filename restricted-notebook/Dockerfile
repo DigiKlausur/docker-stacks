@@ -54,7 +54,7 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN pip install --no-cache-dir jupyterhub==1.0.*
+RUN pip install --no-cache-dir jupyterhub==1.1.*
 
 #Install nbgrader and H-BRS DigiKlausur nbextension
 RUN pip install -I git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
