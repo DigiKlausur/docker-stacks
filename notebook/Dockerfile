@@ -60,12 +60,6 @@ RUN pip install -I --no-cache-dir jupyterhub==1.0.*
 RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix && \
     jupyter serverextension enable --py jupyterlab --sys-prefix
 
-# nbresuse to show users memory usage
-RUN pip install nbresuse==0.3.3
-
-# interact notebook extension
-RUN pip install nbgitpuller==0.8.0
-
 # Install nbzip
 RUN pip install nbzip==0.1.0 && \
     jupyter serverextension enable  --sys-prefix --py nbzip && \
