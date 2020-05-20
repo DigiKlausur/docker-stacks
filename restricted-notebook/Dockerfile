@@ -27,7 +27,7 @@ RUN cd /tmp && \
     rm -rf /tmp/*
 
 # fix conda permission
-RUN chown root:$NB_GID $CONDA_DIR 
+RUN chown -R root:$NB_GID $CONDA_DIR 
 
 # remove unnecessary packages and cache
 RUN conda remove --force-remove jupyterlab &&\
