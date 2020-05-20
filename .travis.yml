@@ -19,7 +19,7 @@ script:
   - make push -C notebook push
   - make -C restricted-notebook build
   - make push -C restricted-notebook push
-  - docker run -p 8882:8888 digiklausur/minimal-notebook:latest
-  - docker run -p 8881:8888 digiklausur/notebook:latest
-  - docker run -p 8883:8888 digiklausur/restricted-notebook:latest
+  - docker run -it --rm -d -p 8882:8888 digiklausur/minimal-notebook:latest
+  - docker run -it --rm -d -p 8881:8888 digiklausur/notebook:latest
+  - docker run -it --rm -d -p 8883:8888 digiklausur/restricted-notebook:latest
   - docker ps -a
