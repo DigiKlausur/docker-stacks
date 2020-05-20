@@ -13,10 +13,13 @@ script:
   - env | grep DOCKER
   - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
   - VERSION=$(git rev-parse --short HEAD)
+  - make -C minimal-notebook build
+  - make push -C minimal-notebook push
   - make -C notebook build
-  - make -C restricted-notebook build
-  - docker run -p 8888:8888 digiklausur/notebook:latest
-  - docker run -p 8889:8888 digiklausur/restricted-notebook:latest
-  - docker ps -a
   - make push -C notebook push
+  - make -C restricted-notebook build
   - make push -C restricted-notebook push
+  - docker run -p 8882:8888 digiklausur/minimal-notebook:latest
+  - docker run -p 8881:8888 digiklausur/notebook:latest
+  - docker run -p 8883:8888 digiklausur/restricted-notebook:latest
+  - docker ps -a
