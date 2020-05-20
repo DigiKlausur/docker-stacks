@@ -78,4 +78,4 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 USER jovyan
 RUN jupyter nbextension list
 
-EXPOSE 8888
+USER $NB_USER
