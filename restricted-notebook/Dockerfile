@@ -38,4 +38,12 @@ RUN conda remove --force-remove jupyterlab &&\
 
 RUN jupyter nbextension list
 
+# enable exam extension for users by default
+USER $NB_USER
+RUN jupyter nbextension enable --user restricted_tree/main --section=tree &&\
+    jupyter nbextension enable --user exam_view/main &&\
+
+USER root
+RUN chown -R root:root $HOME/.jupyter/nbconfig
+
 USER $NB_USER
