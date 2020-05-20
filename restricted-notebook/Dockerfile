@@ -12,10 +12,10 @@ RUN pip install --no-cache-dir jupyterhub==1.1.*
 
 #Install nbgrader and H-BRS DigiKlausur nbextension
 RUN pip install  --no-cache-dir git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
-RUN jupyter serverextension enable --sys-prefix --py nbgrader &&\
-    jupyter nbextension install --sys-prefix --py nbgrader --overwrite &&\
-    jupyter nbextension enable --sys-prefix assignment_list/main --section=tree &&\
-    jupyter serverextension enable --sys-prefix nbgrader.server_extensions.assignment_list
+RUN jupyter serverextension enable --system --py nbgrader &&\
+    jupyter nbextension install --system --py nbgrader --overwrite &&\
+    jupyter nbextension enable --system assignment_list/main --section=tree &&\
+    jupyter serverextension enable --system nbgrader.server_extensions.assignment_list
 
 RUN cd /tmp && \
     git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
@@ -25,6 +25,9 @@ RUN cd /tmp && \
     jupyter nbextension install --system exam_view &&\
     jupyter nbextension enable --system exam_view/main &&\
     rm -rf /tmp/*
+
+# fix conda permission
+RUN chown root:$NB_GID $CONDA_DIR 
 
 # remove unnecessary packages and cache
 RUN conda remove --force-remove jupyterlab &&\
