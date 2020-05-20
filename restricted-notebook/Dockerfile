@@ -1,52 +1,8 @@
-FROM ubuntu:18.04
+FROM digiklausur/minimal-notebook:latest
 
 LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
 
-ENV APP_DIR /srv/app
-ENV PATH ${APP_DIR}/venv/bin:$PATH
-
-ENV TZ=Europe/Berlin
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-RUN apt-get update && \
-    apt-get install --yes \
-            python3.7 \
-            python3.7-venv \
-            python3.7-dev \
-            build-essential \
-            tar \
-            git \
-            wget \
-            npm \
-            nodejs \
-            locales \
-            vim \
-            # for nbconvert
-            pandoc \
-            texlive-xetex \
-            texlive-fonts-recommended \
-            texlive-generic-recommended \
-            texlive-generic-extra
-
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-    locale-gen
-
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
-
-# Container storage
-ENV IPYTHONDIR ${APP_DIR}/venv/etc/ipython
-
-RUN adduser --disabled-password --gecos "Default Jupyter user" jovyan
-
-RUN install -d -o jovyan -g jovyan ${APP_DIR}
-
-WORKDIR /home/jovyan
-
-RUN apt-get install --yes python3-venv
-
-RUN python3.7 -m venv ${APP_DIR}/venv
+USER root
 
 COPY requirements.txt /tmp/requirements.txt
 
@@ -55,7 +11,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 RUN pip install --no-cache-dir jupyterhub==1.1.*
 
 #Install nbgrader and H-BRS DigiKlausur nbextension
-RUN pip install --no-cache-dir git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
+RUN pip install  --no-cache-dir git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
 RUN jupyter serverextension enable --system --py nbgrader &&\
     jupyter nbextension install --system --py nbgrader --overwrite &&\
     jupyter nbextension enable --system assignment_list/main --section=tree &&\
@@ -70,12 +26,26 @@ RUN cd /tmp && \
     jupyter nbextension enable --system exam_view/main &&\
     rm -rf /tmp/*
 
-ADD ipython_config.py ${IPYTHONDIR}/ipython_config.py
+# fix conda permission
+RUN chown -R root:$NB_GID $CONDA_DIR 
 
 # remove unnecessary packages and cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN conda remove --force-remove jupyterlab &&\
+    conda clean --all -f -y && \
+    npm cache clean --force && \
+    rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
+    rm -rf /home/$NB_USER/.cache/yarn 
 
-USER jovyan
 RUN jupyter nbextension list
 
-EXPOSE 8888
+#RUN adduser --disabled-password --gecos "Default Jupyter user" jovyan
+# enable exam extension for users by default
+#USER $NB_USER
+#RUN jupyter nbextension enable --user restricted_tree/main --section=tree &&\
+#    jupyter nbextension enable --user exam_view/main &&\
+
+USER root
+RUN mkdir $HOME/.jupyter/nbconfig
+RUN chown -R root:root $HOME/.jupyter/nbconfig
+
+USER $NB_USER
