@@ -7,17 +7,23 @@ The minimal single user image `minimal-notebook` is based on [jupyter/minimal-no
 
 ## Run the image locally
 ```
-docker run -it --rm -p 8888:8888 digiklausur/notebook:latest
+docker run -it --name notebook --rm -p 8888:8888 digiklausur/notebook:latest
 ``` 
 * Attach host host directory to the container
-```
-docker run -it /home/myhome:/home/jovyan/myhome --rm -p 8888:8888 digiklausur/notebook:latest
+  ```
+  docker run -it --name notebook -v /home/myhome:/home/jovyan/myhome --rm -p 8888:8888 digiklausur/notebook:latest
 
-```
+  ```
 * Run the container in the background
-```
-docker run -it /home/myhome:/home/jovyan/myhome --rm -d -p 8888:8888 digiklausur/notebook:latest
-```
+  ```
+  docker run -it --name notebook -v /home/myhome:/home/jovyan/myhome --rm -d -p 8888:8888 digiklausur/notebook:latest
+  ```
 
 * Open browser and go to localhost:8888
-* Enter the notebook token if asked 
+* Enter the notebook token if asked
+  
+  If you run docker in the background, you can get the log and the notebook token by
+
+  ```
+  docker logs --follow notebook
+  ```
