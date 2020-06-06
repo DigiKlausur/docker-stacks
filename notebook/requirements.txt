@@ -21,7 +21,7 @@ tensorflow==2.0.0b1
 seaborn==0.10.1
 h5py==2.10.0
 opencv-python==4.2.0.34
-opencv-contrib-python==4.2.0.34
+opencv-contrib-python-nonfree==4.1.1.1
 easydict==1.9
 Pillow==7.1.2
 spacy==2.2.4
