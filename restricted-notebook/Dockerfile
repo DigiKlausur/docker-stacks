@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir jupyterhub==1.1.*
 RUN pip install  --no-cache-dir git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
 RUN jupyter serverextension enable --system --py nbgrader &&\
     jupyter nbextension install --system --py nbgrader --overwrite &&\
+    jupyter nbextension enable --system extra_cells/main &&\
     jupyter nbextension enable --system assignment_list/main --section=tree &&\
     jupyter serverextension enable --system nbgrader.server_extensions.assignment_list
 
