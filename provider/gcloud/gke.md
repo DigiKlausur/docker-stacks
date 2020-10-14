@@ -1,2 +1,0 @@
-Todo:
-How to deploy?

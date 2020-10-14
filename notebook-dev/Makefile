@@ -1,5 +1,5 @@
 VERSION=$(shell git rev-parse --short HEAD)
-IMAGE=digiklausur/notebook
+IMAGE=digiklausur/notebook-dev
 
 release: VERSION=$(shell  git tag -l --points-at HEAD)
 
