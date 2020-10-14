@@ -1,8 +1,6 @@
 #
 # DigiKlausur package requirenments
 #
-tornado
-notebook
 matplotlib
 numpy
 pandas
