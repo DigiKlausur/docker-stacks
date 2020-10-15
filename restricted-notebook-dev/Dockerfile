@@ -38,7 +38,7 @@ RUN cd /tmp && \
     jupyter nbextension enable --system --py e2xhelp
 
 # fix conda permission
-RUN chown -R root:$NB_GID $CONDA_DIR 
+RUN chown -R root:root $CONDA_DIR 
 
 # remove unnecessary packages and cache
 RUN conda remove --force-remove jupyterlab &&\
@@ -46,6 +46,9 @@ RUN conda remove --force-remove jupyterlab &&\
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
     rm -rf /home/$NB_USER/.cache/yarn 
+
+#Change owner of jupyter to user, e.g. change nbgrader and other configs
+RUN chown $NB_USER:$NB_GID -R /etc/jupyter
 
 RUN jupyter nbextension list
 
