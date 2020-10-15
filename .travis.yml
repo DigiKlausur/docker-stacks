@@ -21,5 +21,5 @@ script:
   - make push -C restricted-notebook-dev push
     #- docker run -it --rm -d -p 8882:8888 digiklausur/minimal-notebook:latest
   - docker run -it --rm -d -p 8881:8888 digiklausur/notebook-dev:$VERSION
-  - docker run -it --rm -d -p 8881:8888 digiklausur/restricted-notebook-dev:$VERSION
+  - docker run -it --rm -d -p 8882:8888 digiklausur/restricted-notebook-dev:$VERSION
   - docker ps -a
