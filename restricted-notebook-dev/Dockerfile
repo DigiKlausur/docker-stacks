@@ -20,12 +20,22 @@ RUN jupyter serverextension enable --system --py nbgrader &&\
 
 RUN cd /tmp && \
     git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
+    cd /tmp/Jupyter-Extensions && \
+    git checkout -b ss20 d63ed0e && \
     cd /tmp/Jupyter-Extensions/nbextensions/exam_extensions && \
     jupyter nbextension install --system restricted_tree &&\
     jupyter nbextension enable --system restricted_tree/main --section=tree &&\
     jupyter nbextension install --system exam_view &&\
     jupyter nbextension enable --system exam_view/main &&\
     rm -rf /tmp/*
+
+RUN cd /tmp && \
+    git clone https://github.com/DigiKlausur/e2x-help.git && \
+    cd /tmp/e2x-help && \
+    pip install . && \
+    jupyter serverextension enable --system --py e2xhelp && \
+    jupyter nbextension install --system --py e2xhelp && \
+    jupyter nbextension enable --system --py e2xhelp
 
 # fix conda permission
 RUN chown -R root:$NB_GID $CONDA_DIR 
