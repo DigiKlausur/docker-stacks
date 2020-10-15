@@ -47,9 +47,6 @@ RUN conda remove --force-remove jupyterlab &&\
     rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
     rm -rf /home/$NB_USER/.cache/yarn 
 
-#Change owner of jupyter to user, e.g. change nbgrader and other configs
-RUN chown $NB_USER:$NB_GID -R /etc/jupyter
-
 RUN jupyter nbextension list
 
 USER $NB_USER
