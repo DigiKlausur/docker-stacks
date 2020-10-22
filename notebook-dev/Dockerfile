@@ -52,7 +52,7 @@ RUN jupyter serverextension enable e2xgrader --py --sys-prefix &&\
     jupyter nbextension enable e2xgrader --py --sys-prefix
 
 #install students extension
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xstudent.git@master
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xstudent.git@main
 RUN jupyter nbextension install e2xstudent --py --sys-prefix &&\
     jupyter nbextension enable e2xstudent --py --sys-prefix
     #jupyter nbextension disable exam_view/main --sys-prefix
