@@ -13,6 +13,8 @@ script:
   - env | grep DOCKER
   - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
   - VERSION=$(git rev-parse --short HEAD)
+  - make -C hub build
+  - make push -C hub push
   - make -C minimal-notebook build
   - make push -C minimal-notebook push
   - make -C notebook build
