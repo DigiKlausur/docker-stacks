@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir nbzip==0.1.0 && \
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbgrader.git@clean_up
 
 # Install e2xgrader and enable e2xgrader extensions
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@master
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@dev
 
 # Activate student mode by default
 RUN python -m e2xgrader activate student --sys-prefix
