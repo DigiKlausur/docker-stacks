@@ -27,6 +27,6 @@ RUN python -m e2xgrader activate student --sys-prefix
 
 # Install exam kernel
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
-RUN python -m exam_kernel install --sys-prefix
+RUN python -m exam_kernel.install --sys-prefix
 
 RUN jupyter nbextension list
