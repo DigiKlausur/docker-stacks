@@ -2,6 +2,11 @@ FROM digiklausur/minimal-notebook:latest
 
 LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
 
+#Fix opencv libGl
+USER root
+RUN apt-get update
+RUN apt-get install -y libgl1-mesa-dev
+
 USER $NB_USER
 
 COPY requirements.txt /tmp/requirements.txt
@@ -16,11 +21,11 @@ RUN pip install --no-cache-dir nbzip==0.1.0 && \
     jupyter nbextension     install --sys-prefix --py nbzip && \
     jupyter nbextension     enable  --sys-prefix --py nbzip
 
-# Install ngshare_exchange
-RUN pip install --no-cache-dir nbgshare_exchange
-
 # Install nbgrader and H-BRS DigiKlausur nbextension
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbgrader.git@clean_up
+
+# Install ngshare_exchange
+RUN pip install --no-cache-dir ngshare_exchange
 
 # Install e2xgrader and enable e2xgrader extensions
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@dev
