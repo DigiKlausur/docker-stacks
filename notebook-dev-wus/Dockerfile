@@ -7,6 +7,12 @@ USER root
 RUN apt-get update
 RUN apt-get install -y libgl1-mesa-dev
 
+# Create default config for ipython kernel config
+RUN mkdir /etc/ipython/ && \
+    chown root:$NB_GID /etc/ipython/ &&\
+    chmod g+rwX /etc/ipython/ &&\
+    chmod +6000 /etc/ipython/
+
 USER $NB_USER
 
 COPY requirements.txt /tmp/requirements.txt
@@ -37,7 +43,5 @@ RUN python -m e2xgrader activate student --sys-prefix
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
 RUN python -m exam_kernel.install --sys-prefix
 
-# Create default config for ipython kernel config
-RUN mkdir /home/jovyan/.ipython && mkdir /home/jovyan/.ipython/profile_default
 
 RUN jupyter nbextension list
