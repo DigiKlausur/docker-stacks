@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir nbzip==0.1.0 && \
     jupyter nbextension     install --sys-prefix --py nbzip && \
     jupyter nbextension     enable  --sys-prefix --py nbzip
 
+# Install ngshare_exchange
+RUN pip install --no-cache-dir nbgshare_exchange
+
 # Install nbgrader and H-BRS DigiKlausur nbextension
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbgrader.git@clean_up
 
