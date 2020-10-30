@@ -37,4 +37,7 @@ RUN python -m e2xgrader activate student --sys-prefix
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
 RUN python -m exam_kernel.install --sys-prefix
 
+# Create default config for ipython kernel config
+RUN mkdir /home/jovyan/.ipython && mkdir /home/jovyan/.ipython/profile_default
+
 RUN jupyter nbextension list
