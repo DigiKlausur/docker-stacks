@@ -1,11 +1,11 @@
 #
 # DigiKlausur package requirenments
 #
+ipywidgets
+nbresuse
+nbgitpuller
 ilias2nbgrader==0.4.3
-ipywidgets==7.5.1
 scikit-image==0.17.2 
-nbresuse==0.3.3
-nbgitpuller==0.8.0
 matplotlib==3.2.1
 numpy==1.18.4
 pandas==1.0.3

@@ -19,7 +19,7 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN pip install --no-cache-dir jupyterhub==1.1.*
+RUN pip install --no-cache-dir jupyterhub==1.2.*
 
 # Install nbzip
 RUN pip install --no-cache-dir nbzip==0.1.0 && \
