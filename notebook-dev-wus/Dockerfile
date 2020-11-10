@@ -27,6 +27,11 @@ RUN pip install --no-cache-dir nbzip==0.1.0 && \
     jupyter nbextension     install --sys-prefix --py nbzip && \
     jupyter nbextension     enable  --sys-prefix --py nbzip
 
+# Install google translate
+RUN pip install --no-cache-dir jupyter-contrib-nbextensions==0.5.1 && \
+    jupyter contrib nbextension install --sys-prefix && \
+    jupyter nbextension enable --sys-prefix nbTranslate/main
+
 # Install nbgrader and H-BRS DigiKlausur nbextension
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbgrader.git@clean_up
 
