@@ -1,7 +1,7 @@
-FROM jupyter/minimal-notebook:3b1f4f5e6cc1
+FROM jupyter/minimal-notebook:42f4c82a07ff
 # Built from... https://hub.docker.com/r/jupyter/minimal-notebook/
 #               https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile
-# Built from... Ubuntu 18.04
+# Built from... Ubuntu 20.04 (focal)
 
 LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
 
