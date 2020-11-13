@@ -10,22 +10,20 @@ services:
 jobs:
   include:
     - stage: build-dev
-      install:
+      script:
       - bash .travis/build-dev.sh
     - stage: deploy-dev
-      install:
+      script:
       - bash .travis/deploy-dev.sh
     - stage: deploy-prod
-      install:
+      script:
       - bash .travis/deploy-prod.sh
 
 stages:
   - name: build-dev
-    if: type = pull_request AND branch = dev
+    if: type = pull_request
   - name: deploy-dev
-    if: type = pull_request AND branch = dev
+    if: type = push AND branch = dev
   - name: build-prod
-    if: type = pull_request AND branch = master
+    if: type = push AND branch = master
 
-script:
-  - docker images
