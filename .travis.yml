@@ -27,3 +27,5 @@ stages:
   - name: build-prod
     if: branch = master
 
+script:
+  - docker images
