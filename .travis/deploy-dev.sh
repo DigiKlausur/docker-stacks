@@ -4,8 +4,9 @@ env | grep DOCKER
 echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
 VERSION=$(git rev-parse --short HEAD)
 
-make -C minimal-notebook build
-docker run -it --rm -d -p 8880:8888 digiklausur/minimal-notebook-dev:latest
+make -C minimal-notebook build_dev
+make -C minimal-notebook push_dev
+docker run -it --rm -d -p 8880:8888 digiklausur/minimal-notebook-dev:$VERSION
 
 make -C notebook build_dev
 make push -C notebook push_dev
@@ -23,4 +24,3 @@ make -C hub build_dev
 make -C hub push_dev
 
 docker ps
-docker images

@@ -6,7 +6,7 @@ VERSION=$(git rev-parse --short HEAD)
 
 make -C minimal-notebook build
 make -C minimal-notebook push
-docker run -it --rm -d -p 8880:8888 digiklausur/minimal-notebook:latest
+docker run -it --rm -d -p 8880:8888 digiklausur/minimal-notebook:$VERSION
 
 make -C notebook build
 make -C notebook push
@@ -24,4 +24,3 @@ make -C hub build
 make -C hub push
 
 docker ps
-docker images

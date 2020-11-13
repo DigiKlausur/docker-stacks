@@ -15,8 +15,8 @@ RUN apt-get update \
       pandoc \
       texlive-xetex \
       texlive-fonts-recommended \
-      texlive-generic-recommended \
-      texlive-generic-extra \
+      texlive-latex-recommended \
+      texlive-latex-extra \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
