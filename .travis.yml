@@ -9,7 +9,7 @@ services:
 
 script:
   - if [ $TRAVIS_BRANCH == "dev" ] && [ $TRAVIS_PULL_REQUEST == "true" ]; then
-      ./.travis/build.sh;
+      ./.travis/build-dev.sh;
     fi
   - if [ $TRAVIS_BRANCH == "dev" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
       ./.travis/deploy-dev.sh;
