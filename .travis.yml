@@ -1,30 +1,19 @@
-dist: bionic
+dist: focal
 language: python
 
 notifications:
   email: false
 
-sudo: required
-
 services:
   - docker
 
 script:
-  - env | grep DOCKER
-  - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
-  - VERSION=$(git rev-parse --short HEAD)
-    #- make -C minimal-notebook build
-    #- make push -C minimal-notebook push
-  - make -C ngshare build
-  - make push -C ngshare push
-  - make -C notebook-dev build
-  - make push -C notebook-dev push
-  - make -C notebook-dev-wus build
-  - make push -C notebook-dev-wus push
-  - make -C restricted-notebook-dev build
-  - make push -C restricted-notebook-dev push
-    #- docker run -it --rm -d -p 8882:8888 digiklausur/minimal-notebook:latest
-  - docker run -it --rm -d -p 8881:8888 digiklausur/notebook-dev:$VERSION
-  - docker run -it --rm -d -p 8882:8888 digiklausur/restricted-notebook-dev:$VERSION
-  - docker run -it --rm -d -p 8883:8888 digiklausur/notebook-dev-wus:$VERSION
-  - docker ps -a
+  - if [ $TRAVIS_BRANCH == "dev" && $TRAVIS_PULL_REQUEST == "true" ]; then
+      ./.travis/build.sh;
+    fi
+  - if [ $TRAVIS_BRANCH == "dev" && $TRAVIS_PULL_REQUEST == "false" ]; then
+      ./.travis/deploy-dev.sh;
+    fi
+  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
+      ./.travis/deploy-prod.sh;
+    fi
