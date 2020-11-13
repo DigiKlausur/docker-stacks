@@ -7,15 +7,23 @@ notifications:
 services:
   - docker
 
-script:
-  - echo "Travis branch: $TRAVIS_BRANCH"
-  - echo "Travis PR: $TRAVIS_PULL_REQUEST"
-  - if [ "$TRAVIS_BRANCH" == "dev" ] && [ "$TRAVIS_PULL_REQUEST" == "true" ]; then
-      bash .travis/build-dev.sh;
-    fi
-  - if [ "$TRAVIS_BRANCH" == "dev" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      bash .travis/deploy-dev.sh;
-    fi
-  - if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      bash .travis/deploy-prod.sh;
-    fi
+jobs:
+  include:
+    - stage: build-dev
+      install:
+      - bash .travis/build-dev.sh
+    - stage: deploy-dev
+      install:
+      - bash .travis/deploy-dev.sh
+    - stage: deploy-prod
+      install:
+      - bash .travis/deploy-prod.sh
+
+stages:
+  - name: build-dev
+    if: type = pull_request AND branch = dev
+  - name: deploy-dev
+    if: branch = dev
+  - name: build-prod
+    if: branch = master
+
