@@ -4,7 +4,7 @@ IMAGE_DEV=$(OWNER)/minimal-notebook-dev
 IMAGE=$(OWNER)/minimal-notebook
 
 build_dev:
-	docker build -t $(IMAGEi_DEV):$(VERSION) .
+	docker build -t $(IMAGE_DEV):$(VERSION) .
 
 push_dev:
 	docker push $(IMAGE_DEV):$(VERSION)
