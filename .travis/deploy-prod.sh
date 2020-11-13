@@ -24,3 +24,4 @@ make -C ../hub build
 make push -C ../hub push
 
 docker ps
+docker images
