@@ -8,12 +8,12 @@ services:
   - docker
 
 script:
-  - if [ $TRAVIS_BRANCH == "dev" ] && [ $TRAVIS_PULL_REQUEST == "true" ]; then
+  - if [ "$TRAVIS_BRANCH" == "dev" ] && [ "$TRAVIS_PULL_REQUEST" == "true" ]; then
       ./.travis/build-dev.sh;
     fi
-  - if [ $TRAVIS_BRANCH == "dev" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
+  - if [ "$TRAVIS_BRANCH" == "dev" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       ./.travis/deploy-dev.sh;
     fi
-  - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
+  - if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       ./.travis/deploy-prod.sh;
     fi
