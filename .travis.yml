@@ -23,9 +23,9 @@ stages:
   - name: build-dev
     if: type = pull_request AND branch = dev
   - name: deploy-dev
-    if: branch = dev
+    if: type = pull_request AND branch = dev
   - name: build-prod
-    if: branch = master
+    if: type = pull_request AND branch = master
 
 script:
   - docker images
