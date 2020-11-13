@@ -24,6 +24,6 @@ stages:
     if: type = pull_request
   - name: deploy-dev
     if: type = push AND branch = dev
-  - name: build-prod
+  - name: deploy-prod
     if: type = push AND branch = master
 
