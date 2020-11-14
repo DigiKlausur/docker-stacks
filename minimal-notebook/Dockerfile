@@ -1,7 +1,7 @@
-FROM jupyter/minimal-notebook:3b1f4f5e6cc1
+FROM jupyter/minimal-notebook:42f4c82a07ff
 # Built from... https://hub.docker.com/r/jupyter/minimal-notebook/
 #               https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile
-# Built from... Ubuntu 18.04
+# Built from... Ubuntu 20.04 (focal)
 
 LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
 
@@ -15,8 +15,8 @@ RUN apt-get update \
       pandoc \
       texlive-xetex \
       texlive-fonts-recommended \
-      texlive-generic-recommended \
-      texlive-generic-extra \
+      texlive-latex-recommended \
+      texlive-latex-extra \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \

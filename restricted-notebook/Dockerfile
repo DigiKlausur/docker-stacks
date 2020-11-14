@@ -2,33 +2,47 @@ FROM digiklausur/minimal-notebook:latest
 
 LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
 
+#Fix opencv libGl
 USER root
+RUN apt-get update
+RUN apt-get install -y libgl1-mesa-dev
+
+# Create default config for ipython kernel config
+RUN mkdir /etc/ipython/ && \
+    chown root:$NB_GID /etc/ipython/ &&\
+    chmod g+rwX /etc/ipython/ &&\
+    chmod +6000 /etc/ipython/
+
+USER $NB_USER
 
 COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN pip install --no-cache-dir jupyterhub==1.1.*
+RUN pip install --no-cache-dir jupyterhub==1.2.*
 
-#Install nbgrader and H-BRS DigiKlausur nbextension
-RUN pip install  --no-cache-dir git+http://git@github.com/DigiKlausur/nbgrader.git@v0.7.0-dev-k8s
-RUN jupyter serverextension enable --system --py nbgrader &&\
-    jupyter nbextension install --system --py nbgrader --overwrite &&\
-    jupyter nbextension enable --system extra_cells/main &&\
-    jupyter nbextension enable --system assignment_list/main --section=tree &&\
-    jupyter serverextension enable --system nbgrader.server_extensions.assignment_list
+# Install nbzip
+RUN pip install --no-cache-dir nbzip==0.1.0 && \
+    jupyter serverextension enable  --sys-prefix --py nbzip && \
+    jupyter nbextension     install --sys-prefix --py nbzip && \
+    jupyter nbextension     enable  --sys-prefix --py nbzip
 
-RUN cd /tmp && \
-    git clone https://github.com/DigiKlausur/Jupyter-Extensions.git && \
-    cd /tmp/Jupyter-Extensions/nbextensions/exam_extensions && \
-    jupyter nbextension install --system restricted_tree &&\
-    jupyter nbextension enable --system restricted_tree/main --section=tree &&\
-    jupyter nbextension install --system exam_view &&\
-    jupyter nbextension enable --system exam_view/main &&\
-    rm -rf /tmp/*
+# Install nbgrader and H-BRS DigiKlausur nbextension
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbgrader.git@clean_up
 
-# fix conda permission
-RUN chown -R root:$NB_GID $CONDA_DIR 
+# Install ngshare_exchange
+RUN pip install --no-cache-dir ngshare_exchange
+
+# Install e2xgrader and enable e2xgrader extensions
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@master
+
+# Activate student mode by default
+RUN python -m e2xgrader activate student --sys-prefix
+
+# Install exam kernel
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
+RUN python -m exam_kernel.install --sys-prefix
+RUN touch /etc/ipython/ipython_config.py
 
 # remove unnecessary packages and cache
 RUN conda remove --force-remove jupyterlab &&\
@@ -37,6 +51,9 @@ RUN conda remove --force-remove jupyterlab &&\
     rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
     rm -rf /home/$NB_USER/.cache/yarn 
 
-RUN jupyter nbextension list
+# Prevent user from changing the environment
+USER root
+RUN chown -R root:root $CONDA_DIR 
 
 USER $NB_USER
+RUN jupyter nbextension list

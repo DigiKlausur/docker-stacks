@@ -1,7 +1,8 @@
-OWNER=digiklausur
 VERSION=$(shell git rev-parse --short HEAD)
-IMAGE_DEV=$(OWNER)/minimal-notebook-dev
-IMAGE=$(OWNER)/minimal-notebook
+IMAGE_DEV=digiklausur/ngshare-dev
+IMAGE=digiklausur/ngshare
+
+release: VERSION=$(shell  git tag -l --points-at HEAD)
 
 build_dev:
 	docker build -t $(IMAGE_DEV):$(VERSION) .
@@ -15,3 +16,4 @@ build:
 push:
 	docker push $(IMAGE):$(VERSION)
 
+#release: build push

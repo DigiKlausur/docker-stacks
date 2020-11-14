@@ -1,27 +1,29 @@
-dist: bionic
+dist: focal
 language: python
 
 notifications:
   email: false
 
-sudo: required
-
 services:
   - docker
 
-script:
-  - env | grep DOCKER
-  - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
-  - VERSION=$(git rev-parse --short HEAD)
-  - make -C hub build
-  - make push -C hub push
-  - make -C minimal-notebook build
-  - make push -C minimal-notebook push
-  - make -C notebook build
-  - make push -C notebook push
-  - make -C restricted-notebook build
-  - make push -C restricted-notebook push
-  - docker run -it --rm -d -p 8882:8888 digiklausur/minimal-notebook:latest
-  - docker run -it --rm -d -p 8881:8888 digiklausur/notebook:latest
-  - docker run -it --rm -d -p 8883:8888 digiklausur/restricted-notebook:latest
-  - docker ps -a
+jobs:
+  include:
+    - stage: build-dev
+      script:
+      - bash .travis/build-dev.sh
+    - stage: deploy-dev
+      script:
+      - bash .travis/deploy-dev.sh
+    - stage: deploy-prod
+      script:
+      - bash .travis/deploy-prod.sh
+
+stages:
+  - name: build-dev
+    if: type = pull_request
+  - name: deploy-dev
+    if: type = push AND branch = dev
+  - name: deploy-prod
+    if: type = push AND branch = master
+
