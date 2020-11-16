@@ -1,5 +1,10 @@
 [![Build Status](https://api.travis-ci.org/DigiKlausur/docker-stacks.svg?branch=master)](https://travis-ci.org/DigiKlausur/docker-stacks)
 
+# E2x Docker Stacks
+
+## Branches
+The `dev` branch will always reflect `digiklausur/{image_name}-dev:tag` on the docker hub, and the `master` branch reflects `digiklausur/{image_name}:tag`. The tag is based on the `commit id`, and tag `latest` is always built based on the latest commit. 
+
 ## Single user images
 The minimal single user image `minimal-notebook` is based on [jupyter/minimal-notebook](https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile).
 * `notebook` image is used for teaching environment
