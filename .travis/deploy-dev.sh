@@ -9,11 +9,11 @@ make -C minimal-notebook push_dev
 docker run -it --rm -d -p 8880:8888 digiklausur/minimal-notebook-dev:$VERSION
 
 make -C notebook build_dev
-make push -C notebook push_dev
+make -C notebook push_dev
 docker run -it --rm -d -p 8881:8888 digiklausur/notebook-dev:$VERSION
 
 make -C restricted-notebook build_dev
-make push -C restricted-notebook push_dev
+make -C restricted-notebook push_dev
 docker run -it --rm -d -p 8882:8888 digiklausur/restricted-notebook-dev:$VERSION
 
 make -C ngshare build_dev
