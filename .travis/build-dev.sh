@@ -1,4 +1,4 @@
-# Deploy Dev environment
+# Build Dev environment
 
 VERSION=$(git rev-parse --short HEAD)
 

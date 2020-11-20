@@ -1,4 +1,4 @@
-# Deploy Dev environment
+# Build and deploy dev environment
 
 env | grep DOCKER
 echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
