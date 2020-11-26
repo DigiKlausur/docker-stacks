@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/DigiKlausur/docker-stacks.svg?branch=master)](https://travis-ci.org/DigiKlausur/docker-stacks)
+[![Build Status](https://api.travis-ci.com/DigiKlausur/docker-stacks.svg?branch=master)](https://travis-ci.com/DigiKlausur/docker-stacks)
 
 # E2x Docker Stacks
 
