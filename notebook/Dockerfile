@@ -44,4 +44,7 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@ma
 RUN python -m exam_kernel.install --sys-prefix
 RUN touch /etc/ipython/ipython_config.py
 
+# Install e2x-help
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@master
+
 RUN jupyter nbextension list
