@@ -29,6 +29,7 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
+        ls -al
         bash .travis/build-dev.sh
 
     - name: Image digest
@@ -54,6 +55,7 @@ jobs:
     - name: Build and deploy image
       id: docker_deploy_dev
       run: |
+        ls -al
         bash .travis/deploy-dev.sh
 
     - name: Image digest
