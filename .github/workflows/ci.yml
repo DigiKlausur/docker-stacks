@@ -32,7 +32,7 @@ jobs:
 
   deploy-dev:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'ref/head/dev'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
 
     steps:
     - uses: actions/checkout@v2
@@ -57,7 +57,7 @@ jobs:
 
   deploy-prod:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'ref/head/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     steps:
     - uses: actions/checkout@v2
