@@ -9,9 +9,9 @@ on:
   schedule:
     - cron: "0 1 * * 0" # every 01.00 week 0 (sunday)
 
-defaults:
-  run:
-    working-directory: 'digiklausur.docker-stack'
+#defaults:
+#  run:
+#    working-directory: 'digiklausur.docker-stack'
 
 jobs:
   # Build image
