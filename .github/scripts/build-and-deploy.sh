@@ -28,17 +28,17 @@ while test $# -gt 0; do
       echo "-v, --version             image tag, default: github commit id"
       exit 0
       ;;
-    -deployment)
+    -d|--deployment)
       DEPLOYMENT="$2"
       shift
       shift
       ;;
-    -reg)
+    -r|--registry)
       CONTAINER_REGISTRY="$2"
       shift
       shift
       ;;
-    -version)
+    -v|--version)
       VERSION="$2"
       shift
       shift
@@ -68,6 +68,7 @@ then
 fi
 
 echo "Image version: $VERSION"
+echo "Deployment: $DEPLOYMENT"
 
 sudo apt-get install -y -qq figlet
 function fancy_print {
