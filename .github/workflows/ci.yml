@@ -25,7 +25,7 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
-        bash .github/scripts/build-and-deploy.sh
+        bash .github/scripts/build-and-deploy.sh --deployment 
 
     - name: Docker image list
       run: docker images
