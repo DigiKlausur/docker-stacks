@@ -69,6 +69,7 @@ fi
 
 echo "Image version: $VERSION"
 
+sudo apt-get install -y -qq figlet
 function fancy_print {
     echo "################################################################################"
     figlet -t $1
