@@ -11,7 +11,7 @@ then
   echo "options:"
   echo "-h, --help                    show brief help"
   echo "-d, --deployment              deployment (dev or prod), default: is empty or not published to registry"
-  echo "-r, --reg                     container registry e.g. ghcr.io for GitHub container registry, default: docker hub"
+  echo "-r, --registry                container registry e.g. ghcr.io for GitHub container registry, default: docker hub"
   echo "-v, --version                 image tag, default: github commit id"
   exit 0
 fi
@@ -24,7 +24,7 @@ while test $# -gt 0; do
       echo "options:"
       echo "-h, --help                show brief help"
       echo "-d, --deployment          deployment (dev or prod), default: is empty or not published to registry"
-      echo "-r, --reg                 container registry e.g. ghcr.io for GitHub container registry, default: docker hub"
+      echo "-r, --registry            container registry e.g. ghcr.io for GitHub container registry, default: docker hub"
       echo "-v, --version             image tag, default: github commit id"
       exit 0
       ;;
@@ -59,78 +59,90 @@ else
   CONTAINER_REG_OWNER=$CONTAINER_REGISTRY/$OWNER
 fi
 
+echo "Container registry/owner = $CONTAINER_REG_OWNER"
+
 if [ -z "$VERSION" ]
 then
   echo "Version is not set!. Using commit id as version"
   VERSION=$(git rev-parse --short HEAD)
 fi
 
-echo "Container registry/owner = $CONTAINER_REG_OWNER"
+echo "Image version: $VERSION"
 
-if [ -z "$DEPLOYMENT" ]
-then
-  VERSION=test
-  docker build -t $CONTAINER_REG_OWNER/minimal-notebook:$VERSION minimal-notebook
-  docker run -it --rm -d -p 8880:8888 $CONTAINER_REG_OWNER/minimal-notebook:$VERSION
+function build_image {
+  if [ "$1" = "dev" ]
+  then
+    IMAGE_SUFFIX="-dev"
+  else
+    IMAGE_SUFFIX=""
+  fi
 
-  docker build -t $CONTAINER_REG_OWNER/notebook:$VERSION notebook
-  docker run -it --rm -d -p 8881:8888 $CONTAINER_REG_OWNER/notebook:$VERSION
+  docker build -t $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION minimal-notebook
+  docker tag latest $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
+  docker run -it --rm -d -p 8880:8888 $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
 
-  docker build -t $CONTAINER_REG_OWNER/ngshare:$VERSION ngshare
-  docker run -it --rm -d -p 8883:8888 $CONTAINER_REG_OWNER/ngshare:$VERSION
+  docker build -t $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION notebook
+  docker tag latest $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
+  docker run -it --rm -d -p 8881:8888 $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
+
+  docker build -t $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION ngshare
+  docker tag latest $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
+  docker run -it --rm -d -p 8883:8888 $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
 
   # Build e2x k8s-hub
   cd hub
   for k8s_version in */; do
     K8S_VERSION=${k8s_version%/}
     echo "Building k8s-hub:$K8S_VERSION"
-    docker build -t $CONTAINER_REG_OWNER/k8s-hub:$K8S_VERSION $K8S_VERSION
+    docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
   done
+  cd ..
+}
+
+function push_image {
+  if [ "$1" = "dev" ]
+  then
+    IMAGE_SUFFIX="-dev"
+  else
+    IMAGE_SUFFIX=""
+  fi
+
+  docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
+  docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
+  docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
+  docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+  docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
+  docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+
+  cd hub
+  for k8s_version in */; do
+    K8S_VERSION=${k8s_version%/}
+    docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
+  done
+  cd ..
+}
+
+
+if [ -z "$DEPLOYMENT" ]
+then
+  build_image
 
   docker images
   docker ps
 
 elif [ "$DEPLOYMENT" = "dev" ] 
 then
-  docker build -t $CONTAINER_REG_OWNER/minimal-notebook-$DEPLOYMENT:$VERSION minimal-notebook
-  docker run -it --rm -d -p 8880:8888 $CONTAINER_REG_OWNER/minimal-notebook-$DEPLOYMENT:$VERSION
-
-  docker build -t $CONTAINER_REG_OWNER/notebook-$DEPLOYMENT:$VERSION notebook
-  docker run -it --rm -d -p 8881:8888 $CONTAINER_REG_OWNER/notebook-$DEPLOYMENT:$VERSION
-
-  docker build -t $CONTAINER_REG_OWNER/ngshare-$DEPLOYMENT:$VERSION ngshare
-  docker run -it --rm -d -p 8883:8888 $CONTAINER_REG_OWNER/ngshare-$DEPLOYEMTN:$VERSION
-
-  # Build e2x k8s-hub
-  cd hub
-  for k8s_version in */; do
-    K8S_VERSION=${k8s_version%/}
-    echo "Building k8s-hub:$K8S_VERSION"
-    docker build -t $CONTAINER_REG_OWNER/k8s-hub-$DEPLOYMENT:$K8S_VERSION $K8S_VERSION
-  done
+  build_image "dev"
+  push_image "dev"
 
   docker images
   docker ps
 
 elif [ "$DEPLOYMENT" = "prod" ] 
 then
-  docker build -t $CONTAINER_REG_OWNER/minimal-notebook:$VERSION minimal-notebook
-  docker run -it --rm -d -p 8880:8888 $CONTAINER_REG_OWNER/minimal-notebook:$VERSION
-
-  docker build -t $CONTAINER_REG_OWNER/notebook:$VERSION notebook
-  docker run -it --rm -d -p 8881:8888 $CONTAINER_REG_OWNER/notebook:$VERSION
-
-  docker build -t $CONTAINER_REG_OWNER/ngshare:$VERSION ngshare
-  docker run -it --rm -d -p 8883:8888 $CONTAINER_REG_OWNER/ngshare:$VERSION
-
-  # Build e2x k8s-hub
-  cd hub
-  for k8s_version in */; do
-    K8S_VERSION=${k8s_version%/}
-    echo "Building k8s-hub:$K8S_VERSION"
-    docker build -t $CONTAINER_REG_OWNER/k8s-hub:$K8S_VERSION $K8S_VERSION
-  done
-
+  build_image "prod"
+  push_image "prod"
+  
   docker images
   docker ps
 fi
