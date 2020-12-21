@@ -25,7 +25,7 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
-        bash .github/scripts/build-and-deploy.sh --deployment 
+        bash .github/scripts/build-and-deploy.sh --deployment "" --registry "" 
 
     - name: Docker image list
       run: docker images
@@ -50,7 +50,7 @@ jobs:
     - name: Build and deploy image
       id: docker_deploy_dev
       run: |
-        bash .github/scripts/build-and-deploy.sh --deployment dev
+        bash .github/scripts/build-and-deploy.sh --deployment dev --registry ""
 
     - name: Docker image list
       run: docker images
@@ -75,7 +75,7 @@ jobs:
     - name: Build and deploy image
       id: docker_deploy_prod
       run: |
-        bash .github/scripts/build-and-deploy.sh --deployment prod
+        bash .github/scripts/build-and-deploy.sh --deployment prod --registry ""
 
     - name: Docker image list
       run: docker images

@@ -25,7 +25,7 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
-        bash .github/scripts/build-and-deploy.sh --deployment --registry ghcr.io
+        bash .github/scripts/build-and-deploy.sh --deployment "" --registry ghcr.io
 
     - name: Docker image list
       run: docker images
