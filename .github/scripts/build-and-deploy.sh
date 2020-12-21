@@ -69,6 +69,14 @@ fi
 
 echo "Image version: $VERSION"
 
+sudo apt-get install -y -qq figlet
+function fancy_print {
+    echo "################################################################################"
+    figlet -t $1
+    echo "################################################################################"
+}
+
+
 function build_image {
   if [ "$1" = "dev" ]
   then
@@ -125,14 +133,19 @@ function push_image {
 
 if [ -z "$DEPLOYMENT" ]
 then
+  fancy_print "Building images"
   build_image
 
   docker images
   docker ps
+fi
 
-elif [ "$DEPLOYMENT" = "dev" ] 
+if [ "$DEPLOYMENT" = "dev" ] 
 then
+  fancy_print "Building $DEPLOYMENT images"
   build_image "dev"
+
+  fancy_print "Pushing $DEPLOYMENT images"
   push_image "dev"
 
   docker images
@@ -140,7 +153,10 @@ then
 
 elif [ "$DEPLOYMENT" = "prod" ] 
 then
+  fancy_print "Building $DEPLOYMENT images"
   build_image "prod"
+
+  fancy_print "Pushing $DEPLOYMENT images"
   push_image "prod"
   
   docker images
