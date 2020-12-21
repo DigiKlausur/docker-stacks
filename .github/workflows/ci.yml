@@ -1,5 +1,5 @@
 ---
-name: Build CI to Docker Hub
+name: CI to DockerHub
 on:
   pull_request:
   push:
@@ -25,7 +25,7 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
-        bash .github/scripts/build-dev.sh
+        bash .github/scripts/build-and-deploy.sh
 
     - name: Docker image list
       run: docker images
@@ -50,7 +50,7 @@ jobs:
     - name: Build and deploy image
       id: docker_deploy_dev
       run: |
-        bash .github/scripts/deploy-dev.sh
+        bash .github/scripts/build-and-deploy.sh --deployment dev
 
     - name: Docker image list
       run: docker images
@@ -75,7 +75,7 @@ jobs:
     - name: Build and deploy image
       id: docker_deploy_prod
       run: |
-        bash .github/scripts/deploy-prod.sh
+        bash .github/scripts/build-and-deploy.sh --deployment prod
 
     - name: Docker image list
       run: docker images
