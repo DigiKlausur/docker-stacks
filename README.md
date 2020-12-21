@@ -1,4 +1,4 @@
-[<!--lint ignore no-dead-urls-->![Build Status](https://github.com/digiklausur/docker-stacks/workflows/Build%20CI%20to%20Docker%20Hub/badge.svg)](https://github.com/digiklausur/docker-stacks/actions?workflow=Build+CI+to+Docker+Hub)
+[<!--lint ignore no-dead-urls-->![Build Status](https://github.com/digiklausur/docker-stacks/workflows/CI%20to%20DockerHub/badge.svg)](https://github.com/digiklausur/docker-stacks/actions?workflow=CI+to+DockerHub)
 
 # E2x Docker Stacks
 
