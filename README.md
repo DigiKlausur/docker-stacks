@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.com/DigiKlausur/docker-stacks.svg?branch=master)](https://travis-ci.com/DigiKlausur/docker-stacks)
+[<!--lint ignore no-dead-urls-->![Build Status](https://github.com/digiklausur/docker-stacks/workflows/CI%20to%20DockerHub/badge.svg)](https://github.com/digiklausur/docker-stacks/actions?workflow=CI+to+DockerHub)
 
 # E2x Docker Stacks
 
