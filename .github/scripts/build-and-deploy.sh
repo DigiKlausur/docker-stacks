@@ -78,15 +78,15 @@ function build_image {
   fi
 
   docker build -t $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION minimal-notebook
-  docker tag latest $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
+  docker tag $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest 
   docker run -it --rm -d -p 8880:8888 $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
 
   docker build -t $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION notebook
-  docker tag latest $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
+  docker tag $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
   docker run -it --rm -d -p 8881:8888 $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
 
   docker build -t $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION ngshare
-  docker tag latest $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
+  docker tag $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
   docker run -it --rm -d -p 8883:8888 $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
 
   # Build e2x k8s-hub
