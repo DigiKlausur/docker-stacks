@@ -10,8 +10,8 @@ on:
     - cron: "0 1 * * 0" # every 01.00 week 0 (sunday)
 
 jobs:
-  # Build image
   build:
+    name: Build
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
 
@@ -31,6 +31,7 @@ jobs:
       run: docker images
 
   deploy-dev:
+    name: Deploy Dev
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
 
@@ -41,21 +42,20 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v1
       
-      #beta, need PAT
-      #- name: Log into github registry
-      #run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+    - name: Log into github registry
+      run: echo $GH_TOKEN | docker login ghcr.io -u $GH_USERNAME --password-stdin
 
     - name: Build and deploy image
       id: docker_deploy_dev
       run: |
-        # GitHub container registry is still beta, just build
-        #bash .github/scripts/build-and-deploy.sh --deployment dev --registry ghcr.io
-        bash .github/scripts/build-and-deploy.sh --registry ghcr.io
+        # GitHub container registry is still beta
+        bash .github/scripts/build-and-deploy.sh --deployment dev --registry ghcr.io --publish latest
 
     - name: Docker image list
       run: docker images
 
   deploy-prod:
+    name: Deploy Prod
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
@@ -66,16 +66,14 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v1
       
-    #beta, need PAT
-    #- name: Log into github registry
-      #run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+    - name: Log into github registry
+      run: echo $GH_TOKEN | docker login ghcr.io -u $GH_USERNAME --password-stdin
 
     - name: Build and deploy image
       id: docker_deploy_prod
       run: |
         # GitHub container registry is still beta, just build
-        #bash .github/scripts/build-and-deploy.sh --deployment prod --registry ghcr.io
-        bash .github/scripts/build-and-deploy.sh --registry ghcr.io
+        bash .github/scripts/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest
 
     - name: Docker image list
       run: docker images
