@@ -3,6 +3,7 @@
 DEPLOYMENT=""
 CONTAINER_REGISTRY=""
 VERSION=""
+PUBLISH="all"
 
 if [ $# -eq 0 ]
 then
@@ -13,6 +14,7 @@ then
   echo "-d, --deployment              deployment (dev or prod), default: is empty or not published to registry"
   echo "-r, --registry                container registry e.g. ghcr.io for GitHub container registry, default: docker hub"
   echo "-v, --version                 image tag, default: github commit id"
+  echo "-p, --publish                 option whether to publish <all> or <latest> (default: all), all means publish all tags"
   exit 0
 fi
 
@@ -26,6 +28,7 @@ while test $# -gt 0; do
       echo "-d, --deployment          deployment (dev or prod), default: is empty or not published to registry"
       echo "-r, --registry            container registry e.g. ghcr.io for GitHub container registry, default: docker hub"
       echo "-v, --version             image tag, default: github commit id"
+      echo "-p, --publish             option whether to publish <all> tags or <latest> tags only (default: all)"
       exit 0
       ;;
     -d|--deployment)
@@ -40,6 +43,11 @@ while test $# -gt 0; do
       ;;
     -v|--version)
       VERSION="$2"
+      shift
+      shift
+      ;;
+    -p|--publish)
+      PUBLISH="$2"
       shift
       shift
       ;;
@@ -116,12 +124,19 @@ function push_image {
     IMAGE_SUFFIX=""
   fi
 
-  docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
-  docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
-  docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
-  docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-  docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
-  docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  if [ "$PUBLISH" = "latest" ]
+  then
+    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
+    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  else
+    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
+    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
+    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
+    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
+    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  fi
 
   cd hub
   for k8s_version in */; do
