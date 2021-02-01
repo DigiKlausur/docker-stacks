@@ -6,8 +6,6 @@ on:
     branches:
       - master
       - dev
-  schedule:
-    - cron: "0 1 * * 0" # every 01.00 week 0 (sunday)
 
 jobs:
   # Build image
