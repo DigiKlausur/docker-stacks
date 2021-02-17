@@ -19,7 +19,7 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN pip install --no-cache-dir jupyterhub==1.2.*
+RUN pip install --no-cache-dir jupyterhub==1.3.*
 
 # Install nbzip
 RUN pip install --no-cache-dir nbzip==0.1.0 && \
@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbgrader.git@c
 RUN pip install --no-cache-dir ngshare_exchange
 
 # Install e2xgrader and enable e2xgrader extensions
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@attachment_cell
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@dev
 
 # Activate student mode by default
 RUN python -m e2xgrader activate student --sys-prefix
