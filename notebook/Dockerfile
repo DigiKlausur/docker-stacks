@@ -45,6 +45,6 @@ RUN python -m exam_kernel.install --sys-prefix
 RUN touch /etc/ipython/ipython_config.py
 
 # Install e2x-help
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@master
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@test
 
 RUN jupyter nbextension list
