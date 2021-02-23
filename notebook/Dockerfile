@@ -39,6 +39,9 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@dev
 # Activate student mode by default
 RUN python -m e2xgrader activate student --sys-prefix
 
+# Install nbassignment
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbassignment@dev
+
 # Install exam kernel
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
 RUN python -m exam_kernel.install --sys-prefix
