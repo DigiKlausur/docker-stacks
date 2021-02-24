@@ -1,4 +1,4 @@
-FROM jupyter/minimal-notebook:42f4c82a07ff
+FROM jupyter/minimal-notebook:016833b15ceb
 # Built from... https://hub.docker.com/r/jupyter/minimal-notebook/
 #               https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile
 # Built from... Ubuntu 20.04 (focal)
