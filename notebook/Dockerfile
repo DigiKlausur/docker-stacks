@@ -42,6 +42,9 @@ RUN python -m e2xgrader activate student --sys-prefix
 # Install nbassignment
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbassignment@dev
 
+# Install assignmenttest
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/assignmenttest@master
+
 # Install exam kernel
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
 RUN python -m exam_kernel.install --sys-prefix
