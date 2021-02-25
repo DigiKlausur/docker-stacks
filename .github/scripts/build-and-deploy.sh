@@ -1,4 +1,5 @@
 # Build and deploy images
+# Copyright e2x project, Hochschule-Bonn-Rhein-Sieg
 
 DEPLOYMENT=""
 CONTAINER_REGISTRY=""
@@ -93,18 +94,21 @@ function build_image {
   else
     IMAGE_SUFFIX=""
   fi
+  
+  MINIMAL_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION 
+  docker build -t $MINIMAL_NOTEBOOK_TAG minimal-notebook
+  docker tag $MINIMAL_NOTEBOOK_TAG $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest 
+  if docker run -it --rm -d -p 8880:8888 $MINIMAL_NOTEBOOK_TAG ; then echo "$MINIMAL_NOTEBOOK_TAG is running"; else echo "Failed to run $MINIMAL_NOTEBOOK_TAG" && exit 1; fi
 
-  docker build -t $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION minimal-notebook
-  docker tag $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest 
-  docker run -it --rm -d -p 8880:8888 $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
+  NOTEBOOK_TAG=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION 
+  docker build -t $NOTEBOOK_TAG notebook
+  docker tag $NOTEBOOK_TAG $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+  if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG ; then echo "$NOTEBOOK_TAG is running"; else echo "Failed to run $NOTEBOOK_TAG" && exit 1; fi
 
-  docker build -t $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION notebook
-  docker tag $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-  docker run -it --rm -d -p 8881:8888 $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
-
-  docker build -t $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION ngshare
-  docker tag $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
-  docker run -it --rm -d -p 8883:8888 $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
+  NGSHARE_TAG=$CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION 
+  docker build -t $NGSHARE_TAG ngshare
+  docker tag $NGSHARE_TAG $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  if docker run -it --rm -d -p 8882:8888 $NGSHARE_TAG ; then echo "$NGSHARE_TAG is running"; else echo "Failed to run $NGSHARE_TAG" && exit 1; fi
 
   # Build e2x k8s-hub
   cd hub
