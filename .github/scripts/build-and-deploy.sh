@@ -150,6 +150,60 @@ function push_image {
   cd ..
 }
 
+function deploy_image {
+  if [ "$1" = "dev" ]
+  then
+    IMAGE_SUFFIX="-dev"
+  else
+    IMAGE_SUFFIX=""
+  fi
+  
+  MINIMAL_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION 
+  docker build -t $MINIMAL_NOTEBOOK_TAG minimal-notebook
+  docker tag $MINIMAL_NOTEBOOK_TAG $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest 
+  if docker run -it --rm -d -p 8880:8888 $MINIMAL_NOTEBOOK_TAG ; then echo "$MINIMAL_NOTEBOOK_TAG is running"; else echo "Failed to run $MINIMAL_NOTEBOOK_TAG" && exit 1; fi
+  if [ "$PUBLISH" = "latest" ]
+  then
+    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
+  else
+    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
+    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
+  fi
+
+  NOTEBOOK_TAG=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION 
+  docker build -t $NOTEBOOK_TAG notebook
+  docker tag $NOTEBOOK_TAG $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+  if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG ; then echo "$NOTEBOOK_TAG is running"; else echo "Failed to run $NOTEBOOK_TAG" && exit 1; fi
+  if [ "$PUBLISH" = "latest" ]
+  then
+    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+  else
+    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
+    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+  fi
+
+  NGSHARE_TAG=$CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION 
+  docker build -t $NGSHARE_TAG ngshare
+  docker tag $NGSHARE_TAG $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  if docker run -it --rm -d -p 8882:8888 $NGSHARE_TAG ; then echo "$NGSHARE_TAG is running"; else echo "Failed to run $NGSHARE_TAG" && exit 1; fi
+  if [ "$PUBLISH" = "latest" ]
+  then
+    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  else
+    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
+    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  fi
+
+  # Build e2x k8s-hub
+  cd hub
+  for k8s_version in */; do
+    K8S_VERSION=${k8s_version%/}
+    echo "Building k8s-hub:$K8S_VERSION"
+    docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
+    docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
+  done
+  cd ..
+}
 
 if [ -z "$DEPLOYMENT" ]
 then
@@ -162,22 +216,16 @@ fi
 
 if [ "$DEPLOYMENT" = "dev" ] 
 then
-  fancy_print "Building $DEPLOYMENT images"
-  build_image "dev"
-
-  fancy_print "Pushing $DEPLOYMENT images"
-  push_image "dev"
+  fancy_print "Building and Pushing $DEPLOYMENT images"
+  deploy_image "dev"
 
   docker images
   docker ps
 
 elif [ "$DEPLOYMENT" = "prod" ] 
 then
-  fancy_print "Building $DEPLOYMENT images"
-  build_image "prod"
-
   fancy_print "Pushing $DEPLOYMENT images"
-  push_image "prod"
+  deploy_image "prod"
   
   docker images
   docker ps
