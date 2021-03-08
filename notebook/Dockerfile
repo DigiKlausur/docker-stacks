@@ -19,8 +19,6 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN rm /tmp/requirements.txt
-
 RUN pip install --no-cache-dir jupyterhub==1.3.*
 
 # Install nbzip
@@ -56,3 +54,8 @@ RUN touch /etc/ipython/ipython_config.py
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@master
 
 RUN jupyter nbextension list
+
+USER root
+RUN rm /tmp/requirements.txt
+
+USER $NB_USER
