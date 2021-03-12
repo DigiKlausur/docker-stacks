@@ -53,6 +53,9 @@ RUN touch /etc/ipython/ipython_config.py
 # Install e2x-help
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@master
 
+# Install graphviz via conda
+RUN conda install graphviz
+
 RUN jupyter nbextension list
 
 USER root
