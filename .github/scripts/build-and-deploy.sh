@@ -182,7 +182,7 @@ function deploy_image {
   docker tag $EXAM_NOTEBOOK_TAG $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
 
   if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG ; then echo "$NOTEBOOK_TAG is running"; else echo "Failed to run $NOTEBOOK_TAG" && exit 1; fi
-  if docker run -it --rm -d -p 8881:8888 $EXAM_NOTEBOOK_TAG ; then echo "$EXAM_NOTEBOOK_TAG is running"; else echo "Failed to run $EXAM_NOTEBOOK_TAG" && exit 1; fi
+  if docker run -it --rm -d -p 8891:8888 $EXAM_NOTEBOOK_TAG ; then echo "$EXAM_NOTEBOOK_TAG is running"; else echo "Failed to run $EXAM_NOTEBOOK_TAG" && exit 1; fi
 
   if [ "$PUBLISH" = "latest" ]
   then
