@@ -8,10 +8,16 @@ USER $NB_USER
 RUN e2xgrader activate student_exam --sys-prefix
 
 # activate e2x-help
+RUN mkdir /etc/jupyter/ && \
+    chown root:$NB_GID /etc/jupyter/ &&\
+    chmod g+rwX /etc/jupyter/ &&\
+    chmod +6000 /etc/jupyter/
+
+RUN echo 'c = get_config()'  >> /etc/jupyter/e2xhelp_config.py
+RUN echo 'c.Help.shared_path = "/srv/shares"' >> /etc/jupyter/e2xhelp_config.py
+
 RUN jupyter serverextension enable e2xhelp --py --sys-prefix && \
     jupyter nbextension install e2xhelp --py --sys-prefix && \
     jupyter nbextension enable e2xhelp --py --sys-prefix
 
 RUN jupyter nbextension list
-
-USER $NB_USER
