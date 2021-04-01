@@ -1,7 +1,7 @@
 ---
 name: Deploy tags
 on:
-  create:
+  push:
     tags:
       - 'ws*'
       - 'ss*'
