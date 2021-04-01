@@ -18,11 +18,15 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v1
 
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
     - name: Build image
       id: docker_build
       run: |
         # deploy images for specific tag
-        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish version
+        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --version ${{ steps.get_version.outputs.VERSION }} --publish version
 
     - name: Docker image list
       run: docker images
