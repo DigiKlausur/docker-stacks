@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/nbgrader.git@c
 RUN pip install --no-cache-dir ngshare_exchange
 
 # Install e2xgrader and enable e2xgrader extensions
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@pdf_cell
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader@dev
 
 # Activate student mode by default
 RUN python -m e2xgrader activate student --sys-prefix
@@ -53,4 +53,12 @@ RUN touch /etc/ipython/ipython_config.py
 # Install e2x-help
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@master
 
+# Install graphviz via conda
+RUN conda install graphviz
+
 RUN jupyter nbextension list
+
+USER root
+RUN rm /tmp/requirements.txt
+
+USER $NB_USER
