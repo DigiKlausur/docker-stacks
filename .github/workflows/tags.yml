@@ -1,8 +1,10 @@
 ---
-name: Cronjob
+name: Deploy tags
 on:
-  schedule:
-    - cron: "0 1 * * 0" 
+  push:
+    tags:
+      - 'ws*'
+      - 'ss*'
 
 jobs:
   build:
@@ -19,7 +21,8 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
-        bash ci/build-and-deploy.sh --deployment "" --registry ghcr.io
+        # deploy images for specific tag
+        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish version
 
     - name: Docker image list
       run: docker images

@@ -23,7 +23,7 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
-        bash .github/scripts/build-and-deploy.sh --deployment "" --registry ghcr.io
+        bash ci/build-and-deploy.sh --deployment "" --registry ghcr.io
 
     - name: Docker image list
       run: docker images
@@ -51,7 +51,7 @@ jobs:
       id: docker_deploy_dev
       run: |
         # GitHub container registry is still beta
-        bash .github/scripts/build-and-deploy.sh --deployment dev --registry ghcr.io --publish latest
+        bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --publish latest
 
     - name: Docker image list
       run: docker images
@@ -79,7 +79,7 @@ jobs:
       id: docker_deploy_prod
       run: |
         # GitHub container registry is still beta, just build
-        bash .github/scripts/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest
+        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest
 
     - name: Docker image list
       run: docker images

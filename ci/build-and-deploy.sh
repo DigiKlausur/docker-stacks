@@ -168,6 +168,9 @@ function deploy_image {
   if [ "$PUBLISH" = "latest" ]
   then
     docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
+  elif [ "$PUBLISH" = "version" ]
+  then
+    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
   else
     docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
     docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
@@ -188,6 +191,10 @@ function deploy_image {
   then
     docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
     docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
+  elif [ "$PUBLISH" = "version" ]
+  then
+    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
+    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION
   else
     docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
     docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
@@ -203,6 +210,9 @@ function deploy_image {
   if [ "$PUBLISH" = "latest" ]
   then
     docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  elif [ "$PUBLISH" = "version" ]
+  then
+    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
   else
     docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
     docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
@@ -210,12 +220,22 @@ function deploy_image {
 
   # Build e2x k8s-hub
   cd hub
-  for k8s_version in */; do
-    K8S_VERSION=${k8s_version%/}
-    echo "Building k8s-hub:$K8S_VERSION"
-    docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
-    docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
-  done
+  if [ "$PUBLISH" = "version" ]
+  then
+    for k8s_version in */; do
+      K8S_VERSION=${k8s_version%/}
+      echo "Building k8s-hub:$K8S_VERSION"
+      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION $K8S_VERSION
+      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION
+    done
+  else
+    for k8s_version in */; do
+      K8S_VERSION=${k8s_version%/}
+      echo "Building k8s-hub:$K8S_VERSION"
+      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
+      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
+    done
+  fi
   cd ..
 }
 
