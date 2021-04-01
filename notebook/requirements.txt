@@ -20,7 +20,7 @@ h5py==2.10.0
 opencv-python==4.4.0.44
 opencv-contrib-python==4.4.0.44
 easydict==1.9
-Pillow==7.1.2
+Pillow==8.1.1
 spacy==2.2.4
 nltk==3.5
 gensim==3.8.3
