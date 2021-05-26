@@ -176,29 +176,36 @@ function deploy_image {
     docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
   fi
 
+  # build notebook
   NOTEBOOK_TAG=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION 
-  EXAM_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION 
   docker build -t $NOTEBOOK_TAG notebook
-  docker build -t $EXAM_NOTEBOOK_TAG exam-notebook
-
   docker tag $NOTEBOOK_TAG $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-  docker tag $EXAM_NOTEBOOK_TAG $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
-
   if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG ; then echo "$NOTEBOOK_TAG is running"; else echo "Failed to run $NOTEBOOK_TAG" && exit 1; fi
-  if docker run -it --rm -d -p 8891:8888 $EXAM_NOTEBOOK_TAG ; then echo "$EXAM_NOTEBOOK_TAG is running"; else echo "Failed to run $EXAM_NOTEBOOK_TAG" && exit 1; fi
 
   if [ "$PUBLISH" = "latest" ]
   then
     docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
   elif [ "$PUBLISH" = "version" ]
   then
     docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION
   else
     docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
     docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+  fi
 
+  # build exam notebook
+  EXAM_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION 
+  docker build -t $EXAM_NOTEBOOK_TAG exam-notebook
+  docker tag $EXAM_NOTEBOOK_TAG $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
+  if docker run -it --rm -d -p 8891:8888 $EXAM_NOTEBOOK_TAG ; then echo "$EXAM_NOTEBOOK_TAG is running"; else echo "Failed to run $EXAM_NOTEBOOK_TAG" && exit 1; fi
+
+  if [ "$PUBLISH" = "latest" ]
+  then
+    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
+  elif [ "$PUBLISH" = "version" ]
+  then
+    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION
+  else
     docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION
     docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
   fi
