@@ -1,4 +1,5 @@
-FROM digiklausur/minimal-notebook:latest
+ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest
+FROM $IMAGE_SOURCE
 
 LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
 
