@@ -17,6 +17,7 @@ RUN apt-get update \
       texlive-fonts-recommended \
       texlive-latex-recommended \
       texlive-latex-extra \
+      vim \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
