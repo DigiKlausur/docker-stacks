@@ -19,7 +19,8 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
-        bash ci/build-and-deploy.sh --deployment "" --registry ghcr.io
+        #cronjob build on docker hub to deal with their image retention policy
+        bash ci/build-and-deploy.sh --deployment ""
 
     - name: Docker image list
       run: docker images
