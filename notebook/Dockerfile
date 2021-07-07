@@ -8,6 +8,9 @@ USER root
 RUN apt-get update
 RUN apt-get install -y libgl1-mesa-dev
 
+# Install PDF libraries
+RUN apt-get install wkhtmltopdf
+
 # Create default config for ipython kernel config
 RUN mkdir /etc/ipython/ && \
     chown root:$NB_GID /etc/ipython/ &&\
