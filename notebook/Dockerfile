@@ -23,7 +23,8 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN pip install --no-cache-dir jupyterhub==1.3.*
+# Update jupyterhub and use the version that is used in z2jh version
+RUN pip install --no-cache-dir jupyterhub==1.4.*
 
 # Install nbzip
 RUN pip install --no-cache-dir nbzip==0.1.0 && \
