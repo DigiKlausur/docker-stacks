@@ -3,12 +3,12 @@
 # E2x Docker Stacks
 
 ## Branches
-The `dev` branch will always reflect `digiklausur/{image_name}-dev:tag` on the docker hub, and the `master` branch reflects `digiklausur/{image_name}:tag`. The default image tag is `latest`, and images from github tags are also built by using the github tag as the image tag.
+The `dev` branch will always reflect `digiklausur/{image_name}-dev:tag` on the docker hub, and the `master` branch reflects `digiklausur/{image_name}:tag`. The default image tag is `latest`, and images from github tags are also built by using the github tag as the image tag. Additionally, the image used in a particular semester can be pulled using tag i.e. `ws20` for winter semester 2020.
 
 ## Single user images
-The minimal single user image `minimal-notebook` is based on [jupyter/minimal-notebook](https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile).
+* `minimal-notebook` is based on [jupyter/minimal-notebook](https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile)
 * `notebook` image is used for teaching environment
-* `restricted-notebook` is used for examination environment
+* `exam-notebook` is used for examination environment
 
 ## Run the image locally
 ```
@@ -32,3 +32,5 @@ docker run -it --name notebook --rm -p 8888:8888 ghcr.io/digiklausur/docker-stac
   ```
   docker logs --follow notebook
   ```
+
+For more detailed information on how to run the image in your local pc, as well as to mount you local disks to the container, please visit [this page](https://e2x.inf.h-brs.de/usage/student.html#working-on-the-assignments-locally).
