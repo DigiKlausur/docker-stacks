@@ -9,7 +9,7 @@ RUN apt-get update
 RUN apt-get install -y libgl1-mesa-dev
 
 # Install PDF libraries
-RUN apt-get install wkhtmltopdf
+#RUN apt-get install wkhtmltopdf
 
 # Create default config for ipython kernel config
 RUN mkdir /etc/ipython/ && \
@@ -38,7 +38,7 @@ RUN pip install --no-cache-dir git+https://github.com/jupyter/nbgrader.git@maste
 # Install ngshare_exchange
 RUN pip install --no-cache-dir ngshare_exchange
 
-# Install e2xgrader and enable e2xgrader extensions (test)
+# Install e2xgrader and enable e2xgrader extensions
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@nbassignment_integration
 
 # Activate student mode by default
