@@ -38,7 +38,7 @@ RUN pip install --no-cache-dir git+https://github.com/jupyter/nbgrader.git@maste
 # Install ngshare_exchange
 RUN pip install --no-cache-dir ngshare_exchange
 
-# Install e2xgrader and enable e2xgrader extensions
+# Install e2xgrader and enable e2xgrader extensions (test)
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@nbassignment_integration
 
 # Activate student mode by default
