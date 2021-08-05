@@ -9,7 +9,7 @@ RUN apt-get update
 RUN apt-get install -y libgl1-mesa-dev
 
 # Install PDF libraries
-#RUN apt-get install wkhtmltopdf
+RUN apt-get install wkhtmltopdf
 
 # Create default config for ipython kernel config
 RUN mkdir /etc/ipython/ && \
