@@ -86,73 +86,6 @@ function fancy_print {
     echo "################################################################################"
 }
 
-
-function build_image {
-  if [ "$1" = "dev" ]
-  then
-    IMAGE_SUFFIX="-dev"
-  else
-    IMAGE_SUFFIX=""
-  fi
-  
-  MINIMAL_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION 
-  docker build -t $MINIMAL_NOTEBOOK_TAG minimal-notebook
-  docker tag $MINIMAL_NOTEBOOK_TAG $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest 
-  if docker run -it --rm -d -p 8880:8888 $MINIMAL_NOTEBOOK_TAG ; then echo "$MINIMAL_NOTEBOOK_TAG is running"; else echo "Failed to run $MINIMAL_NOTEBOOK_TAG" && exit 1; fi
-
-  NOTEBOOK_TAG=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION 
-  docker build -t $NOTEBOOK_TAG notebook
-  docker tag $NOTEBOOK_TAG $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-  if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG ; then echo "$NOTEBOOK_TAG is running"; else echo "Failed to run $NOTEBOOK_TAG" && exit 1; fi
-
-  NGSHARE_TAG=$CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION 
-  docker build -t $NGSHARE_TAG ngshare
-  docker tag $NGSHARE_TAG $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
-  if docker run -it --rm -d -p 8882:8888 $NGSHARE_TAG ; then echo "$NGSHARE_TAG is running"; else echo "Failed to run $NGSHARE_TAG" && exit 1; fi
-
-  # Build e2x k8s-hub
-  cd hub
-  for k8s_version in */; do
-    K8S_VERSION=${k8s_version%/}
-    echo "Building k8s-hub:$K8S_VERSION"
-    docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
-  done
-  cd ..
-}
-
-function push_image {
-  if [ "$1" = "dev" ]
-  then
-    IMAGE_SUFFIX="-dev"
-  else
-    IMAGE_SUFFIX=""
-  fi
-
-  if [ "$PUBLISH" = "latest" ]
-  then
-    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
-    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
-    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
-  else
-    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
-    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
-    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
-  fi
-
-  cd hub
-  for k8s_version in */; do
-    K8S_VERSION=${k8s_version%/}
-    docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
-  done
-  cd ..
-}
-
 function deploy_image {
   if [ "$1" = "dev" ]
   then
@@ -162,69 +95,110 @@ function deploy_image {
   fi
   
   MINIMAL_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION 
-  docker build -t $MINIMAL_NOTEBOOK_TAG minimal-notebook
-  docker tag $MINIMAL_NOTEBOOK_TAG $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest 
-  if docker run -it --rm -d -p 8880:8888 $MINIMAL_NOTEBOOK_TAG ; then echo "$MINIMAL_NOTEBOOK_TAG is running"; else echo "Failed to run $MINIMAL_NOTEBOOK_TAG" && exit 1; fi
+  MINIMAL_NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest 
+  docker build -t $MINIMAL_NOTEBOOK_TAG_LATEST minimal-notebook
+  docker tag $MINIMAL_NOTEBOOK_TAG_LATEST $MINIMAL_NOTEBOOK_TAG
+  if docker run -it --rm -d -p 8880:8888 $MINIMAL_NOTEBOOK_TAG_LATEST ; then echo "$MINIMAL_NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $MINIMAL_NOTEBOOK_TAG_LATEST" && exit 1; fi
   if [ "$PUBLISH" = "latest" ]
   then
-    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
+    docker push $MINIMAL_NOTEBOOK_TAG_LATEST
   elif [ "$PUBLISH" = "version" ]
   then
-    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
+    docker push $MINIMAL_NOTEBOOK_TAG
+  elif [ "$PUBLISH" = "all" ]
+  then
+    docker push $MINIMAL_NOTEBOOK_TAG
+    docker push $MINIMAL_NOTEBOOK_TAG_LATEST
   else
-    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest
+    echo "None is published"
   fi
 
+  # build notebook
   NOTEBOOK_TAG=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION 
+  NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+  docker build -t $NOTEBOOK_TAG_LATEST --build-arg IMAGE_SOURCE=$MINIMAL_NOTEBOOK_TAG_LATEST notebook
+  docker tag $NOTEBOOK_TAG_LATEST $NOTEBOOK_TAG
+  if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG_LATEST ; then echo "$NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $NOTEBOOK_TAG_LATEST" && exit 1; fi
+  if [ "$PUBLISH" = "latest" ]
+  then
+    docker push $NOTEBOOK_TAG_LATEST
+  elif [ "$PUBLISH" = "version" ]
+  then
+    docker push $NOTEBOOK_TAG
+  elif [ "$PUBLISH" = "all" ]
+  then
+    docker push $NOTEBOOK_TAG
+    docker push $NOTEBOOK_TAG_LATEST
+  else
+    echo "None is published"
+  fi
+
+  # build exam notebook
   EXAM_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION 
-  docker build -t $NOTEBOOK_TAG notebook
-  docker build -t $EXAM_NOTEBOOK_TAG exam-notebook
-
-  docker tag $NOTEBOOK_TAG $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-  docker tag $EXAM_NOTEBOOK_TAG $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
-
-  if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG ; then echo "$NOTEBOOK_TAG is running"; else echo "Failed to run $NOTEBOOK_TAG" && exit 1; fi
-  if docker run -it --rm -d -p 8891:8888 $EXAM_NOTEBOOK_TAG ; then echo "$EXAM_NOTEBOOK_TAG is running"; else echo "Failed to run $EXAM_NOTEBOOK_TAG" && exit 1; fi
+  EXAM_NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
+  docker build -t $EXAM_NOTEBOOK_TAG_LATEST --build-arg IMAGE_SOURCE=$NOTEBOOK_TAG_LATEST exam-notebook
+  docker tag $EXAM_NOTEBOOK_TAG_LATEST $EXAM_NOTEBOOK_TAG
+  if docker run -it --rm -d -p 8882:8888 $EXAM_NOTEBOOK_TAG_LATEST ; then echo "$EXAM_NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $EXAM_NOTEBOOK_TAG_LATEST" && exit 1; fi
 
   if [ "$PUBLISH" = "latest" ]
   then
-    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
+    docker push $EXAM_NOTEBOOK_TAG_LATEST
   elif [ "$PUBLISH" = "version" ]
   then
-    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION
+    docker push $EXAM_NOTEBOOK_TAG
+  elif [ "$PUBLISH" = "all" ]
+  then
+    docker push $EXAM_NOTEBOOK_TAG
+    docker push $EXAM_NOTEBOOK_TAG_LATEST
   else
-    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
+    echo "None is published"
   fi
 
   NGSHARE_TAG=$CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION 
-  docker build -t $NGSHARE_TAG ngshare
-  docker tag $NGSHARE_TAG $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
-  if docker run -it --rm -d -p 8882:8888 $NGSHARE_TAG ; then echo "$NGSHARE_TAG is running"; else echo "Failed to run $NGSHARE_TAG" && exit 1; fi
+  NGSHARE_TAG_LATEST=$CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+  docker build -t $NGSHARE_TAG_LATEST ngshare
+  docker tag $NGSHARE_TAG_LATEST $NGSHARE_TAG
+  if docker run -it --rm -d -p 8883:8888 $NGSHARE_TAG_LATEST ; then echo "$NGSHARE_TAG_LATEST is running"; else echo "Failed to run $NGSHARE_TAG_LATEST" && exit 1; fi
   if [ "$PUBLISH" = "latest" ]
   then
-    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+    docker push $NGSHARE_TAG_LATEST
   elif [ "$PUBLISH" = "version" ]
   then
-    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
+    docker push $NGSHARE_TAG
+  elif [ "$PUBLISH" = "all" ]
+  then
+    docker push $NGSHARE_TAG
+    docker push $NGSHARE_TAG_LATEST
   else
-    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:$VERSION
-    docker push $CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
+    echo "None is published"
   fi
 
   # Build e2x k8s-hub
   cd hub
-  if [ "$PUBLISH" = "version" ]
+  if [ "$PUBLISH" = "latest" ]
   then
     for k8s_version in */; do
       K8S_VERSION=${k8s_version%/}
       echo "Building k8s-hub:$K8S_VERSION"
+      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
+      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
+    done
+  elif [ "$PUBLISH" = "version" ]
+  then
+    for k8s_version in */; do
+      K8S_VERSION=${k8s_version%/}
+      echo "Building k8s-hub:$K8S_VERSION-$VERSION"
+      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION $K8S_VERSION
+      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION
+    done
+  elif [ "$PUBLISH" = "all" ]
+  then
+    for k8s_version in */; do
+      K8S_VERSION=${k8s_version%/}
+      echo "Building k8s-hub:$K8S_VERSION and k8s-hub:$K8S_VERSION-$VERSION"
+      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
+      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
+
       docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION $K8S_VERSION
       docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION
     done
@@ -233,8 +207,8 @@ function deploy_image {
       K8S_VERSION=${k8s_version%/}
       echo "Building k8s-hub:$K8S_VERSION"
       docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
-      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
     done
+    echo "None is published"
   fi
   cd ..
 }
@@ -242,7 +216,9 @@ function deploy_image {
 if [ -z "$DEPLOYMENT" ]
 then
   fancy_print "Building images"
-  build_image
+  #reset publish argument
+  PUBLISH=""
+  deploy_image "prod"
 
   docker images
   docker ps
