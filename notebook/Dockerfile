@@ -39,7 +39,7 @@ RUN pip install --no-cache-dir git+https://github.com/jupyter/nbgrader.git@maste
 RUN pip install --no-cache-dir ngshare_exchange
 
 # Install e2xgrader and enable e2xgrader extensions
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@dev
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@master
 
 # Activate student mode by default
 RUN python -m e2xgrader activate student --sys-prefix
