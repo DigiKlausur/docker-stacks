@@ -42,7 +42,7 @@ RUN pip install --no-cache-dir ngshare_exchange
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@dev
 
 # Activate student mode by default
-RUN python -m e2xgrader activate student --sys-prefix
+RUN e2xgrader activate student --sys-prefix
 
 # Install assignmenttest
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/assignmenttest@master
