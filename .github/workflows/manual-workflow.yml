@@ -1,11 +1,11 @@
-name: Workflow dispatch
+name: Manual workflow
 on:
   workflow_dispatch:
     inputs:
       branch:
         description: 'Branch to build'
         required: true
-        default: 'master'
+        default: 'dev'
 
 jobs:
   deploy:
