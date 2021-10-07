@@ -1,5 +1,4 @@
 name: Workflow dispatch
-
 on:
   workflow_dispatch:
     inputs:
@@ -10,6 +9,7 @@ on:
 
 jobs:
   deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
