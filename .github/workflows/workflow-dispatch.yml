@@ -3,47 +3,39 @@ name: Workflow dispatch
 on:
   workflow_dispatch:
     inputs:
-      black:
-        description: 'Lint with black'
-        required: false
-        default: 'black.yml'
-      python-package:
-        description: 'Python package'
-        required: false
-        default: 'python-package.yml'
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'master'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    #if: github.event_name == 'push'
     steps:
-    - name: Get current branch
-      id: get-branch
-      run: |
-        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+    - uses: actions/checkout@v2
 
-    - name: Check black ci status
-      id: check-black
-      run: |
-        GH_BRANCH=${{ steps.get-branch.outputs.branch }}
-        output=$(curl -sSL -X GET -G -H "Accept: application/vnd.github.v3+json" -d "branch=$GH_BRANCH" -d "event=push" https://api.github.com/repos/digiklausur/e2xgrader/actions/workflows/${{ github.event.inputs.black }}/runs | jq -r '.workflow_runs[0] | "\(.conclusion)"')
-        echo "::set-output name=black-status::$output"
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+      
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GH_TOKEN }}
 
-    - name: Abort if black ci not successful
-      if: steps.check.outputs.black-status != 'success'
+    - name: Build and deploy dev
+      if: github.event.inputs.branch != 'dev'
+      id: docker_deploy_dev
       run: |
-          echo ${{ steps.check-black.outputs.black-status }}
-          exit 1
+        bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --publish latest
 
-    - name: Check python ci status
-      id: check-python
+    - name: Build and deploy prod
+      if: github.event.inputs.branch != 'master'
+      id: docker_deploy_prod
       run: |
-        GH_BRANCH=${{ steps.get-branch.outputs.branch }}
-        output=$(curl -sSL -X GET -G -H "Accept: application/vnd.github.v3+json" -d "branch=$GH_BRANCH" -d "event=push" https://api.github.com/repos/digiklausur/e2xgrader/actions/workflows/${{ github.event.inputs.python-package }}/runs | jq -r '.workflow_runs[0] | "\(.conclusion)"')
-        echo "::set-output name=python-status::$output"
+        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest
 
-    - name: Abort if black ci not successful
-      if: steps.check.outputs.python-status != 'success'
-      run: |
-          echo ${{ steps.check-python.outputs.python-status }}
-          exit 1
+    - name: Docker image list
+      run: docker images
