@@ -1,8 +1,9 @@
 ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest
-ARG E2X_BRANCH=master
 FROM $IMAGE_SOURCE
 
 LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
+
+ARG E2XGRADER_BRANCH=master
 
 #Fix opencv libGl
 USER root
@@ -40,7 +41,7 @@ RUN pip install --no-cache-dir git+https://github.com/jupyter/nbgrader.git@maste
 RUN pip install --no-cache-dir ngshare_exchange
 
 # Install e2xgrader and enable e2xgrader extensions
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@$E2X_BRANCH
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@"$E2XGRADER_BRANCH"
 
 # Activate student mode by default
 RUN e2xgrader activate student --sys-prefix
