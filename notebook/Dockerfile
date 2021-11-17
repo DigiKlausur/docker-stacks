@@ -13,7 +13,7 @@ RUN apt-get install -y libgl1-mesa-dev
 # Install PDF libraries
 RUN apt-get install -y wkhtmltopdf
 # Fixes libQt5Core not found (https://github.com/microsoft/WSL/issues/3023)
-RUN strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so
+RUN strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5
 
 # Create default config for ipython kernel config
 RUN mkdir /etc/ipython/ && \
