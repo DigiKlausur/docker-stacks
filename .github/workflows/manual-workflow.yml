@@ -26,13 +26,13 @@ jobs:
         password: ${{ secrets.GH_TOKEN }}
 
     - name: Build and deploy dev
-      if: github.event.inputs.branch = 'dev'
+      if: github.event.inputs.branch == 'dev'
       id: docker_deploy_dev
       run: |
         bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --publish latest
 
     - name: Build and deploy prod
-      if: github.event.inputs.branch = 'master'
+      if: github.event.inputs.branch == 'master'
       id: docker_deploy_prod
       run: |
         bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest
