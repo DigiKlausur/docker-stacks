@@ -26,6 +26,7 @@ gensim==3.8.3
 imageio==2.8.0
 wikipedia-api==0.5.4
 pydot
+pyyaml
 pypdf2
 pdfkit
 #pytorch
