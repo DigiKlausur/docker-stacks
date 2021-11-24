@@ -90,8 +90,10 @@ function deploy_image {
   if [ "$1" = "dev" ]
   then
     IMAGE_SUFFIX="-dev"
+    E2XGRADER_BRANCH="dev"
   else
     IMAGE_SUFFIX=""
+    E2XGRADER_BRANCH="master"
   fi
   
   MINIMAL_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION 
@@ -116,7 +118,7 @@ function deploy_image {
   # build notebook
   NOTEBOOK_TAG=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION 
   NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-  docker build -t $NOTEBOOK_TAG_LATEST --build-arg IMAGE_SOURCE=$MINIMAL_NOTEBOOK_TAG_LATEST notebook
+  docker build -t $NOTEBOOK_TAG_LATEST --build-arg E2XGRADER_BRANCH=$E2XGRADER_BRANCH --build-arg IMAGE_SOURCE=$MINIMAL_NOTEBOOK_TAG_LATEST notebook
   docker tag $NOTEBOOK_TAG_LATEST $NOTEBOOK_TAG
   if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG_LATEST ; then echo "$NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $NOTEBOOK_TAG_LATEST" && exit 1; fi
   if [ "$PUBLISH" = "latest" ]

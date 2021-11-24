@@ -3,6 +3,8 @@ FROM $IMAGE_SOURCE
 
 LABEL maintainer="DigiKlausur project HBRS <mohammad.wasil@h-brs.de>"
 
+ARG E2XGRADER_BRANCH=master
+
 #Fix opencv libGl
 USER root
 RUN apt-get update
@@ -10,6 +12,8 @@ RUN apt-get install -y libgl1-mesa-dev
 
 # Install PDF libraries
 RUN apt-get install -y wkhtmltopdf
+# Fixes libQt5Core not found (https://github.com/microsoft/WSL/issues/3023)
+RUN strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5
 
 # Create default config for ipython kernel config
 RUN mkdir /etc/ipython/ && \
@@ -39,10 +43,10 @@ RUN pip install --no-cache-dir git+https://github.com/jupyter/nbgrader.git@maste
 RUN pip install --no-cache-dir ngshare_exchange
 
 # Install e2xgrader and enable e2xgrader extensions
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@master
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@"$E2XGRADER_BRANCH"
 
 # Activate student mode by default
-RUN python -m e2xgrader activate student --sys-prefix
+RUN e2xgrader activate student --sys-prefix
 
 # Install assignmenttest
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/assignmenttest@master
