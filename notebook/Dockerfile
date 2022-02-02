@@ -68,7 +68,7 @@ RUN pip install --no-cache-dir RISE==5.7.1 && \
 
 # Jupyter contrib extensions
 RUN cd /tmp && \
-    git clone https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git@master && \
+    git clone --depth 1 -b master https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git && \
     cd /tmp/jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions && \
     jupyter nbextension install --sys-prefix codefolding && \
     jupyter nbextension enable --sys-prefix codefolding/main && \
