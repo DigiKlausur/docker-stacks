@@ -62,6 +62,20 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@m
 # Install graphviz via conda
 RUN conda install graphviz
 
+# Install RISE for presentation
+RUN pip install --no-cache-dir RISE==5.7.1 && \
+    jupyter-nbextension install rise --py --sys-prefix
+
+# Jupyter contrib extensions
+RUN cd /tmp && \
+    git clone https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git@master && \
+    cd /tmp/jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions && \
+    jupyter nbextension install --sys-prefix codefolding && \
+    jupyter nbextension enable --sys-prefix codefolding/main && \
+    jupyter nbextension install --sys-prefix collapsible_headings && \
+    jupyter nbextension enable --sys-prefix collapsible_headings/main && \
+    rm -rf /tmp/jupyter_contrib_nbextensions
+
 RUN jupyter nbextension list
 
 USER root
