@@ -27,6 +27,9 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+# Install pytorch
+RUN pip install torch==1.11.0+cpu torchvision==0.12.0+cpu torchaudio==0.11.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
+
 # Update jupyterhub and use the version that is used in z2jh version
 RUN pip install --no-cache-dir jupyterhub==1.4.2
 
