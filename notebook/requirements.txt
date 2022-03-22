@@ -1,6 +1,3 @@
-#
-# DigiKlausur package requirenments
-#
 ipywidgets
 nbresuse
 nbgitpuller
@@ -30,5 +27,3 @@ pydot
 pyyaml
 pypdf2
 pdfkit
-#pytorch
-#torchvision
