@@ -27,3 +27,4 @@ pydot
 pyyaml
 pypdf2
 pdfkit
+pydantic
