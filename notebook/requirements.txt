@@ -28,3 +28,4 @@ pyyaml
 pypdf2
 pdfkit
 pydantic
+pydantic_yaml
