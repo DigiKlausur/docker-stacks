@@ -1,6 +1,7 @@
 # Pin MarkupSafe to < 2.1 to fix jinja2
 MarkupSafe<2.1
 
+pyparsing>=3.0.0
 ipywidgets
 nbresuse
 nbgitpuller
