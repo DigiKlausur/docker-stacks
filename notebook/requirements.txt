@@ -22,7 +22,7 @@ opencv-contrib-python==4.4.0.44
 easydict==1.9
 Pillow==8.3.2
 spacy==2.2.4
-nltk==3.5
+nltk==3.6.6
 gensim==3.8.3
 imageio==2.8.0
 wikipedia-api==0.5.4
