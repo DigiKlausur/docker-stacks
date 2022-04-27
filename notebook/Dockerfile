@@ -27,6 +27,9 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+# Install pytorch
+RUN pip install torch==1.11.0+cpu torchvision==0.12.0+cpu torchaudio==0.11.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
+
 # Update jupyterhub and use the version that is used in z2jh version
 RUN pip install --no-cache-dir jupyterhub==1.4.2
 
@@ -61,6 +64,20 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@m
 
 # Install graphviz via conda
 RUN conda install graphviz
+
+# Install RISE for presentation
+RUN pip install --no-cache-dir RISE==5.7.1 && \
+    jupyter-nbextension install rise --py --sys-prefix
+
+# Jupyter contrib extensions
+RUN cd /tmp && \
+    git clone --depth 1 -b master https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git && \
+    cd /tmp/jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions && \
+    jupyter nbextension install --sys-prefix codefolding && \
+    jupyter nbextension enable --sys-prefix codefolding/main && \
+    jupyter nbextension install --sys-prefix collapsible_headings && \
+    jupyter nbextension enable --sys-prefix collapsible_headings/main && \
+    rm -rf /tmp/jupyter_contrib_nbextensions
 
 RUN jupyter nbextension list
 
