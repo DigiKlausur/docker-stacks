@@ -40,7 +40,9 @@ RUN pip install --no-cache-dir nbzip==0.1.0 && \
     jupyter nbextension     enable  --sys-prefix --py nbzip
 
 # Install ngshare_exchange
-RUN pip install --no-cache-dir ngshare_exchange
+# Use the latest commit after this PR: https://github.com/LibreTexts/ngshare_exchange/pull/19 
+# to ensure compatibility with nbgrader 7 and up
+RUN pip install --no-cache-dir git+https://github.com/LibreTexts/ngshare_exchange.git@e432c28135599299db8fbd376cf029db04d18b10
 
 # Install e2xgrader and enable e2xgrader extensions
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@"$E2XGRADER_BRANCH"
