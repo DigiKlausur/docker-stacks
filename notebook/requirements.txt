@@ -33,3 +33,4 @@ pypdf2
 pdfkit
 pydantic
 pydantic_yaml
+handcalcs
