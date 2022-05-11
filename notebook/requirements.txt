@@ -34,3 +34,4 @@ pdfkit
 pydantic
 pydantic_yaml
 handcalcs
+forallpeople
