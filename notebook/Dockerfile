@@ -61,6 +61,11 @@ RUN touch /etc/ipython/ipython_config.py
 # Install e2x-help
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@master
 
+# Install syntax_highlight
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/syntax_highlight.git@main
+RUN jupyter nbextension install --py --sys-prefix syntax_highlight
+RUN jupyter nbextension enable --py --sys-prefix syntax_highlight
+
 # Install graphviz via conda
 RUN conda install graphviz
 
