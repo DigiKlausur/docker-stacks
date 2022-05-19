@@ -8,6 +8,9 @@ USER $NB_USER
 # Activate student exam mode by default
 RUN e2xgrader activate student_exam --sys-prefix
 
+# Deactivate RISE
+RUN jupyter-nbextension uninstall rise --py --sys-prefix
+
 # activate e2x-help
 RUN echo 'c = get_config()'  >> /etc/jupyter/e2xhelp_config.py
 RUN echo 'c.Help.shared_path = "/srv/shares"' >> /etc/jupyter/e2xhelp_config.py
