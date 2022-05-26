@@ -33,5 +33,5 @@ pypdf2
 pdfkit
 pydantic
 pydantic_yaml
-handcalcs
-forallpeople
+#handcalcs
+#forallpeople
