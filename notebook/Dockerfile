@@ -90,4 +90,13 @@ RUN jupyter nbextension list
 USER root
 RUN rm /tmp/requirements.txt
 
+# Add gitwatch
+RUN apt get install inotify-tools
+RUN cd /tmp && \
+    git clone https://github.com/gitwatch/gitwatch.git &&
+    cd gitwatch &&
+    install -b gitwatch.sh /user/local/bin/gitwatch
+    cd ..
+    rm -rf gitwatch
+
 USER $NB_USER
