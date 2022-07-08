@@ -91,7 +91,7 @@ USER root
 RUN rm /tmp/requirements.txt
 
 # Add gitwatch
-RUN apt get install inotify-tools
+RUN apt-get install inotify-tools
 RUN cd /tmp && \
     git clone https://github.com/gitwatch/gitwatch.git && \
     cd gitwatch && \
