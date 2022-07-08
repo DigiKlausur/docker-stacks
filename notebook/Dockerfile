@@ -65,6 +65,9 @@ RUN python -m java_syntax_kernel.install --sys-prefix
 # Install e2x-help
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@master
 
+# Install e2xgit
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgit.git@main
+
 # Install graphviz via conda
 RUN conda install graphviz
 
