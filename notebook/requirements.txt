@@ -34,5 +34,6 @@ pdfkit
 pydantic
 pydantic_yaml
 itables
+bokeh
 #handcalcs
 #forallpeople
