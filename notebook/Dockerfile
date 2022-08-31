@@ -50,6 +50,9 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@
 # Activate student mode by default
 RUN e2xgrader activate student --sys-prefix
 
+# Install e2xauthoring
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xauthoring.git@main
+
 # Install assignmenttest
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/assignmenttest@master
 
