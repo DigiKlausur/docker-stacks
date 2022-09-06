@@ -56,6 +56,9 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xauthoring.g
 # Install assignmenttest
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/assignmenttest@master
 
+# Install e2xtest
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xtest@main
+
 # Install exam kernel
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
 RUN python -m exam_kernel.install --sys-prefix
