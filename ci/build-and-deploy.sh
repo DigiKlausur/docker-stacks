@@ -176,43 +176,18 @@ function deploy_image {
   fi
 
   # Build e2x k8s-hub
-  cd hub
-  if [ "$PUBLISH" = "latest" ]
-  then
-    for k8s_version in */; do
-      K8S_VERSION=${k8s_version%/}
-      echo "Building k8s-hub:$K8S_VERSION"
-      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
-      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
-    done
-  elif [ "$PUBLISH" = "version" ]
-  then
-    for k8s_version in */; do
-      K8S_VERSION=${k8s_version%/}
-      echo "Building k8s-hub:$K8S_VERSION-$VERSION"
-      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION $K8S_VERSION
-      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION
-    done
-  elif [ "$PUBLISH" = "all" ]
-  then
-    for k8s_version in */; do
-      K8S_VERSION=${k8s_version%/}
-      echo "Building k8s-hub:$K8S_VERSION and k8s-hub:$K8S_VERSION-$VERSION"
-      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
-      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
-
-      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION $K8S_VERSION
-      docker push $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION-$VERSION
-    done
+  K8S_VERSION_FILE=hub/k8s-versions.txt
+  if [ -f "$K8S_VERSION_FILE" ]; then
+    while IFS= read -r line; do
+      K8S_VERSION=$line
+      K8S_HUB_IMAGE_TAG=jupyterhub/k8s-hub:$K8S_VERSION
+      E2X_K8S_HUB_IMAGE_TAG=$CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION
+      docker build -t $E2X_K8S_HUB_IMAGE_TAG --build-arg IMAGE_SOURCE=$K8S_HUB_IMAGE_TAG hub
+      docker push $E2X_K8S_HUB_IMAGE_TAG
+    done < $K8S_VERSION_FILE
   else
-    for k8s_version in */; do
-      K8S_VERSION=${k8s_version%/}
-      echo "Building k8s-hub:$K8S_VERSION"
-      docker build -t $CONTAINER_REG_OWNER/k8s-hub$IMAGE_SUFFIX:$K8S_VERSION $K8S_VERSION
-    done
-    echo "None is published"
+    echo "$K8S_VERSION_FILE not found; no k8s-hub is built"
   fi
-  cd ..
 }
 
 if [ -z "$DEPLOYMENT" ]
