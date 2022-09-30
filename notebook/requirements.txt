@@ -35,5 +35,6 @@ pydantic
 pydantic_yaml
 itables
 bokeh
+ipysheet
 #handcalcs
 #forallpeople
