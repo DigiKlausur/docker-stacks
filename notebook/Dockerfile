@@ -10,6 +10,9 @@ USER root
 RUN apt-get update
 RUN apt-get install -y libgl1-mesa-dev
 
+# Install zip
+RUN apt-get install -y zip
+
 # Install PDF libraries
 RUN apt-get install -y wkhtmltopdf
 # Fixes libQt5Core not found (https://github.com/microsoft/WSL/issues/3023)
