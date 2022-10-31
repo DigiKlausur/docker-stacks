@@ -92,6 +92,8 @@ RUN cd /tmp && \
     jupyter nbextension enable --sys-prefix codefolding/main && \
     jupyter nbextension install --sys-prefix collapsible_headings && \
     jupyter nbextension enable --sys-prefix collapsible_headings/main && \
+    jupyter nbextension install --sys-prefix execute_time && \
+    jupyter nbextension enable --sys-prefix execute_time/ExecuteTime && \
     rm -rf /tmp/jupyter_contrib_nbextensions
 
 RUN jupyter nbextension list
