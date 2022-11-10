@@ -94,6 +94,10 @@ RUN cd /tmp && \
     jupyter nbextension enable --sys-prefix collapsible_headings/main && \
     jupyter nbextension install --sys-prefix execute_time && \
     jupyter nbextension enable --sys-prefix execute_time/ExecuteTime && \
+    jupyter nbextension install --sys-prefix toc2 && \
+    jupyter nbextension enable --sys-prefix toc2/toc2 && \
+    jupyter nbextension install --sys-prefix highlighter && \
+    jupyter nbextension enable --sys-prefix highlighter/highlighter && \
     rm -rf /tmp/jupyter_contrib_nbextensions
 
 RUN jupyter nbextension list
