@@ -83,6 +83,12 @@ RUN conda install graphviz
 # Install RISE for presentation
 RUN pip install --no-cache-dir RISE==5.7.1 && \
     jupyter-nbextension install rise --py --sys-prefix
+    
+# Install highlight selected word
+RUN pip install --no-cache-dir jupyter_highlight_selected_word && \
+    jupyter nbextension install jupyter_highlight_selected_word --py --sys-prefix && \
+    jupyter nbextension enable jupyter_highlight_selected_word/main --sys-prefix
+    
 
 # Jupyter contrib extensions
 RUN cd /tmp && \
@@ -96,8 +102,6 @@ RUN cd /tmp && \
     jupyter nbextension enable --sys-prefix execute_time/ExecuteTime && \
     jupyter nbextension install --sys-prefix toc2 && \
     jupyter nbextension enable --sys-prefix toc2/main && \
-    jupyter nbextension install --sys-prefix highlighter && \
-    jupyter nbextension enable --sys-prefix highlighter/highlighter && \
     rm -rf /tmp/jupyter_contrib_nbextensions
 
 RUN jupyter nbextension list
