@@ -87,7 +87,7 @@ RUN pip install --no-cache-dir RISE==5.7.1 && \
 # Install highlight selected word
 RUN pip install --no-cache-dir jupyter_highlight_selected_word && \
     jupyter nbextension install jupyter_highlight_selected_word --py --sys-prefix && \
-    jupyter nbextension enable jupyter_highlight_selected_word/main --sys-prefix
+    jupyter nbextension enable jupyter_highlight_selected_word --py --sys-prefix
     
 
 # Jupyter contrib extensions
