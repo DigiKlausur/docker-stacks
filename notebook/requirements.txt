@@ -36,5 +36,6 @@ pydantic_yaml
 itables
 bokeh
 ipysheet
+transformers
 #handcalcs
 #forallpeople
