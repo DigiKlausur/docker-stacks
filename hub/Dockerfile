@@ -7,6 +7,9 @@ USER root
 RUN pip install pandas
 
 # install jupyterhub-nativeauthenticator
-RUN pip install jupyterhub-nativeauthenticator==1.1.0
+RUN pip install --no-cache-dir jupyterhub-nativeauthenticator==1.1.0
+
+# install MIAAuth authenticator
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/miaauth.git@main
 
 USER $NB_USER
