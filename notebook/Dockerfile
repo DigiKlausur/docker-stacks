@@ -48,7 +48,7 @@ RUN pip install --no-cache-dir nbzip==0.1.0 && \
 RUN pip install --no-cache-dir ngshare_exchange>=0.5.2
 
 # Install e2xgrader and enable e2xgrader extensions
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@"$E2XGRADER_BRANCH"
+RUN pip install e2xgrader
 
 # Activate student mode by default
 RUN e2xgrader activate student --sys-prefix
@@ -62,8 +62,11 @@ RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/assignmenttest
 # Install e2xtest
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xtest@main
 
+# Install gradingutils
+RUN pip install e2xgradingtools
+
 # Install exam kernel
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
+RUN pip install exam-kernel
 RUN python -m exam_kernel.install --sys-prefix
 RUN touch /etc/ipython/ipython_config.py
 
