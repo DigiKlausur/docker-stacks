@@ -48,13 +48,13 @@ RUN pip install --no-cache-dir nbzip==0.1.0 && \
 RUN pip install --no-cache-dir ngshare_exchange>=0.5.2
 
 # Install e2xgrader and enable e2xgrader extensions
-RUN pip install e2xgrader
+RUN pip install e2xgrader==0.1.0.dev3
 
 # Activate student mode by default
 RUN e2xgrader activate student --sys-prefix
 
 # Install e2xauthoring
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xauthoring.git@main
+RUN pip install e2xauthoring==0.1.0
 
 # Install assignmenttest
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/assignmenttest@master
