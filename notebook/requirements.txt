@@ -34,5 +34,5 @@ pdfkit
 pydantic
 pydantic_yaml
 colorama
-pysat
+python-sat[aiger,approxmc,pblib]
 nx
