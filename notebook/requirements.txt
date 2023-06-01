@@ -37,5 +37,6 @@ itables
 bokeh
 ipysheet
 transformers
-#handcalcs
-#forallpeople
+colorama
+python-sat[aiger,approxmc,pblib]
+nx
