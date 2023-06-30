@@ -8,13 +8,8 @@ ARG E2XGRADER_BRANCH=master
 #Fix opencv libGl
 USER root
 RUN apt-get update
-RUN apt-get install -y libgl1-mesa-dev
+RUN apt-get install -y libgl1-mesa-dev zip wkhtmltopdf
 
-# Install zip
-RUN apt-get install -y zip
-
-# Install PDF libraries
-RUN apt-get install -y wkhtmltopdf
 # Fixes libQt5Core not found (https://github.com/microsoft/WSL/issues/3023)
 RUN strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5
 
