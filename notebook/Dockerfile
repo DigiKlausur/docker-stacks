@@ -43,19 +43,21 @@ RUN pip install --no-cache-dir nbzip==0.1.0 && \
 RUN pip install --no-cache-dir ngshare_exchange>=0.5.2
 
 # Install e2xgrader and enable e2xgrader extensions
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@dev
 RUN pip install e2xgrader==0.1.0.dev3
 
 # Activate student mode by default
 RUN e2xgrader activate student --sys-prefix
-
-# Install e2xauthoring
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xauthoring.git@main
 
 # Install assignmenttest
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/assignmenttest@master
 
 # Install e2xtest
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xtest@main
+
+
+# Install pdf feedback
+RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/pdf_feedback_exporter@main
 
 # Install exam kernel
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/exam_kernel@master
@@ -65,12 +67,6 @@ RUN touch /etc/ipython/ipython_config.py
 # Install java syntax kernel
 RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/java_syntax_kernel@main
 RUN python -m java_syntax_kernel.install --sys-prefix
-
-# Install e2x-help
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-help.git@master
-
-# Install e2xgit
-RUN pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgit.git@main
 
 # Install graphviz via conda
 RUN conda install graphviz
