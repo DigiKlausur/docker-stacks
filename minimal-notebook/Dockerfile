@@ -46,12 +46,6 @@ USER $NB_USER
 # Update jupyterhub and use the version that is used in z2jh version
 RUN pip install --no-cache-dir jupyterhub==1.4.2
 
-# Install nbzip
-RUN pip install --no-cache-dir nbzip==0.1.0 && \
-    jupyter serverextension enable  --sys-prefix --py nbzip && \
-    jupyter nbextension     install --sys-prefix --py nbzip && \
-    jupyter nbextension     enable  --sys-prefix --py nbzip
-
 # Install RISE for presentation
 RUN pip install --no-cache-dir RISE==5.7.1 && \
     jupyter-nbextension install rise --py --sys-prefix
