@@ -98,6 +98,7 @@ function deploy_image {
   
   MINIMAL_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:$VERSION 
   MINIMAL_NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/minimal-notebook$IMAGE_SUFFIX:latest 
+  echo "Build image" $MINIMAL_NOTEBOOK_TAG
   docker build -t $MINIMAL_NOTEBOOK_TAG_LATEST minimal-notebook
   docker tag $MINIMAL_NOTEBOOK_TAG_LATEST $MINIMAL_NOTEBOOK_TAG
   if docker run -it --rm -d -p 8880:8888 $MINIMAL_NOTEBOOK_TAG_LATEST ; then echo "$MINIMAL_NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $MINIMAL_NOTEBOOK_TAG_LATEST" && exit 1; fi
@@ -118,7 +119,8 @@ function deploy_image {
   # build datascience notebook
   DATASCIENCE_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/datascience-notebook$IMAGE_SUFFIX:$VERSION 
   DATASCIENCE_NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/datascience-notebook$IMAGE_SUFFIX:latest
-  docker build -t $DATASCIENCE_NOTEBOOK_TAG_LATEST --build-arg IMAGE_SOURCE=$MINIMAL_NOTEBOOK_TAG_LATEST notebook
+  echo "Build image" $DATASCIENCE_NOTEBOOK_TAG
+  docker build -t $DATASCIENCE_NOTEBOOK_TAG_LATEST --build-arg IMAGE_SOURCE=$MINIMAL_NOTEBOOK_TAG_LATEST datascience-notebook
   docker tag $DATASCIENCE_NOTEBOOK_TAG_LATEST $DATASCIENCE_NOTEBOOK_TAG
   if docker run -it --rm -d -p 8881:8888 $DATASCIENCE_NOTEBOOK_TAG_LATEST ; then echo "$DATASCIENCE_NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $DATASCIENCE_NOTEBOOK_TAG_LATEST" && exit 1; fi
   if [ "$PUBLISH" = "latest" ]
@@ -138,6 +140,7 @@ function deploy_image {
   # build notebook
   NOTEBOOK_TAG=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION 
   NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
+  echo "Build image" $NOTEBOOK_TAG
   docker build -t $NOTEBOOK_TAG_LATEST --build-arg E2XGRADER_BRANCH=$E2XGRADER_BRANCH --build-arg IMAGE_SOURCE=$DATASCIENCE_NOTEBOOK_TAG_LATEST notebook
   docker tag $NOTEBOOK_TAG_LATEST $NOTEBOOK_TAG
   if docker run -it --rm -d -p 8882:8888 $NOTEBOOK_TAG_LATEST ; then echo "$NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $NOTEBOOK_TAG_LATEST" && exit 1; fi
@@ -160,7 +163,7 @@ function deploy_image {
   EXAM_NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/exam-notebook$IMAGE_SUFFIX:latest
   docker build -t $EXAM_NOTEBOOK_TAG_LATEST --build-arg IMAGE_SOURCE=$NOTEBOOK_TAG_LATEST exam-notebook
   docker tag $EXAM_NOTEBOOK_TAG_LATEST $EXAM_NOTEBOOK_TAG
-  if docker run -it --rm -d -p 8882:8888 $EXAM_NOTEBOOK_TAG_LATEST ; then echo "$EXAM_NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $EXAM_NOTEBOOK_TAG_LATEST" && exit 1; fi
+  if docker run -it --rm -d -p 8883:8888 $EXAM_NOTEBOOK_TAG_LATEST ; then echo "$EXAM_NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $EXAM_NOTEBOOK_TAG_LATEST" && exit 1; fi
 
   if [ "$PUBLISH" = "latest" ]
   then
@@ -180,7 +183,7 @@ function deploy_image {
   NGSHARE_TAG_LATEST=$CONTAINER_REG_OWNER/ngshare$IMAGE_SUFFIX:latest
   docker build -t $NGSHARE_TAG_LATEST ngshare
   docker tag $NGSHARE_TAG_LATEST $NGSHARE_TAG
-  if docker run -it --rm -d -p 8883:8888 $NGSHARE_TAG_LATEST ; then echo "$NGSHARE_TAG_LATEST is running"; else echo "Failed to run $NGSHARE_TAG_LATEST" && exit 1; fi
+  if docker run -it --rm -d -p 8884:8888 $NGSHARE_TAG_LATEST ; then echo "$NGSHARE_TAG_LATEST is running"; else echo "Failed to run $NGSHARE_TAG_LATEST" && exit 1; fi
   if [ "$PUBLISH" = "latest" ]
   then
     docker push $NGSHARE_TAG_LATEST
