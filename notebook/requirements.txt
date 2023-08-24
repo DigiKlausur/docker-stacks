@@ -1,43 +1,8 @@
-# Pin MarkupSafe to < 2.1 to fix jinja2
-MarkupSafe<2.1
-
-pyparsing>=3.0.0
-ipywidgets
-nbresuse
+exam_kernel
+ngshare_exchange>=0.5.2
+assignmenttest @ git+https://github.com/Digiklausur/assignmenttest@master
+e2xtest @ git+https://github.com/DigiKlausur/e2xtest@main
+pdf_feedback_exporter @ git+https://github.com/DigiKlausur/pdf_feedback_exporter@main
+java_syntax_kernel @ git+https://github.com/DigiKlausur/java_syntax_kernel@main
 nbgitpuller
-ilias2nbgrader==0.4.3
-scikit-image==0.17.2 
-matplotlib==3.2.1
-numpy>=1.18.4
-pandas==1.0.3
-scipy==1.4.1
-statsmodels==0.11.1
-sympy==1.8
-xlrd==1.2.0
-scikit-learn==0.22.2
-tensorflow==2.5.1
-seaborn==0.10.1
-opencv-python==4.4.0.44
-opencv-contrib-python==4.4.0.44
-easydict==1.9
-Pillow==8.3.2
-spacy==2.2.4
-nltk==3.5
-gensim==3.8.3
-imageio==2.8.0
-wikipedia-api==0.5.4
-ipycanvas
-pydot
-pyyaml
-pypdf2
-pdfkit
-pydantic
-pydantic_yaml
-itables
-bokeh
-ipysheet
-transformers
-colorama
-python-sat[aiger,approxmc,pblib]
-nx
-pyagrum
+nbresuse
