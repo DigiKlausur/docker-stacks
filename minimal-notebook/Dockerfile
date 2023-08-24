@@ -33,8 +33,6 @@ RUN rm -rf $HOME/work
 RUN apt-get update
 RUN apt-get install -y libgl1-mesa-dev zip wkhtmltopdf
 
-RUN pip install --upgrade pip
-
 # Create default config for ipython kernel config
 RUN mkdir /etc/ipython/ && \
     chown root:$NB_GID /etc/ipython/ &&\
@@ -42,6 +40,8 @@ RUN mkdir /etc/ipython/ && \
     chmod +6000 /etc/ipython/
 
 USER $NB_USER
+
+RUN pip install --upgrade pip
 
 # Update jupyterhub and use the version that is used in z2jh version
 RUN pip install --no-cache-dir jupyterhub==1.4.2
