@@ -130,7 +130,7 @@ function deploy_image {
   elif [ "$PUBLISH" = "all" ]
   then
     docker push $DATASCIENCE_NOTEBOOK_TAG
-    docker push $NOTEBOOK_TAG_LATEST
+    docker push $DATASCIENCE_NOTEBOOK_TAG_LATEST
   else
     echo "None is published"
   fi
