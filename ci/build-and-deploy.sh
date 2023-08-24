@@ -115,10 +115,30 @@ function deploy_image {
     echo "None is published"
   fi
 
+  # build datascience notebook
+  DATASCIENCE_NOTEBOOK_TAG=$CONTAINER_REG_OWNER/datascience-notebook$IMAGE_SUFFIX:$VERSION 
+  DATASCIENCE_NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/datascience-notebook$IMAGE_SUFFIX:latest
+  docker build -t $DATASCIENCE_NOTEBOOK_TAG_LATEST --build-arg IMAGE_SOURCE=$MINIMAL_NOTEBOOK_TAG_LATEST notebook
+  docker tag $DATASCIENCE_NOTEBOOK_TAG_LATEST $DATASCIENCE_NOTEBOOK_TAG
+  if docker run -it --rm -d -p 8881:8888 $DATASCIENCE_NOTEBOOK_TAG_LATEST ; then echo "$DATASCIENCE_NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $DATASCIENCE_NOTEBOOK_TAG_LATEST" && exit 1; fi
+  if [ "$PUBLISH" = "latest" ]
+  then
+    docker push $DATASCIENCE_NOTEBOOK_TAG_LATEST
+  elif [ "$PUBLISH" = "version" ]
+  then
+    docker push $DATASCIENCE_NOTEBOOK_TAG
+  elif [ "$PUBLISH" = "all" ]
+  then
+    docker push $DATASCIENCE_NOTEBOOK_TAG
+    docker push $NOTEBOOK_TAG_LATEST
+  else
+    echo "None is published"
+  fi
+
   # build notebook
   NOTEBOOK_TAG=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:$VERSION 
   NOTEBOOK_TAG_LATEST=$CONTAINER_REG_OWNER/notebook$IMAGE_SUFFIX:latest
-  docker build -t $NOTEBOOK_TAG_LATEST --build-arg E2XGRADER_BRANCH=$E2XGRADER_BRANCH --build-arg IMAGE_SOURCE=$MINIMAL_NOTEBOOK_TAG_LATEST notebook
+  docker build -t $NOTEBOOK_TAG_LATEST --build-arg E2XGRADER_BRANCH=$E2XGRADER_BRANCH --build-arg IMAGE_SOURCE=$DATASCIENCE_NOTEBOOK_TAG_LATEST notebook
   docker tag $NOTEBOOK_TAG_LATEST $NOTEBOOK_TAG
   if docker run -it --rm -d -p 8881:8888 $NOTEBOOK_TAG_LATEST ; then echo "$NOTEBOOK_TAG_LATEST is running"; else echo "Failed to run $NOTEBOOK_TAG_LATEST" && exit 1; fi
   if [ "$PUBLISH" = "latest" ]
