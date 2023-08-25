@@ -42,8 +42,8 @@ RUN apt-get update -y \
 USER $NB_USER
 
 # Install conda related pkgs
-RUN conda install gh --channel conda-forge && \
-    conda install graphviz
+RUN mamba install -y gh --channel conda-forge && \
+    mamba install -y graphviz
 
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir RISE==5.7.1
@@ -65,8 +65,7 @@ RUN cd /tmp && \
 USER root
 
 # clean up
-RUN rm /tmp/requirements.txt && \
-    /opt/conda/bin/conda clean -afy && \
+RUN /opt/conda/bin/conda clean -afy && \
     find /opt/conda/ -follow -type f -name '*.a' -delete && \
     find /opt/conda/ -follow -type f -name '*.pyc' -delete && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete

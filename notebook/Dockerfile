@@ -21,6 +21,9 @@ RUN e2xgrader activate student --sys-prefix
 # Copy nbgrader base config
 COPY configs/nbgrader_config.py /etc/jupyter/nbgrader_config.py
 
+# Jupyter extension list
+RUN jupyter nbextension list
+
 USER root
 RUN rm /tmp/requirements.txt
 
