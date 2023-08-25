@@ -220,6 +220,16 @@ function build_all_notebook_images {
   build_exam_notebook
 }
 
+function stop_docker_containers {
+  # Get a list of running container IDs
+  container_ids=$(docker ps -q)
+
+  # Stop each container
+  for container_id in $container_ids; do
+    docker stop "$container_id"
+  done
+}
+
 function main {
   echo "Building $IMAGE image"
   if [ "$IMAGE" = "all" ]; then 
@@ -255,3 +265,4 @@ main
 # check docker images and containers
 docker images
 docker ps
+stop_docker_containers
