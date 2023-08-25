@@ -11,4 +11,5 @@ RUN e2xgrader activate student_exam --sys-prefix
 # Deactivate RISE
 RUN jupyter-nbextension uninstall rise --py --sys-prefix
 
+# Jupyter extension list
 RUN jupyter nbextension list
