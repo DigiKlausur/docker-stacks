@@ -83,7 +83,7 @@ jobs:
         bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --image notebook --publish latest
 
   exam-notebook:
-    name: Notebook
+    name: Exam Notebook
     need: notebook
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
