@@ -1,4 +1,4 @@
-ARG IMAGE_SOURCE=jupyterhub/k8s-hub:1.1.1
+ARG IMAGE_SOURCE=jupyterhub/k8s-hub:0.11.1
 FROM $IMAGE_SOURCE
 
 LABEL maintainer="DigiKlausur (E2x) project HBRS <mohammad.wasil@h-brs.de>"

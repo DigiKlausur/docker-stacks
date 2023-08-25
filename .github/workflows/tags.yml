@@ -5,6 +5,7 @@ on:
     tags:
       - 'ws*'
       - 'ss*'
+      - 'release-*'
 
 jobs:
   build:
@@ -32,8 +33,4 @@ jobs:
     - name: Build image
       id: docker_build
       run: |
-        # deploy images for specific tag
-        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --version ${{ steps.get_version.outputs.VERSION }} --publish version
-
-    - name: Docker image list
-      run: docker images
+        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --image all --version ${{ steps.get_version.outputs.VERSION }} --publish version
