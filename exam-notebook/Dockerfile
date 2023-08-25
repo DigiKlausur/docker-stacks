@@ -1,7 +1,7 @@
 ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/notebook:latest
 FROM $IMAGE_SOURCE
 
-LABEL maintainer="DigiKlausur project HBRS <e2x@inf.h-brs.de>"
+LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 
 USER $NB_USER
 

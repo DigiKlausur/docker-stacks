@@ -3,7 +3,7 @@ FROM jupyter/minimal-notebook:4d70cf8da953
 #               https://github.com/jupyter/docker-stacks/blob/main/images/minimal-notebook/Dockerfile
 # Built from... Ubuntu 22.04
 
-LABEL maintainer="DigiKlausur project HBRS <e2x@inf.h-brs.de>"
+LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 
 USER root
 
@@ -35,16 +35,18 @@ RUN apt-get update -y \
        texlive-latex-extra \
        vim \
        libgl1-mesa-dev zip wkhtmltopdf \
+       build-essential \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 USER $NB_USER
 
-# Install GitHub cli
-RUN conda install gh --channel conda-forge
+# Install conda related pkgs
+RUN conda install gh --channel conda-forge && \
+    conda install graphviz
 
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir RISE==5.7.1\
+    pip install --no-cache-dir RISE==5.7.1
 
 # Enable extenstions and Jupyter contrib extensions
 RUN cd /tmp && \
