@@ -25,12 +25,7 @@ jobs:
     - name: Build image
       id: build_image
       run: |
-        if [[ "${{ github.ref#refs/heads/ }}" == "master" ]]; then
-          bash ci/build-and-deploy.sh --deployment "master" --registry ghcr.io --image minimal-notebook --publish none
-        if [[ "${{ github.ref#refs/heads/ }}" == "dev" ]]; then
-          bash ci/build-and-deploy.sh --deployment "dev" --registry ghcr.io --image minimal-notebook --publish none
-        else
-        fi
+        bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --image all --publish none
 
     - name: Docker image list
       run: docker images
