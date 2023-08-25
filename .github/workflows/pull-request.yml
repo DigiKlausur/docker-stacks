@@ -26,7 +26,3 @@ jobs:
       id: build_image
       run: |
         bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --image all --publish none
-
-    - name: Docker image list
-      run: docker images
-

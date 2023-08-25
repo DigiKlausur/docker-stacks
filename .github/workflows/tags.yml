@@ -34,6 +34,3 @@ jobs:
       id: docker_build
       run: |
         bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --image all --version ${{ steps.get_version.outputs.VERSION }} --publish version
-
-    - name: Docker image list
-      run: docker images

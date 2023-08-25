@@ -32,9 +32,6 @@ jobs:
       run: |
         bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --image ngshare --publish latest
 
-    - name: Docker image list
-      run: docker images
-
   build-and-publish-prod:
     name: Deploy Prod
     runs-on: ubuntu-latest
@@ -56,6 +53,3 @@ jobs:
       id: docker_deploy_prod
       run: |
         bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --image ngshare --publish latest
-
-    - name: Docker image list
-      run: docker images

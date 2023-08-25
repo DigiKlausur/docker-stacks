@@ -43,6 +43,3 @@ jobs:
         IMAGE=${{ needs.event.inputs.image }}
 
         bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest
-
-    - name: Docker image list
-      run: docker images
