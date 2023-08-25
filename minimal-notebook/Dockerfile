@@ -65,8 +65,7 @@ RUN cd /tmp && \
 USER root
 
 # clean up
-RUN rm /tmp/requirements.txt && \
-    /opt/conda/bin/conda clean -afy && \
+RUN /opt/conda/bin/conda clean -afy && \
     find /opt/conda/ -follow -type f -name '*.a' -delete && \
     find /opt/conda/ -follow -type f -name '*.pyc' -delete && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
