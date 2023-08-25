@@ -1,0 +1,37 @@
+---
+name: Pull Request
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+    paths:
+      - minimal-notebook/**
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build image
+      id: build_image
+      run: |
+        if [[ "${{ github.ref#refs/heads/ }}" == "master" ]]; then
+          bash ci/build-and-deploy.sh --deployment "master" --registry ghcr.io --image minimal-notebook --publish none
+        if [[ "${{ github.ref#refs/heads/ }}" == "dev" ]]; then
+          bash ci/build-and-deploy.sh --deployment "dev" --registry ghcr.io --image minimal-notebook --publish none
+        else
+        fi
+
+    - name: Docker image list
+      run: docker images
+
