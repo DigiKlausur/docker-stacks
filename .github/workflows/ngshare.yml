@@ -13,6 +13,7 @@ jobs:
   build-and-publish-dev:
     name: Deploy Dev
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     steps:
     - uses: actions/checkout@v2
 
@@ -35,6 +36,7 @@ jobs:
   build-and-publish-prod:
     name: Deploy Prod
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
     - uses: actions/checkout@v2
 
