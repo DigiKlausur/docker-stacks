@@ -36,7 +36,7 @@ jobs:
 
   datascience-notebook:
     name: Datascience Notebook
-    need: minimal-notebook
+    needs: minimal-notebook
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
@@ -60,7 +60,7 @@ jobs:
 
   notebook:
     name: Notebook
-    need: datascience-notebook
+    needs: datascience-notebook
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
@@ -84,7 +84,7 @@ jobs:
 
   exam-notebook:
     name: Exam Notebook
-    need: notebook
+    needs: notebook
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
