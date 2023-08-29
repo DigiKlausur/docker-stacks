@@ -1,4 +1,5 @@
-[<!--lint ignore no-dead-urls-->![Build Status](https://github.com/digiklausur/docker-stacks/workflows/CI/badge.svg)](https://github.com/digiklausur/docker-stacks/actions?workflow=CI)
+[<!--lint ignore no-dead-urls-->![Notebook Stable](https://github.com/digiklausur/docker-stacks/workflows/notebook-stable.yml/badge.svg)](https://github.com/digiklausur/docker-stacks/actions/workflows/notebook-stable.yml)
+[<!--lint ignore no-dead-urls-->![Notebook Dev](https://github.com/digiklausur/docker-stacks/workflows/notebook-dev.yml/badge.svg)](https://github.com/digiklausur/docker-stacks/actions/workflows/notebook-dev.yml)
 
 # E2x Docker Stacks
 
