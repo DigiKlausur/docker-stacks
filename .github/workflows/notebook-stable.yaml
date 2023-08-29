@@ -1,5 +1,5 @@
 ---
-name: Notebook Prod
+name: Notebook Stable
 on:
   push:
     branches:
