@@ -77,10 +77,11 @@ echo "Deployment: $DEPLOYMENT"
 
 if [ "$DEPLOYMENT" = "dev" ]; then
   IMAGE_SUFFIX="-dev"
-  E2XGRADER_BRANCH="dev"
+  E2XGRADER="git+https://github.com/DigiKlausur/e2xgrader.git@dev"
 elif [ "$DEPLOYMENT" = "prod" ]; then
   IMAGE_SUFFIX=""
-  E2XGRADER_BRANCH="master"
+  # use pypi version of e2xgrader https://pypi.org/project/e2xgrader
+  E2XGRADER="e2xgrader"
 else
   echo "Deployment argument is unknown $DEPLOYMENT"
   exit 1
@@ -97,12 +98,12 @@ function build_and_publish_single_image {
   echo "Base image: $BASE_IMAGE"
 
   if [ -z "$BASE_IMAGE" ]; then
-    if ! docker build -t $IMAGE_TAG $IMAGE_DIR; then
+    if ! docker build -t $IMAGE_TAG --build-arg E2XGRADER=$E2XGRADER $IMAGE_DIR; then
       echo "Docker build failed $IMAGE_TAG"
       exit 1
     fi
   else
-    if ! docker build -t $IMAGE_TAG --build-arg IMAGE_SOURCE=$BASE_IMAGE $IMAGE_DIR; then
+    if ! docker build -t $IMAGE_TAG --build-arg IMAGE_SOURCE=$BASE_IMAGE --build-arg E2XGRADER=$E2XGRADER $IMAGE_DIR; then
       echo "Docker build failed $IMAGE_TAG"
       exit 1
     fi

@@ -3,12 +3,13 @@ FROM $IMAGE_SOURCE
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 
+ARG E2XGRADER=e2xgrader
 USER $NB_USER
 
 # Install grading requirements
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
-    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@dev
+    pip install --no-cache-dir $E2XGRADER
 
 # Set up kernels
 RUN touch /etc/ipython/ipython_config.py && \
