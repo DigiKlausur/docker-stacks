@@ -237,6 +237,8 @@ function main {
     build_all_notebook_images
     build_k8s_hub
     build_ngshare
+  elif [ "$IMAGE" = "all-notebook" ]; then 
+    build_all_notebook_images
   else 
     if [ "$IMAGE" = "minimal-notebook" ]; then
       build_all_notebook_images
