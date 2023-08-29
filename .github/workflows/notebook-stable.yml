@@ -5,6 +5,7 @@ on:
     branches:
       - master
     paths:
+      - .github/**
       - minimal-notebook/**
       - datascience-notebook/**
       - notebook/**
