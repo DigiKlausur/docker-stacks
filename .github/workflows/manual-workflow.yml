@@ -6,6 +6,10 @@ on:
         description: 'Branch to build'
         required: true
         default: 'dev'
+      image:
+        descriptiion: 'Image to build'
+        required: true
+        default: 'notebook'
 
 jobs:
   deploy:
@@ -35,7 +39,7 @@ jobs:
       if: github.event.inputs.branch == 'master'
       id: docker_deploy_prod
       run: |
-        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest
+        BRANCH=${{ needs.event.inputs.branch }}
+        IMAGE=${{ needs.event.inputs.image }}
 
-    - name: Docker image list
-      run: docker images
+        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest

@@ -1,39 +1,19 @@
 ---
-name: CI
+name: Ngshare
 on:
-  pull_request:
   push:
     branches:
       - master
       - dev
+    paths:
+      - .github/**
+      - hub/**
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v1
-
-    - name: Build image
-      id: docker_build
-      run: |
-        # pull from docker hub to deal with their retention policy
-        bash ci/build-and-deploy.sh --deployment ""
-
-    - name: Docker image list
-      run: docker images
-
-  deploy-dev:
+  build-and-publish-dev:
     name: Deploy Dev
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-
     steps:
     - uses: actions/checkout@v2
 
@@ -51,17 +31,12 @@ jobs:
     - name: Build and deploy image
       id: docker_deploy_dev
       run: |
-        # GitHub container registry is still beta
-        bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --publish latest
+        bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --image ngshare --publish latest
 
-    - name: Docker image list
-      run: docker images
-
-  deploy-prod:
+  build-and-publish-prod:
     name: Deploy Prod
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-
     steps:
     - uses: actions/checkout@v2
 
@@ -79,8 +54,4 @@ jobs:
     - name: Build and deploy image
       id: docker_deploy_prod
       run: |
-        # GitHub container registry is still beta, just build
-        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --publish latest
-
-    - name: Docker image list
-      run: docker images
+        bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --image ngshare --publish latest

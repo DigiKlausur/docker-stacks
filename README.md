@@ -1,14 +1,34 @@
-[<!--lint ignore no-dead-urls-->![Build Status](https://github.com/digiklausur/docker-stacks/workflows/CI/badge.svg)](https://github.com/digiklausur/docker-stacks/actions?workflow=CI)
+[![K8s Hub](https://github.com/DigiKlausur/docker-stacks/actions/workflows/hub.yml/badge.svg)](https://github.com/DigiKlausur/docker-stacks/actions/workflows/hub.yml)
+[![Notebook Stable](https://github.com/DigiKlausur/docker-stacks/actions/workflows/notebook-stable.yml/badge.svg)](https://github.com/DigiKlausur/docker-stacks/actions/workflows/notebook-stable.yml)
+[![Notebook Dev](https://github.com/DigiKlausur/docker-stacks/actions/workflows/notebook-dev.yml/badge.svg)](https://github.com/DigiKlausur/docker-stacks/actions/workflows/notebook-dev.yml)
 
 # E2x Docker Stacks
 
 ## Branches
-The `dev` branch will always reflect `digiklausur/{image_name}-dev:tag` on the docker hub, and the `master` branch reflects `digiklausur/{image_name}:tag`. The default image tag is `latest`, and images from github tags are also built by using the github tag as the image tag. Additionally, the image used in a particular semester can be pulled using tag i.e. `ws20` for winter semester 2020.
+The `dev` branch will always reflect `ghcr.io/digiklausur/docker-stacks/{image_name}-dev:tag` on the GitHub container registry, and the `master` branch reflects `ghcr.io/digiklausur/docker-stacks/{image_name}:tag`. The default image tag is `latest`, and images using the commit hash are also built but not necessarily pushed to avoid fine-grained image tags on the registry. Additionally, the image used in a particular semester and release version can be pulled using tag i.e. `ws20` for winter semester 2020.
 
-## Single user images
-* `minimal-notebook` is based on [jupyter/minimal-notebook](https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile)
-* `notebook` image is used for teaching environment
-* `exam-notebook` is used for examination environment
+## Single user image
+* `minimal-notebook`
+  - Based on [jupyter/minimal-notebook](https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile)
+* `datascience-notebook`
+  - Built on top of `minimal-notebook`
+  - Includes machine learning libraries like TensorFlow, PyTorch, scikit-learn, etc.
+* `notebook`
+  - Built on top of `datascience-notebook`
+  - Includes e2xgrader and its dependencies for teaching purposes
+* `exam-notebook`
+  - Built on top of `notebook`
+  - Includes exam extensions such as restricted tree, no delete button, etc.
+
+To learn more about our teaching, authoring, grading, and examination packages, please visit our [e2xgrader repository](https://github.com/DigiKlausur/e2xgrader). 
+
+## Build the image locally
+You can build our images locally by using the following script
+```
+bash ci/build-and-deploy.sh --deployment "" --registry ghcr.io --image all --publish none
+```
+If you want to build the individual image, you can replace argument `--image` with the name of the image e.g. `minimal-notebook`, `datascience-notebook`, `notebook`, and `exam-notebook`
+
 
 ## Run the image locally
 ```
