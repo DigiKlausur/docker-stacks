@@ -1,3 +1,4 @@
+[![K8s Hub](https://github.com/DigiKlausur/docker-stacks/actions/workflows/hub.yml/badge.svg)](https://github.com/DigiKlausur/docker-stacks/actions/workflows/hub.yml)
 [![Notebook Stable](https://github.com/DigiKlausur/docker-stacks/actions/workflows/notebook-stable.yml/badge.svg)](https://github.com/DigiKlausur/docker-stacks/actions/workflows/notebook-stable.yml)
 [![Notebook Dev](https://github.com/DigiKlausur/docker-stacks/actions/workflows/notebook-dev.yml/badge.svg)](https://github.com/DigiKlausur/docker-stacks/actions/workflows/notebook-dev.yml)
 
