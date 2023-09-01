@@ -44,7 +44,7 @@ jobs:
     - name: Build and publish to quay.io
       id: build_and_deploy_to_quay
       run: |
-        bash ci/build-and-deploy.sh --deployment dev --registry ghcr.io --image ngshare --publish latest
+        bash ci/build-and-deploy.sh --deployment dev --registry quay.io --image ngshare --publish latest
 
   build-and-publish-prod:
     name: Deploy Prod
