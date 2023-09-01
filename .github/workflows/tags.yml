@@ -30,7 +30,19 @@ jobs:
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
-    - name: Build image
-      id: docker_build
+    - name: Build and publis to ghcr.io
+      id: docker_build_publish_ghcr
       run: |
         bash ci/build-and-deploy.sh --deployment prod --registry ghcr.io --image all --version ${{ steps.get_version.outputs.VERSION }} --publish version
+
+    - name: Login to Quay Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: quay.io
+        username: ${{ secrets.QUAY_USERNAME }}
+        password: ${{ secrets.QUAY_SECRET }}
+
+    - name: Build and publis to quay.io
+      id: docker_build_publish_quay
+      run: |
+        bash ci/build-and-deploy.sh --deployment prod --registry quay.io --image all --version ${{ steps.get_version.outputs.VERSION }} --publish version
