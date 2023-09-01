@@ -77,6 +77,6 @@ jobs:
         password: ${{ secrets.QUAY_SECRET }}
 
     - name: Build and publish to ghcr.io
-      id: build_and_deploy_to_ghcr
+      id: build_and_deploy_to_quay
       run: |
         bash ci/build-and-deploy.sh --deployment prod --registry quay.io --image ngshare --publish latest
