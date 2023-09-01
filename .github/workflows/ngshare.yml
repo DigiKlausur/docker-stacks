@@ -8,6 +8,7 @@ on:
     paths:
       - .github/**
       - hub/**
+      - ci/**
 
 jobs:
   build-and-publish-dev:
