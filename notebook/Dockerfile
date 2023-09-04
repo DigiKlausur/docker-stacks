@@ -4,6 +4,13 @@ FROM $IMAGE_SOURCE
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 
 ARG E2XGRADER=e2xgrader
+
+USER root
+# Copy nbgrader base config
+COPY configs/nbgrader_config.py /etc/jupyter/nbgrader_config.py
+RUN chown root:$NB_GID /etc/jupyter/nbgrader_config.py &&\
+    chmod g+rwX /etc/jupyter/nbgrader_config.py
+
 USER $NB_USER
 
 # Install grading requirements
@@ -18,9 +25,6 @@ RUN touch /etc/ipython/ipython_config.py && \
 
 # Activate student mode by default
 RUN e2xgrader activate student --sys-prefix
-
-# Copy nbgrader base config
-COPY configs/nbgrader_config.py /etc/jupyter/nbgrader_config.py
 
 # Jupyter extension list
 RUN jupyter nbextension list
