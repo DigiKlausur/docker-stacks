@@ -51,8 +51,8 @@ jobs:
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_SECRET }}
 
-    - name: Build and publish to ghcr.io
-      id: build_and_deploy
+    - name: Build and publish to quay.io
+      id: build_and_deploy_to_quay
       run: |
         BRANCH=${{ needs.event.inputs.branch }}
         IMAGE=${{ needs.event.inputs.image }}
