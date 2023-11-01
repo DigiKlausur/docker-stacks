@@ -2,7 +2,7 @@ bokeh
 colorama
 easydict==1.9
 gensim==4.3.1
-graphviz
+gymnasium==0.29.1
 imageio==2.31.1
 ipycanvas
 ipysheet
