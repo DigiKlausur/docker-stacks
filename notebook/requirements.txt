@@ -1,5 +1,5 @@
 exam_kernel
-e2xgradingtools
+e2xgradingtools>=0.0.4
 ngshare_exchange>=0.5.2
 assignmenttest @ git+https://github.com/Digiklausur/assignmenttest@master
 e2xtest @ git+https://github.com/DigiKlausur/e2xtest@main
