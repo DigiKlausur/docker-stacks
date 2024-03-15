@@ -35,5 +35,6 @@ statsmodels==0.14.0
 sympy==1.12
 tensorflow==2.12.0
 transformers
+weasyprint
 wikipedia-api
 xlrd
