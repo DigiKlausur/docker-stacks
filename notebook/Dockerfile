@@ -3,7 +3,7 @@ FROM $IMAGE_SOURCE
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 
-ARG E2XGRADER=e2xgrader=="0.3.0-dev0"
+ARG E2XGRADER=e2xgrader
 
 USER root
 # Copy nbgrader base config
@@ -16,7 +16,7 @@ USER $NB_USER
 # Install grading requirements
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
-    pip install --no-cache-dir $E2XGRADER
+    pip install --no-cache-dir e2xgrader=="0.3.0-dev0"
 
 # Set up kernels
 RUN touch /etc/ipython/ipython_config.py && \
