@@ -8,8 +8,8 @@ USER $NB_USER
 # Activate student exam mode by default
 RUN e2xgrader activate student_exam --sys-prefix
 
-# Deactivate RISE
-RUN jupyter-nbextension uninstall rise --py --sys-prefix
+# Remove RISE
+RUN pip uninstall RISE
 
 # Jupyter extension list
 RUN jupyter nbextension list
