@@ -16,7 +16,7 @@ USER $NB_USER
 # Install grading requirements
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
-    pip install --no-cache-dir e2xgrader=="0.3.0-dev0"
+    pip install --no-cache-dir e2xgrader=="0.3.0-dev1"
 
 # Set up kernels
 RUN touch /etc/ipython/ipython_config.py && \
