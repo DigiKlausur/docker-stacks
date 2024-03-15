@@ -3,7 +3,7 @@ FROM $IMAGE_SOURCE
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 
-ARG E2XGRADER=e2xgrader
+ARG E2XGRADER=e2xgrader=="0.3.0-dev0"
 
 USER root
 # Copy nbgrader base config
