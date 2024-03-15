@@ -9,7 +9,7 @@ USER $NB_USER
 RUN e2xgrader activate student_exam --sys-prefix
 
 # Remove RISE
-RUN pip uninstall RISE
+RUN pip uninstall -y RISE
 
 # Jupyter extension list
 RUN jupyter nbextension list
