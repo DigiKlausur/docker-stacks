@@ -1,5 +1,5 @@
-ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest
-FROM $IMAGE_SOURCE
+#ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest
+FROM ghcr.io/digiklausur/docker-stacks/minimal-notebook-dev:latest
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 
