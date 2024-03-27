@@ -7,3 +7,4 @@ pdf_feedback_exporter @ git+https://github.com/DigiKlausur/pdf_feedback_exporter
 java_syntax_kernel @ git+https://github.com/DigiKlausur/java_syntax_kernel@main
 nbgitpuller
 nbresuse
+nbconvert>=7.16.3
