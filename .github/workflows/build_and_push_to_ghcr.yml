@@ -12,7 +12,7 @@ jobs:
     with:
       force_build: true
       push: true
-      registry: ghcr.io
+      registry: "ghcr.io"
       tag: test
       e2xgrader_installation_source: pypi
             
