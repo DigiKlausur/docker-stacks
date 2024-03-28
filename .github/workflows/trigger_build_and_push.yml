@@ -1,0 +1,60 @@
+name: Manually build and push all images
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: If the build should be forced even if there are no changes
+        type: boolean
+        required: false
+        default: false
+      push:
+        description: Push the image to the registry
+        type: boolean
+        required: false
+        default: false
+      registry:
+        description: Container registry to use
+        type: choice
+        required: false
+        default: ghcr.io
+        options:
+         - ghcr.io
+         - quay.io
+      tag:
+        description: Tag to use for the images (e.g. latest, dev)
+        type: string
+        required: false
+        default: latest
+      e2xgrader_installation_source:
+        description: Where to install e2xgrader from
+        type: choice
+        required: false
+        default: pypi
+        options:
+         - pypi
+         - github
+      e2xgrader_version:
+        description: Use a specific e2xgrader version from PyPi
+        type: string
+        required: false
+        default: ""
+      e2xgrader_branch:
+        description: Which e2xgrader branch or tag to install from. Only takes effect if e2xgrader_installation_source is "github"
+        type: string
+        required: false
+        default: "main"
+
+jobs:
+  
+  manually_build_all_images:
+    uses: ./.github/workflows/build_and_push_all_images.yml
+    with:
+      force_build: ${{ inputs.force_build }}
+      push: ${{ inputs.push }}
+      registry: ${{ inputs.registry }}
+      tag: ${{ inputs.tag }}
+      e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
+      e2xgrader_version: ${{ inputs.e2xgrader_version }}
+      e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
+            
