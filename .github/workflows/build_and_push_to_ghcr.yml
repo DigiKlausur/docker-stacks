@@ -15,4 +15,5 @@ jobs:
       registry: ghcr.io
       tag: test
       e2xgrader_installation_source: pypi
+    secrets: inherit
             
