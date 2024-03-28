@@ -1,0 +1,4 @@
+gymnasium==0.29.1
+opencv-contrib-python==4.8.0.76
+stable-baselines3
+tensorflow==2.12.0
