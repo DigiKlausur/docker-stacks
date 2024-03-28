@@ -53,6 +53,9 @@ jobs:
       - name: Print the base image
         run: |
           echo "The base image to build from is ${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}"
+      - id: lower-repo
+        run: |
+          echo "repository=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
       - name: Check if files changed
         if: ${{ ! inputs.force_build }}
         uses: dorny/paths-filter@v3
@@ -82,7 +85,7 @@ jobs:
         with:
           context: images/${{ inputs.image_name }}
           push: ${{ inputs.push }}
-          tags: ${{ inputs.registry }}/${{ github.repository }}/${{ inputs.image_name }}:${{ inputs.image_tag }}
+          tags: ${{ inputs.registry }}/${{ steps.lower-repo.outputs.repository }}/${{ inputs.image_name }}:${{ inputs.image_tag }}
           build-args: |
             IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}
       - name: List images

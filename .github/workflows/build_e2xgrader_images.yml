@@ -76,6 +76,9 @@ jobs:
         id: print_image_tag
         run: |
           echo ${{ steps.set_image_tag.outputs.image_tag }}
+      - id: lower-repo
+        run: |
+          echo "repository=${GITHUB_REPOSITORY@L}" >> $GITHUB_OUTPUT
       - name: Login to ghcr.io
         if: ${{ inputs.registry == 'ghcr.io' }}
         uses: docker/login-action@v3
@@ -97,7 +100,7 @@ jobs:
         with:
           context: images/e2xgrader-notebook
           push: ${{ inputs.push }}
-          tags: ${{ inputs.registry }}/${{ github.repository }}/${{ steps.set_image_tag.outputs.image_tag }}
+          tags: ${{ inputs.registry }}/${{ steps.lower-repo.outputs.repository }}/${{ steps.set_image_tag.outputs.image_tag }}
           build-args: |
             IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}
             E2XGRADER_MODE=${{ matrix.e2xgrader_mode }}
