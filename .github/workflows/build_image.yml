@@ -2,6 +2,7 @@ name: Build and push image
 
 on:
   workflow_call:
+    secrets: inherit
     inputs:
       force_build:
         description: If the build should be forced even if there are no changes
