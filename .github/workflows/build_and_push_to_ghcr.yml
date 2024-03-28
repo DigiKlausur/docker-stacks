@@ -7,10 +7,10 @@ on:
 
 jobs:
   
-  manually_build_all_images:
+  build_and_push_to_ghcr:
     uses: ./.github/workflows/build_and_push_all_images.yml
     with:
-      force_build: true
+      force_build: false
       push: true
       registry: ghcr.io
       tag: test
