@@ -74,14 +74,14 @@ jobs:
         run: |
           echo ${{ steps.set_image_tag.outputs.image_tag }}
       - name: Login to ghcr.io
-        if: ${{ inputs.registry == "ghcr.io" }}
+        if: ${{ inputs.registry == 'ghcr.io' }}
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GH_TOKEN }}
       - name: Login to Quay Container Registry
-        if: ${{ inputs.registry == "quay.io" }}
+        if: ${{ inputs.registry == 'quay.io' }}
         uses: docker/login-action@v1
         with:
           registry: quay.io
