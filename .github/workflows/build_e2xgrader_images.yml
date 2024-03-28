@@ -2,7 +2,9 @@ name: Build e2xgrader image for all modes
 
 on:
   workflow_call:
-    secrets: inherit
+    secrets:
+      GH_TOKEN:
+        required: true
     inputs: 
       force_build:
         description: Force the build even if there are no changes

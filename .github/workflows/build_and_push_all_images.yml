@@ -2,6 +2,9 @@ name: Build and push all images
 
 on: 
   workflow_call:
+    secrets:
+      GH_TOKEN:
+        required: true
     inputs:
       force_build:
         description: If the build should be forced even if there are no changes
@@ -51,6 +54,7 @@ jobs:
       base_image_tag: 4d70cf8da953
       image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
+    secrets: inherit
   
   datascience_notebook:
     needs: [minimal_notebook]
@@ -63,6 +67,7 @@ jobs:
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
       base_image_tag: ${{ inputs.tag }}      
       push: ${{ inputs.push }}
+    secrets: inherit
 
   e2x_datascience_notebook:
     needs: [datascience_notebook]
@@ -78,6 +83,7 @@ jobs:
       e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
       e2xgrader_version: ${{ inputs.e2xgrader_version }}
       e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
+    secrets: inherit
       
 
   
