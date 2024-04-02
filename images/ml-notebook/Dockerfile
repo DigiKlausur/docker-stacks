@@ -7,7 +7,7 @@ LABEL description="e2x machine learning notebook"
 USER $NB_USER
 
 # Install pytorch cpu 
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
