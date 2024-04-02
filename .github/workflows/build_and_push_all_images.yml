@@ -113,6 +113,35 @@ jobs:
       e2xgrader_version: ${{ inputs.e2xgrader_version }}
       e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
     secrets: inherit
+
+  nlp_notebook:
+    needs: [ml_notebook]
+    uses: ./.github/workflows/build_image.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.ml_notebook.outputs.did_build_image == 'true' }}
+      image_name: nlp-notebook
+      image_tag: ${{ inputs.tag }}
+      registry: ${{ inputs.registry }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/ml-notebook
+      base_image_tag: ${{ inputs.tag }}      
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  e2x_nlp_notebook:
+    needs: [nlp_notebook]
+    uses: ./.github/workflows/build_e2xgrader_images.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.nlp_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      image_name: nlp-notebook
+      image_tag: ${{ inputs.tag }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/nlp-notebook
+      base_image_tag: ${{ inputs.tag }}
+      push: ${{ inputs.push }}
+      e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
+      e2xgrader_version: ${{ inputs.e2xgrader_version }}
+      e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
+    secrets: inherit
       
 
   
