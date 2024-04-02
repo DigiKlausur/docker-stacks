@@ -9,6 +9,12 @@ ARG E2XGRADER_MODE=student
 # Inherit from any image, then just install e2xgrader and activate a mode
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 
+USER root
+# Copy nbgrader base config
+COPY configs/nbgrader_config.py /etc/jupyter/nbgrader_config.py
+RUN chown root:$NB_GID /etc/jupyter/nbgrader_config.py &&\
+    chmod g+rwX /etc/jupyter/nbgrader_config.py
+    
 USER $NB_USER
 
 # Install requirements shared between all modes
