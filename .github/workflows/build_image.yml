@@ -1,4 +1,3 @@
-name: Build and push image
 run-name: Build ${{ inputs.image_name }}:${{ inputs.image_tag }}
 
 on:
