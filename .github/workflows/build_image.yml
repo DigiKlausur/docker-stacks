@@ -1,0 +1,100 @@
+run-name: Build ${{ inputs.image_name }}:${{ inputs.image_tag }}
+
+on:
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        required: true
+      QUAY_USERNAME:
+        required: true
+      QUAY_SECRET:
+        required: true
+    inputs:
+      force_build:
+        description: If the build should be forced even if there are no changes
+        type: boolean
+        required: false
+        default: false
+      push:
+        description: Push the image to the registry
+        type: boolean
+        required: false
+        default: false
+      registry:
+        description: Container registry to use
+        type: string
+        required: false
+        default: ghcr.io
+      base_image_name:
+        description: The name of the base image to build from
+        type: string
+        required: true
+      base_image_tag:
+        description: The tag of the base image to build from
+        type: string
+        required: false
+        default: latest
+      image_name:
+        description: The name of the image to build.
+        type: string
+        required: true
+      image_tag:
+        description: The tag of the image to build. E.g. latest
+        type: string
+        required: false
+        default: latest
+    outputs:
+      did_build_image:
+        description: If the image was built
+        value: ${{ jobs.build_and_push_image.outputs.did_build_image }}
+
+jobs:
+  build_and_push_image:
+    name: ${{ inputs.image_name }}:${{ inputs.image_tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Print the base image
+        run: |
+          echo "The base image to build from is ${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}"
+      - name: Check if files changed
+        if: ${{ ! inputs.force_build }}
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            image_changed:
+              images/${{ inputs.image_name }}/**
+      - name: Login to ghcr.io
+        if: ${{ inputs.registry == 'ghcr.io' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+      - name: Login to Quay Container Registry
+        if: ${{ inputs.registry == 'quay.io' }}
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_SECRET }}
+      - name: Build Docker image
+        if: ${{ inputs.force_build || steps.changes.outputs.image_changed == 'true' }}
+        id: build_image
+        uses: docker/build-push-action@v5
+        with:
+          context: images/${{ inputs.image_name }}
+          push: ${{ inputs.push }}
+          tags: ${{ inputs.registry }}/digiklausur/docker-stacks/${{ inputs.image_name }}:${{ inputs.image_tag }}
+          build-args: |
+            IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}
+      - name: List images
+        if: ${{ inputs.force_build || steps.changes.outputs.image_changed == 'true' }}
+        run: |
+          docker images
+      - name: Set output (image was built)
+        if: ${{ inputs.force_build || steps.changes.outputs.image_changed == 'true' }}
+        run: |
+          echo "image_built=true" >> $GITHUB_OUTPUT

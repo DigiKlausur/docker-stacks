@@ -1,10 +1,5 @@
-exam_kernel
-e2xgradingtools
-ngshare_exchange>=0.5.2
 assignmenttest @ git+https://github.com/Digiklausur/assignmenttest@master
+e2xgradingtools
 e2xtest @ git+https://github.com/DigiKlausur/e2xtest@main
-pdf_feedback_exporter @ git+https://github.com/DigiKlausur/pdf_feedback_exporter@main
+exam_kernel
 java_syntax_kernel @ git+https://github.com/DigiKlausur/java_syntax_kernel@main
-nbgitpuller
-nbresuse
-nbconvert>=7.16.3

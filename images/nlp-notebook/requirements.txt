@@ -1,0 +1,8 @@
+spacy==3.7.4
+gensim==4.3.2
+wikipedia
+nltk==3.8.1
+transformers==4.39.3
+tokenizers
+huggingface_hub
+wordcloud
