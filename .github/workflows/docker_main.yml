@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
+      - .github/workflows/docker_main.yml
       - .github/workflows/build_and_push_all_images.yml
-      - .github/workflows/build_and_push_to_registry.yml
       - .github/workflows/build_e2xgrader_images.yml
       - .github/workflows/build_image.yml
       - images/**
