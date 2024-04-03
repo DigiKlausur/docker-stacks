@@ -50,7 +50,7 @@ on:
 
 jobs:
   build_and_push_image:
-    name: Build ${{ inputs.image_name }}:${{ inputs.image_tag }} from ${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}
+    name: ${{ inputs.image_name }}:${{ inputs.image_tag }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
