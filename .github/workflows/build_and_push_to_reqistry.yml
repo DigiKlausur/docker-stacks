@@ -3,7 +3,15 @@ name: Test build and push to ghcr.io and quay.io
 on:
   push:
     branches:
-      refactor_workflows_and_images
+      - refactor_workflows_and_images
+    paths:
+      - .github/workflows/build_and_push_all_images.yml
+      - .github/workflows/build_and_push_to_registry.yml
+      - .github/workflows/build_e2xgrader_images.yml
+      - .github/workflows/build_image.yml
+      - images/**
+    paths-ignore:
+      - images/**/README.md
 
 jobs:
   
