@@ -8,7 +8,6 @@ ipysheet
 ipywidgets
 itables
 matplotlib==3.7.2
-nltk==3.8
 nbconvert>=7.16.3
 numpy
 nx
