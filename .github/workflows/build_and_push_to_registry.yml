@@ -10,8 +10,6 @@ on:
       - .github/workflows/build_e2xgrader_images.yml
       - .github/workflows/build_image.yml
       - images/**
-    paths-ignore:
-      - images/**/README.md
 
 jobs:
   
