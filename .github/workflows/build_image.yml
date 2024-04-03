@@ -5,6 +5,10 @@ on:
     secrets:
       GH_TOKEN:
         required: true
+      QUAY_USERNAME:
+        required: true
+      QUAY_SECRET:
+        required: true
     inputs:
       force_build:
         description: If the build should be forced even if there are no changes
