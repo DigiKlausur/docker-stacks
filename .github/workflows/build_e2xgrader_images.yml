@@ -89,6 +89,7 @@ jobs:
           filters: |
             image_changed:
               images/e2xgrader-notebook/**
+          base: ${{ github.ref }}
       - name: Login to ghcr.io
         if: ${{ inputs.registry == 'ghcr.io' }}
         uses: docker/login-action@v3

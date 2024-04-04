@@ -66,6 +66,7 @@ jobs:
           filters: |
             image_changed:
               images/${{ inputs.image_name }}/**
+          base: ${{ github.ref }}
       - name: Login to ghcr.io
         if: ${{ inputs.registry == 'ghcr.io' }}
         uses: docker/login-action@v3
