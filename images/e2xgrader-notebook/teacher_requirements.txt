@@ -1,3 +1,3 @@
+e2x-exam-sheets
 RISE==5.7.1
-weasyprint
 pdf_feedback_exporter @ git+https://github.com/DigiKlausur/pdf_feedback_exporter@main
