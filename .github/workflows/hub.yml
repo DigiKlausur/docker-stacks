@@ -6,7 +6,7 @@ on:
       - master
       - dev
     paths:
-      - .github/hub.yml
+      - .github/workflows/hub.yml
       - hub/**
       - ci/**
 
