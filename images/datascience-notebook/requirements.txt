@@ -14,6 +14,7 @@ nx
 pandas==2.2.1
 pdfkit
 Pillow==10.3.0
+ply
 pyagrum
 pydantic
 pydantic_yaml
