@@ -65,7 +65,7 @@ jobs:
         with:
           filters: |
             image_changed:
-              images/${{ inputs.image_name }}/**
+              images/${{ inputs.image_name }}/!(README.md)
           base: ${{ github.ref }}
       - name: Login to ghcr.io
         if: ${{ inputs.registry == 'ghcr.io' }}
