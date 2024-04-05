@@ -1,0 +1,130 @@
+name: Build e2xgrader image for all modes
+
+on:
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        required: true
+      QUAY_USERNAME:
+        required: true
+      QUAY_SECRET:
+        required: true
+    inputs: 
+      force_build:
+        description: Force the build even if there are no changes
+        type: boolean
+        required: false
+        default: false
+      base_image_name:
+        description: The name of the base image to build from
+        type: string
+        required: true
+      base_image_tag:
+        description: The tag of the base image to build from
+        type: string
+        required: false
+        default: latest
+      image_name:
+        description: The name of the image we build.
+        type: string
+        required: true
+      image_tag:
+        description: The tag of the image we build. E.g. latest
+        type: string
+        required: false
+        default: latest
+      e2xgrader_installation_source:
+        description: Where to install e2xgrader from
+        type: string
+        required: false
+        default: pypi
+      e2xgrader_version:
+        description: Use a specific e2xgrader version from PyPi
+        type: string
+        required: false
+        default: ""
+      e2xgrader_branch:
+        description: Which e2xgrader branch or tag to install from. Only takes effect if e2xgrader_installation_source is "github"
+        type: string
+        required: false
+        default: "main"
+      push:
+        description: Push the image to the registry
+        type: boolean
+        required: false
+        default: false
+      registry:
+        description: Container registry to use
+        type: string
+        required: false
+        default: ghcr.io
+
+jobs:
+  build:
+    name: ${{ inputs.image_name }}:${{ inputs.image_tag }} (${{ matrix.e2xgrader_mode }})
+    strategy:
+      matrix:
+        e2xgrader_mode: [student, student_exam, teacher]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set image tag
+        id: set_image_tag
+        run: |
+          if [ "${{ matrix.e2xgrader_mode }}" == "student_exam" ]; then
+            echo "image_tag=${{ inputs.image_name }}-exam:${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "image_tag=${{ inputs.image_name }}-${{ matrix.e2xgrader_mode }}:${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+          fi
+      - name: Print image tag
+        id: print_image_tag
+        run: |
+          echo ${{ steps.set_image_tag.outputs.image_tag }}
+      - name: Check if files changed
+        if: ${{ ! inputs.force_build }}
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            image_changed:
+              images/e2xgrader-notebook/**
+          base: ${{ github.ref }}
+      - name: Login to ghcr.io
+        if: ${{ inputs.registry == 'ghcr.io' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+      - name: Login to Quay Container Registry
+        if: ${{ inputs.registry == 'quay.io' }}
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_SECRET }}
+      - name: Build Docker image
+        if: ${{ inputs.force_build  || steps.changes.outputs.image_changed == 'true' }}
+        id: build_image
+        uses: docker/build-push-action@v5
+        with:
+          context: images/e2xgrader-notebook
+          push: ${{ inputs.push }}
+          tags: ${{ inputs.registry }}/digiklausur/docker-stacks/${{ steps.set_image_tag.outputs.image_tag }}
+          build-args: |
+            IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}
+            E2XGRADER_MODE=${{ matrix.e2xgrader_mode }}
+            E2XGRADER_VERSION=${{ inputs.e2xgrader_version }}
+            FROM_REPO=${{ inputs.e2xgrader_installation_source == 'github' }}
+            E2XGRADER_BRANCH=${{ inputs.e2xgrader_branch }}
+      - name: List images
+        if: ${{ inputs.force_build  || steps.changes.outputs.image_changed == 'true' }}
+        run: |
+          docker images
+            
+            
+            
+        
+      
+      

@@ -1,9 +1,11 @@
-FROM jupyter/minimal-notebook:4d70cf8da953
+ARG IMAGE_SOURCE=jupyter/minimal-notebook:4d70cf8da953
+FROM $IMAGE_SOURCE
 # Built from... https://hub.docker.com/r/jupyter/minimal-notebook/
 #               https://github.com/jupyter/docker-stacks/blob/main/images/minimal-notebook/Dockerfile
 # Built from... Ubuntu 22.04
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
+LABEL description="e2x minimal notebook"
 
 USER root
 
@@ -29,10 +31,6 @@ RUN rm -rf $HOME/work
 RUN apt-get update -y \
     && apt-get install --yes \
        pandoc \
-       texlive-xetex \
-       texlive-fonts-recommended \
-       texlive-latex-recommended \
-       texlive-latex-extra \
        vim \
        libgl1-mesa-dev zip wkhtmltopdf \
        build-essential \
@@ -45,20 +43,18 @@ USER $NB_USER
 RUN mamba install -y gh --channel conda-forge && \
     mamba install -y graphviz
 
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir RISE==5.7.1
+RUN pip install --upgrade pip
+
+# Install requirements
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Enable extenstions and Jupyter contrib extensions
 RUN cd /tmp && \
     git clone --depth 1 -b master https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git && \
     cd /tmp/jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions && \
-    jupyter nbextension install --sys-prefix codefolding && \
-    jupyter nbextension enable --sys-prefix codefolding/main && \
-    jupyter nbextension install --sys-prefix collapsible_headings && \
-    jupyter nbextension enable --sys-prefix collapsible_headings/main && \
     jupyter nbextension install --sys-prefix execute_time && \
     jupyter nbextension enable --sys-prefix execute_time/ExecuteTime && \
-    jupyter-nbextension install rise --py --sys-prefix && \
     jupyter nbextension list && \
     rm -rf /tmp/jupyter_contrib_nbextensions
 
