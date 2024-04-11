@@ -46,7 +46,7 @@ on:
     outputs:
       did_build_image:
         description: If the image was built
-        value: ${{ jobs.build_and_push_image.outputs.did_build_image }}
+        value: ${{ jobs.build_and_push_image.outputs.image_built }}
 
 jobs:
   build_and_push_image:
