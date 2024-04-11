@@ -6,7 +6,7 @@ LABEL description="e2x machine learning notebook"
 
 USER $NB_USER
 
-RUN mamba install -y xeus-sql soci-mysql soci-postgresql soci-sqlite conda-forge
+RUN mamba install -y xeus-sql soci-mysql soci-postgresql soci-sqlite -c conda-forge
 
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
