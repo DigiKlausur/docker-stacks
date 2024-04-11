@@ -51,7 +51,7 @@ jobs:
       image_name: minimal-notebook
       registry: ${{ inputs.registry }}
       base_image_name: jupyter/minimal-notebook
-      base_image_tag: 4d70cf8da953
+      base_image_tag: notebook-6.5.4
       image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
     secrets: inherit
