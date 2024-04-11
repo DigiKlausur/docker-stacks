@@ -46,12 +46,14 @@ on:
     outputs:
       did_build_image:
         description: If the image was built
-        value: ${{ jobs.build_and_push_image.outputs.image_built }}
+        value: ${{ jobs.build_and_push_image.outputs.did_build_image }}
 
 jobs:
   build_and_push_image:
     name: ${{ inputs.image_name }}:${{ inputs.image_tag }}
     runs-on: ubuntu-latest
+    outputs:
+      did_build_image: ${{ steps.build_image.set_output.image_built }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -96,6 +98,7 @@ jobs:
         run: |
           docker images
       - name: Set output (image was built)
+        id: set_output
         if: ${{ inputs.force_build || steps.changes.outputs.image_changed == 'true' }}
         run: |
           echo "image_built=true" >> $GITHUB_OUTPUT
