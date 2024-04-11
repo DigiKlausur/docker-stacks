@@ -67,3 +67,6 @@ RUN /opt/conda/bin/conda clean -afy && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 USER $NB_USER
+
+# Jupyter extension list
+RUN jupyter nbextension list
