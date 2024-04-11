@@ -6,6 +6,8 @@ FROM $IMAGE_SOURCE
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 LABEL description="e2x minimal notebook"
+LABEL org.opencontainers.image.description="e2x minimal notebook"
+LABEL org.opencontainers.image.authors="e2x project H-BRS <e2x@inf.h-brs.de>"
 
 USER root
 
