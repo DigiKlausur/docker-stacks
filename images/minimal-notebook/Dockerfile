@@ -52,8 +52,8 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Enable extenstions and Jupyter contrib extensions
-WORKDIR /tmp
-RUN git clone --depth 1 -b master https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git && \
+RUN cd /tmp && \
+    git clone --depth 1 -b master https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git && \
     cd /tmp/jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions && \
     jupyter nbextension install --sys-prefix execute_time && \
     jupyter nbextension enable --sys-prefix execute_time/ExecuteTime && \
