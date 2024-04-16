@@ -48,12 +48,19 @@ RUN if [ "${vncserver}" = "turbovnc" ]; then \
         rm -rf /var/lib/apt/lists/*; \
     fi
 
+
+
 USER $NB_USER
 
-COPY --chown=$NB_UID:$NB_GID config/user-dirs.dirs /etc/xdg/
+COPY --chown=$NB_UID:$NB_GID config/user-dirs.defaults /etc/xdg/
 
 RUN mamba install -y "jupyter-server-proxy>=1.4" websockify -c conda-forge
 
 RUN pip install jupyter_remote_desktop_proxy
 
+USER root
+
+COPY config/user-dirs.defaults /etc/xdg/
+
 USER $NB_USER
+RUN xdg-user-dirs-update
