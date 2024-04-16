@@ -61,6 +61,8 @@ RUN pip install jupyter_remote_desktop_proxy
 USER root
 
 COPY config/user-dirs.defaults /etc/xdg/
+RUN mkdir -p /usr/local/xfce-userdirs/
+RUN chown -R $NB_UID:$NB_GID /usr/local/xfce-userdirs/
 
 USER $NB_USER
 RUN xdg-user-dirs-update

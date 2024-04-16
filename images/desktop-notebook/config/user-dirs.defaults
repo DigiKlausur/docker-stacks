@@ -5,8 +5,8 @@
 # homedir-relative path, or XDG_xxx_DIR="/yyy", where /yyy is an
 # absolute path. No other format is supported.
 # 
-DESKTOP=xfce-userdirs/Desktop
+DESKTOP=/usr/local/xfce-userdirs/Desktop
 #DOWNLOAD=xfce-userdirs/Downloads
 #TEMPLATES=xfce-userdirs/Templates
 #PUBLICSHARE=xfce-userdirs/Public
-DOCUMENTS=xfce-userdirs/Documents
+DOCUMENTS=/usr/local/xfce-userdirs/Documents
