@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=DB Main
+Comment=
+Exec=/usr/local/db-main/bin/start_dbmain.sh
+Icon=
+Path=
+Terminal=false
+StartupNotify=false
