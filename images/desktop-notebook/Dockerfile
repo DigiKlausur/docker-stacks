@@ -50,7 +50,7 @@ RUN if [ "${vncserver}" = "turbovnc" ]; then \
 
 USER $NB_USER
 
-COPY --chown=$NB_UID:$NB_GID config/user-dirs.dirs /home/$NB_USER/.config/
+COPY --chown=$NB_UID:$NB_GID config/user-dirs.dirs /etc/xdg/
 
 RUN mamba install -y "jupyter-server-proxy>=1.4" websockify -c conda-forge
 
