@@ -3,7 +3,7 @@ FROM $IMAGE_SOURCE
 
 USER root
 
-RUN wget -P /tmp https://projects.info.unamur.be/dbmain/files/dbm-1102-linux-amd64-setup.tar.gz && \
+RUN wget -P /tmp -q https://projects.info.unamur.be/dbmain/files/dbm-1102-linux-amd64-setup.tar.gz && \
     mkdir -p /usr/local/db-main && \
     tar -xf /tmp/dbm-1102-linux-amd64-setup.tar.gz -C /usr/local/db-main --strip-components=1
 
