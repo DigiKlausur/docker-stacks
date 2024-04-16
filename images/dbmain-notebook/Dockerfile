@@ -13,14 +13,14 @@ USER $NB_USER
 
 COPY --chown=$NB_UID:$NB_GID dbmain/start_dbmain.sh /usr/local/db-main/bin
 COPY --chown=$NB_UID:$NB_GID dbmain/dbmain.desktop /usr/share/applications/
-COPY --chown=$NB_UID:$NB_GID dbmain/dbmain.desktop /home/$NB_USER/xfce-userdirs/Desktop/
+COPY --chown=$NB_UID:$NB_GID dbmain/dbmain.desktop /usr/local/xfce-userdirs/Desktop/
 COPY --chown=$NB_UID:$NB_GID dbmain/dbmain.desktop /etc/xdg/autostart/
 COPY --chown=$NB_UID:$NB_GID dbmain/db_main.ini /home/$NB_USER/.db-main/
 
 RUN chmod a+x /usr/local/db-main/bin
 RUN chmod +x /usr/share/applications/dbmain.desktop
 RUN chmod +x /usr/local/db-main/bin/start_dbmain.sh
-RUN chmod +x /home/$NB_USER/xfce-userdirs/Desktop/dbmain.desktop
+RUN chmod +x /usr/local/xfce-userdirs/Desktop/dbmain.desktop
 RUN chmod +x /etc/xdg/autostart/dbmain.desktop
 
 RUN echo "export DB_MAIN_BIN=/usr/local/db-main/bin" >> ~/.bashrc
