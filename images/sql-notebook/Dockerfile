@@ -6,7 +6,14 @@ LABEL description="e2x machine learning notebook"
 
 USER $NB_USER
 
-RUN mamba install -y xeus-sql soci-mysql soci-postgresql soci-sqlite -c conda-forge
+# Install conda related pkgs
+RUN mamba install -y xeus-sql --channel conda-forge && \
+    mamba install -y soci-mysql --channel conda-forge && \
+    mamba install -y soci-postgresql --channel conda-forge && \
+    mamba install -y soci-sqlite --channel conda-forge && \
+    mamba clean -afy && \
+    npm cache clean --force && \
+    find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
