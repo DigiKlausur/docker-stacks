@@ -183,7 +183,7 @@ jobs:
       registry: ${{ inputs.registry }}
       image_name: datascience-notebook-code
       image_tag: ${{ inputs.tag }}
-      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datasience-notebook-code
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook-code
       base_image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
       e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
