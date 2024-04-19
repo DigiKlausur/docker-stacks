@@ -25,8 +25,6 @@ RUN curl -fOL https://github.com/coder/code-server/releases/download/v$CODE_VERS
     && find /usr/lib/code-server -type f -name '*.js.map' -delete \
     && npm cache clean --force
 
-
-
 RUN mamba install -y jupyter-server-proxy -c conda-forge && \
     mamba install -y jupyter-vscode-proxy -c conda-forge && \
     mamba clean -afy && \
@@ -34,6 +32,3 @@ RUN mamba install -y jupyter-server-proxy -c conda-forge && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 USER $NB_USER
-
-
-
