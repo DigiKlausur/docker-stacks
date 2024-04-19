@@ -43,6 +43,10 @@ on:
         type: string
         required: false
         default: latest
+      image_path:
+        description: The path to the Dockerfile and other files needed to build the image
+        type: string
+        required: true
     outputs:
       did_build_image:
         description: If the image was built
@@ -67,7 +71,7 @@ jobs:
         with:
           filters: |
             image_changed:
-              images/${{ inputs.image_name }}/!(README.md)
+              ${{ inputs.image_path }}/!(README.md)
           base: ${{ github.ref }}
       - name: Login to ghcr.io
         if: ${{ inputs.registry == 'ghcr.io' }}
@@ -88,7 +92,7 @@ jobs:
         id: build_image
         uses: docker/build-push-action@v5
         with:
-          context: images/${{ inputs.image_name }}
+          context: ${{ inputs.image_path }}
           push: ${{ inputs.push }}
           tags: ${{ inputs.registry }}/digiklausur/docker-stacks/${{ inputs.image_name }}:${{ inputs.image_tag }}
           build-args: |
