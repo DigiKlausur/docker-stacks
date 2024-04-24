@@ -17,15 +17,24 @@ All [hub images](hub) contain JupyterHub, [e2xhub](https://github.com/DigiKlausu
 There are several Jupyter Notebook images for different use cases.
 Currently all images are based on `notebook==6.5.4`.
 
-The notebook images are (end-point images marked with *):
+| Image                | Base                                                                   | Teacher                                                                           | Student                                                                           | Exam                                                                        |
+|----------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| [minimal-notebook](images/minimal-notebook)     | [base](https://ghcr.io/digiklausur/docker-stacks/minimal-notebook)     |                                                                                   |                                                                                   |                                                                             |
+| [datascience-notebook](images/datascience-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/datascience-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/datascience-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/datascience-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/datascience-notebook-exam) |
+| [ml-notebook](images/ml-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/ml-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-exam) |
+| [nlp-notebook](images/nlp-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-exam) |
+| [sql-notebook](images/sql-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/sql-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-exam) |
+| [desktop-notebook](images/desktop-notebook)     | [base](https://ghcr.io/digiklausur/docker-stacks/desktop-notebook)     |                                                                                   |                                                                                   |                                                                             |
+
+The notebook images are:
 
 * [Minimal Notebook](images/minimal-notebook/): Base image used for all other images here.
-  * [Data Science Notebook](images/datascience-notebook/)*: Additional Python data science libraries (e.g., numpy, scipy, pandas, sklearn, statsmodels). 
-    * [Machine Learning Notebook](images/ml-notebook/)*: Additional Python machine learning libraries (e.g., pytorch, gymnasium). 
-      * [Natural Language Processing Notebook](images/nlp-notebook/)*: Additional Python NLP libraries (e.g., nltk, spacy, gensim, transformers). 
-    * [SQL Notebook](images/sql-notebook/)*: Additional SQL libraries and kernels.
-  * [Desktop Notebook](images/desktop-notebook/): Customized version of the [Minimal Notebook](images/minimal-notebook) image, with an XFCE desktop installed using [Jupyter Remote Desktop Proxy](https://github.com/jupyterhub/jupyter-remote-desktop-proxy).
-    * [DB Main Notebook (experimental)](images/dbmain-notebook/)*: With the DB Main application installed. Serves as an example for running an application in a desktop image.
+* [Data Science Notebook](images/datascience-notebook/): Based on Minimal Notebook. Additional Python data science libraries (e.g., numpy, scipy, pandas, sklearn, statsmodels). 
+* [Machine Learning Notebook](images/ml-notebook/): Based on Data Science Notebook. Additional Python machine learning libraries (e.g., pytorch, gymnasium). 
+* [Natural Language Processing Notebook](images/nlp-notebook/): Based on Machine Learning Notebook. Additional Python NLP libraries (e.g., nltk, spacy, gensim, transformers). 
+* [SQL Notebook](images/sql-notebook/): Based on Data Science Notebook. Additional SQL libraries and kernels.
+* [Desktop Notebook](images/desktop-notebook/): Based on Minimal Notebook. Customized version of the [Minimal Notebook](images/minimal-notebook) image, with an XFCE desktop installed using [Jupyter Remote Desktop Proxy](https://github.com/jupyterhub/jupyter-remote-desktop-proxy).
+* [DB Main Notebook (experimental)](images/dbmain-notebook/): Based on Desktop Notebook. With the DB Main application installed. Serves as an example for running an application in a desktop image.
 
 ## E2xGrader Images
 
