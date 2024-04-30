@@ -88,7 +88,7 @@ jobs:
         with:
           filters: |
             image_changed:
-              images/e2xgrader-notebook/!(README.md)
+              images/e2xgrader-notebook/**/!(README.md)
           base: ${{ github.ref }}
       - name: Login to ghcr.io
         if: ${{ inputs.registry == 'ghcr.io' }}
