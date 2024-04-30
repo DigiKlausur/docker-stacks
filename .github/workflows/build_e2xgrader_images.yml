@@ -89,6 +89,8 @@ jobs:
           filters: |
             image_changed:
               images/e2xgrader-notebook/**/!(README.md)
+            workflow_changed:
+              .github/workflows/build_e2xgrader_images.yml
           base: ${{ github.ref }}
       - name: Login to ghcr.io
         if: ${{ inputs.registry == 'ghcr.io' }}
@@ -119,7 +121,10 @@ jobs:
             FROM_REPO=${{ inputs.e2xgrader_installation_source == 'github' }}
             E2XGRADER_BRANCH=${{ inputs.e2xgrader_branch }}
       - name: List images
-        if: ${{ inputs.force_build  || steps.changes.outputs.image_changed == 'true' }}
+        if: |
+          ${{ inputs.force_build }}
+          ${{ steps.changes.outputs.image_changed == 'true' }}
+          ${{ steps.changes.outputs.workflow_changed == 'true' }}
         run: |
           docker images
             
