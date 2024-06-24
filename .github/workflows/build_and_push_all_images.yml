@@ -48,12 +48,57 @@ jobs:
     uses: ./.github/workflows/build_image.yml
     with:
       force_build: ${{ inputs.force_build }}
-      image_name: minimal-notebook
       registry: ${{ inputs.registry }}
       base_image_name: jupyter/minimal-notebook
-      base_image_tag: 4d70cf8da953
+      base_image_tag: notebook-6.5.4
+      image_path: images/minimal-notebook
+      image_name: minimal-notebook
       image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
+    secrets: inherit
+
+  desktop_notebook:
+    needs: [minimal_notebook]
+    uses: ./.github/workflows/build_image.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.minimal_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
+      base_image_tag: ${{ inputs.tag }}      
+      image_path: images/desktop-notebook
+      image_name: desktop-notebook
+      image_tag: ${{ inputs.tag }}      
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  dbmain_notebook:
+    needs: [desktop_notebook]
+    uses: ./.github/workflows/build_image.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.desktop_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/desktop-notebook
+      base_image_tag: ${{ inputs.tag }}  
+      image_path: images/dbmain-notebook
+      image_name: dbmain-notebook
+      image_tag: ${{ inputs.tag }}          
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  e2x_dbmain_notebook:
+    needs: [dbmain_notebook]
+    uses: ./.github/workflows/build_e2xgrader_images.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.dbmain_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/dbmain-notebook
+      base_image_tag: ${{ inputs.tag }}
+      image_name: dbmain-notebook
+      image_tag: ${{ inputs.tag }}
+      push: ${{ inputs.push }}
+      e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
+      e2xgrader_version: ${{ inputs.e2xgrader_version }}
+      e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
     secrets: inherit
   
   datascience_notebook:
@@ -61,11 +106,12 @@ jobs:
     uses: ./.github/workflows/build_image.yml
     with:
       force_build: ${{ inputs.force_build || needs.minimal_notebook.outputs.did_build_image == 'true' }}
-      image_name: datascience-notebook
-      image_tag: ${{ inputs.tag }}
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
       base_image_tag: ${{ inputs.tag }}      
+      image_path: images/datascience-notebook
+      image_name: datascience-notebook
+      image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
     secrets: inherit
 
@@ -85,16 +131,77 @@ jobs:
       e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
     secrets: inherit
 
+  sql_notebook:
+    needs: [datascience_notebook]
+    uses: ./.github/workflows/build_image.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.datascience_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
+      base_image_tag: ${{ inputs.tag }}     
+      image_path: images/sql-notebook
+      image_name: sql-notebook
+      image_tag: ${{ inputs.tag }} 
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  e2x_sql_notebook:
+    needs: [sql_notebook]
+    uses: ./.github/workflows/build_e2xgrader_images.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.sql_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      image_name: sql-notebook
+      image_tag: ${{ inputs.tag }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/sql-notebook
+      base_image_tag: ${{ inputs.tag }}
+      push: ${{ inputs.push }}
+      e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
+      e2xgrader_version: ${{ inputs.e2xgrader_version }}
+      e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
+    secrets: inherit
+
+  code_datascience_notebook:
+    needs: [datascience_notebook]
+    uses: ./.github/workflows/build_image.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.datascience_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
+      base_image_tag: ${{ inputs.tag }}     
+      image_path: images/code-notebook
+      image_name: datascience-notebook-code
+      image_tag: ${{ inputs.tag }} 
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  e2x_code_datascience_notebook:
+    needs: [code_datascience_notebook]
+    uses: ./.github/workflows/build_e2xgrader_images.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.code_datascience_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      image_name: datascience-notebook-code
+      image_tag: ${{ inputs.tag }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook-code
+      base_image_tag: ${{ inputs.tag }}
+      push: ${{ inputs.push }}
+      e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
+      e2xgrader_version: ${{ inputs.e2xgrader_version }}
+      e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
+    secrets: inherit
+
   ml_notebook:
     needs: [datascience_notebook]
     uses: ./.github/workflows/build_image.yml
     with:
       force_build: ${{ inputs.force_build || needs.datascience_notebook.outputs.did_build_image == 'true' }}
-      image_name: ml-notebook
-      image_tag: ${{ inputs.tag }}
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
-      base_image_tag: ${{ inputs.tag }}      
+      base_image_tag: ${{ inputs.tag }}    
+      image_path: images/ml-notebook
+      image_name: ml-notebook
+      image_tag: ${{ inputs.tag }}  
       push: ${{ inputs.push }}
     secrets: inherit
 
@@ -119,11 +226,12 @@ jobs:
     uses: ./.github/workflows/build_image.yml
     with:
       force_build: ${{ inputs.force_build || needs.ml_notebook.outputs.did_build_image == 'true' }}
-      image_name: nlp-notebook
-      image_tag: ${{ inputs.tag }}
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/ml-notebook
-      base_image_tag: ${{ inputs.tag }}      
+      base_image_tag: ${{ inputs.tag }}    
+      image_path: images/nlp-notebook
+      image_name: nlp-notebook
+      image_tag: ${{ inputs.tag }}  
       push: ${{ inputs.push }}
     secrets: inherit
 

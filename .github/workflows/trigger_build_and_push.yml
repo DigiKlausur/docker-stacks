@@ -57,4 +57,5 @@ jobs:
       e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
       e2xgrader_version: ${{ inputs.e2xgrader_version }}
       e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
+    secrets: inherit
             
