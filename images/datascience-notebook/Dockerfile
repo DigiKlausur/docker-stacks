@@ -13,6 +13,7 @@ COPY requirements.txt /tmp/requirements.txt
 RUN apt-get update -y \
     && apt-get install --yes \
         build-essential \
+        libgomp1 \
     && su $NB_USER -c ". /opt/conda/bin/activate && pip install --no-cache-dir -r /tmp/requirements.txt" \
     && rm /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
