@@ -1,0 +1,44 @@
+name: Generate Timestamp and Retag Images
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-timestamp:
+    runs-on: ubuntu-latest
+    outputs:
+      timestamp: ${{ steps.generate.outputs.timestamp }}
+
+    steps:
+    - name: Generate current timestamp
+      id: generate
+      run: echo "::set-output name=timestamp::$(date +"%Y%m%d%H%M")"
+
+  retag-images:
+    needs: generate-timestamp
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [ "minimal-notebook", "datascience-notebook" ] 
+        new_tags: [ "dev-${{ needs.generate-timestamp.outputs.timestamp }}" ]   # Add your new tags here
+
+    steps:
+    - name: Trigger retag and push workflow
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const workflow = 'retag-image.yml';
+          const ref = 'dev'; // Branch where your reusable workflow is located
+          const newTags = [matrix.new_tags].join(',');
+          await github.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: workflow,
+            ref: ref,
+            inputs: {
+              registry: 'ghcr.io', 
+              image_name: matrix.image,
+              tag: 'dev', 
+              new_tags: newTags
+            }
+          });
