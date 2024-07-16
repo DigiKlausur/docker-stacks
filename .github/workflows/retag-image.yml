@@ -1,0 +1,71 @@
+name: Retag and Push Docker Image
+
+on:
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        required: true
+      QUAY_USERNAME:
+        required: true
+      QUAY_SECRET:
+        required: true
+    inputs:
+      registry:
+        description: 'Container Registry (e.g., ghcr.io)'
+        required: true
+        type: string
+        default: ghcr.io
+      image_name:
+        description: 'Image Name (e.g., my_image)'
+        required: true
+        type: string
+      tag:
+        description: 'Tag to pull (default: latest)'
+        required: false
+        default: 'latest'
+        type: string
+      new_tags:
+        description: 'Comma-separated list of new tags to apply to the image'
+        required: true
+        type: string
+
+jobs:
+  retag-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login to ghcr.io
+        if: ${{ inputs.registry == 'ghcr.io' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+      - name: Login to Quay Container Registry
+        if: ${{ inputs.registry == 'quay.io' }}
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_SECRET }}
+
+      - name: Pull the specified image
+        run: |
+          docker pull ${{ inputs.registry }}/digiklausur/docker-stacks/${{ inputs.image_name }}:${{ inputs.tag }}
+
+      - name: Retag the image with provided new tags
+        run: |
+          IMAGE_NAME=${{ inputs.registry }}/digiklausur/docker-stacks/${{ inputs.image_name }}
+          IFS=',' read -r -a TAG_ARRAY <<< "${{ inputs.new_tags }}"
+          for NEW_TAG in "${TAG_ARRAY[@]}"; do
+            docker tag $IMAGE_NAME:${{ inputs.tag }} $IMAGE_NAME:$NEW_TAG
+            echo "Retagged $IMAGE_NAME:${{ inputs.tag }} as $IMAGE_NAME:$NEW_TAG"
+          done
+
+      - name: Push the retagged images
+        run: |
+          IMAGE_NAME=${{ inputs.registry }}/digiklausur/docker-stacks/${{ inputs.image_name }}
+          IFS=',' read -r -a TAG_ARRAY <<< "${{ inputs.new_tags }}"
+          for NEW_TAG in "${TAG_ARRAY[@]}"; do
+            docker push $IMAGE_NAME:$NEW_TAG
+          done
