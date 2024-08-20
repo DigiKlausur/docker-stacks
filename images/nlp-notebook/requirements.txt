@@ -2,7 +2,7 @@ spacy==3.7.4
 gensim==4.3.2
 scipy==1.10.0 # Newer versions break gensim
 wikipedia
-nltk==3.8.1
+nltk==3.9
 transformers==4.39.3
 tokenizers
 huggingface_hub
