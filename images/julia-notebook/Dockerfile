@@ -23,5 +23,5 @@ RUN apt-get update -y \
 
 USER $NB_USER
 
-# Install the IJulia kernel
-RUN julia -e 'using Pkg; Pkg.add("IJulia")'
+# Install the IJulia kernel and run a check to make sure that the IJulia kernel is installed
+RUN julia -e 'using Pkg; Pkg.add("IJulia")' && julia -e 'using IJulia'
