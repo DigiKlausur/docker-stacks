@@ -30,7 +30,10 @@ RUN mkdir -p /opt/julia-env \
 ENV JULIA_DEPOT_PATH="/opt/julia-env"
 
 # Install the IJulia kernel globally
-RUN julia -e 'using Pkg; Pkg.add("IJulia"); using IJulia' && chmod -R $NB_USER:$NB_USER /opt/julia-env
+RUN julia -e 'using Pkg; Pkg.add("IJulia"); using IJulia'
+
+# Set permissions for the shared environment directory
+RUN chmod -R 777 /opt/julia-env
 
 USER $NB_USER
 
