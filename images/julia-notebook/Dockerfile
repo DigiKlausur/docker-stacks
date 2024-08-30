@@ -6,6 +6,9 @@ LABEL description="e2x julia notebook"
 
 USER root
 
+# CPU architecture
+RUN echo "Compile target is $(uname -m)"
+
 # Set Julia environment variables
 ENV JULIA_DEPOT_PATH=/opt/julia \
     JULIA_PKGDIR=/opt/julia \
@@ -17,39 +20,40 @@ RUN /opt/setup-scripts/setup-julia.bash
 USER ${NB_UID}
 
 # Install Julia packages for TU Dortmund and IJulia kernel
-RUN julia -e 'import Pkg; Pkg.update(); Pkg.add([ \
-    "Plots", \
-    "CairoMakie", \
-    "HDF5", \
-    "MAT", \
-    "DelimitedFiles", \
-    "Colors", \
-    "LaTeXStrings", \
-    "GZip", \
-    "Serialization", \
-    "ComponentArrays", \
-    "BenchmarkTools", \
-    "SparseArrays", \
-    "Random", \
-    "LinearAlgebra", \
-    "Statistics", \
-    "StatsBase", \
-    "OrdinaryDiffEq", \
-    "Optim", \
-    "FiniteDiff", \
-    "ForwardDiff", \
-    "GridLayoutBase", \
-    "COSMO", \
-    "Zygote", \
-    "JuMP", \
-    "DataInterpolations", \
-    "LineSearches", \
-    "Lux", \
-    "Optimization", \
-    "OptimizationFlux", \
-    "Flux", \
-    "OptimizationOptimJL", \
-    "SciMLSensitivity" \
-]); Pkg.precompile();' \
-    && /opt/setup-scripts/setup-julia-packages.bash \
+RUN /opt/setup-scripts/setup-julia-packages.bash \
+    && julia -e \
+        'import Pkg; Pkg.update(); Pkg.add([ \
+        "Plots", \
+        "CairoMakie", \
+        "HDF5", \
+        "MAT", \
+        "DelimitedFiles", \
+        "Colors", \
+        "LaTeXStrings", \
+        "GZip", \
+        "Serialization", \
+        "ComponentArrays", \
+        "BenchmarkTools", \
+        "SparseArrays", \
+        "Random", \
+        "LinearAlgebra", \
+        "Statistics", \
+        "StatsBase", \
+        "OrdinaryDiffEq", \
+        "Optim", \
+        "FiniteDiff", \
+        "ForwardDiff", \
+        "GridLayoutBase", \
+        "COSMO", \
+        "Zygote", \
+        "JuMP", \
+        "DataInterpolations", \
+        "LineSearches", \
+        "Lux", \
+        "Optimization", \
+        "OptimizationFlux", \
+        "Flux", \
+        "OptimizationOptimJL", \
+        "SciMLSensitivity" \
+    ]); Pkg.precompile();' \
     && jupyter kernelspec list
