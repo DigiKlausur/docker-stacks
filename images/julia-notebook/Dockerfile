@@ -7,26 +7,49 @@ LABEL description="e2x julia notebook"
 USER root
 
 # Set Julia environment variables
-ENV JULIA_DEPOT_PATH=/opt/julia-1.10.5/share/julia
-ENV JULIA_PKGDIR=/opt/julia-1.10.5/share/julia
-ENV JULIA_VERSION=1.10.5
+ENV JULIA_DEPOT_PATH=/opt/julia \
+    JULIA_PKGDIR=/opt/julia \
+    JULIA_VERSION=1.10.5
 
-# Install Julia
-RUN apt-get update && apt-get install -y wget \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && wget -q https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.5-linux-x86_64.tar.gz \
-    && tar zxf julia-1.10.5-linux-x86_64.tar.gz \
-    && mv julia-1.10.5 /opt/ \
-    && ln -s /opt/julia-1.10.5/bin/julia /usr/local/bin/julia \
-    && rm julia-1.10.5-linux-x86_64.tar.gz \
-    && chown -R "$NB_USER":users /opt/julia-1.10.5
+# Install Julia using the script provided by Jupyter
+RUN /opt/setup-scripts/setup-julia.bash
 
-USER $NB_USER
+USER ${NB_UID}
 
-# Install Julia kernel and set permissions
-RUN julia -e 'using Pkg; Pkg.add("IJulia");' \
-    && chmod -R 777 /opt/julia-1.10.5/share/julia \
-    && mkdir -p /opt/conda/share/jupyter/kernels/julia-1.10 \
-    && mv /home/"$NB_USER"/.local/share/jupyter/kernels/julia-1.10 /opt/conda/share/jupyter/kernels/ \
+# Install Julia packages for TU Dortmund and IJulia kernel
+RUN julia -e 'import Pkg; Pkg.update(); Pkg.add([ \
+    "Plots", \
+    "CairoMakie", \
+    "HDF5", \
+    "MAT", \
+    "DelimitedFiles", \
+    "Colors", \
+    "LaTeXStrings", \
+    "GZip", \
+    "Serialization", \
+    "ComponentArrays", \
+    "BenchmarkTools", \
+    "SparseArrays", \
+    "Random", \
+    "LinearAlgebra", \
+    "Statistics", \
+    "StatsBase", \
+    "OrdinaryDiffEq", \
+    "Optim", \
+    "FiniteDiff", \
+    "ForwardDiff", \
+    "GridLayoutBase", \
+    "COSMO", \
+    "Zygote", \
+    "JuMP", \
+    "DataInterpolations", \
+    "LineSearches", \
+    "Lux", \
+    "Optimization", \
+    "OptimizationFlux", \
+    "Flux", \
+    "OptimizationOptimJL", \
+    "SciMLSensitivity" \
+]); Pkg.precompile();' \
+    && /opt/setup-scripts/setup-julia-packages.bash \
     && jupyter kernelspec list
