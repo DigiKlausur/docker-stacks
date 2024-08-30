@@ -19,41 +19,11 @@ RUN /opt/setup-scripts/setup-julia.bash
 
 USER ${NB_UID}
 
-# Install Julia packages for TU Dortmund and IJulia kernel
-RUN /opt/setup-scripts/setup-julia-packages.bash \
-    && julia -e \
-        'import Pkg; Pkg.update(); Pkg.add([ \
-        "Plots", \
-        "CairoMakie", \
-        "HDF5", \
-        "MAT", \
-        "DelimitedFiles", \
-        "Colors", \
-        "LaTeXStrings", \
-        "GZip", \
-        "Serialization", \
-        "ComponentArrays", \
-        "BenchmarkTools", \
-        "SparseArrays", \
-        "Random", \
-        "LinearAlgebra", \
-        "Statistics", \
-        "StatsBase", \
-        "OrdinaryDiffEq", \
-        "Optim", \
-        "FiniteDiff", \
-        "ForwardDiff", \
-        "GridLayoutBase", \
-        "COSMO", \
-        "Zygote", \
-        "JuMP", \
-        "DataInterpolations", \
-        "LineSearches", \
-        "Lux", \
-        "Optimization", \
-        "OptimizationFlux", \
-        "Flux", \
-        "OptimizationOptimJL", \
-        "SciMLSensitivity" \
-    ]); Pkg.precompile();' \
+COPY scripts/setup-julia-packages.bash /tmp/setup-julia-packages.bash
+COPY julia-packages.txt /tmp/julia-packages.txt
+
+# Run the setup script to install Julia packages and the IJulia kernel
+RUN /tmp/setup-julia-packages.bash /tmp/julia-packages.txt \
+    && rm /tmp/julia-packages.txt \
+    && rm /tmp/setup-julia-packages.bash \
     && jupyter kernelspec list
