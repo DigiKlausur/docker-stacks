@@ -22,8 +22,16 @@ USER ${NB_UID}
 COPY scripts/setup-julia-packages.bash /tmp/setup-julia-packages.bash
 COPY julia-packages.txt /tmp/julia-packages.txt
 
+USER root
+# Change ownership of the copied files to NB_UID
+USER root
+RUN chown ${NB_UID}:${NB_UID} /tmp/setup-julia-packages.bash /tmp/julia-packages.txt
+
+USER ${NB_UID}
+
 # Run the setup script to install Julia packages and the IJulia kernel
 RUN /tmp/setup-julia-packages.bash /tmp/julia-packages.txt \
     && rm /tmp/julia-packages.txt \
     && rm /tmp/setup-julia-packages.bash \
     && jupyter kernelspec list
+
