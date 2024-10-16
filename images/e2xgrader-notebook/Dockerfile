@@ -22,6 +22,8 @@ RUN echo "Installing common requirements"
 COPY common_requirements.txt /tmp/common_requirements.txt
 RUN pip install --no-cache-dir -r /tmp/common_requirements.txt
 
+RUN python -m java_syntax_kernel.install --sys-prefix
+
 # Install mode specific requirements
 RUN echo "Installing requirements for ${E2XGRADER_MODE}"
 COPY ${E2XGRADER_MODE}_requirements.txt /tmp/mode_requirements.txt
