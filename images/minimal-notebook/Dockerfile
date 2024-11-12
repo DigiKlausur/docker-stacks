@@ -55,4 +55,5 @@ RUN mamba install -y gh --channel conda-forge \
     && jupyter nbextension enable --sys-prefix execute_time/ExecuteTime \
     && jupyter nbextension list \
     && rm -rf /tmp/jupyter_contrib_nbextensions \
-    && jupyter nbextension list
+    && jupyter nbextension list \
+    && jupyter serverextension list
