@@ -69,6 +69,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Extract first base image tag
+        id: extract_base_tag
+        run: |
+          IFS=',' read -r -a base_tags <<< "${{ inputs.base_image_tag }}"
+          first_base_tag="${base_tags[0]}"
+          echo "first_base_tag=$first_base_tag" >> $GITHUB_OUTPUT
+          echo "First base tag is $first_base_tag"
       - name: Set image tag
         id: set_image_tag
         run: |
@@ -77,6 +85,17 @@ jobs:
           else
             echo "image_tag=${{ inputs.image_name }}-${{ matrix.e2xgrader_mode }}:${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Set tags
+        id: set_tags
+        run: |
+          IFS=',' read -r -a tags <<< "${{ inputs.image_tag }}"
+          tags_output=""
+          for tag in "${tags[@]}"; do
+            tags_output+="${{ inputs.registry }}/digiklausur/docker-stacks/${{ steps.set_image_tag.outputs.image_tag }}:$tag,"
+          done
+          tags_output="${tags_output%,}" # Remove trailing comma
+          echo "tags=$tags_output" >> $GITHUB_OUTPUT
       - name: Print image tag
         id: print_image_tag
         run: |
@@ -116,9 +135,9 @@ jobs:
         with:
           context: images/e2xgrader-notebook
           push: ${{ inputs.push }}
-          tags: ${{ inputs.registry }}/digiklausur/docker-stacks/${{ steps.set_image_tag.outputs.image_tag }}
+          tags: ${{ steps.set_tags.outputs.tags }}
           build-args: |
-            IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}
+            IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ steps.extract_base_tag.outputs.first_base_tag }}
             E2XGRADER_MODE=${{ matrix.e2xgrader_mode }}
             E2XGRADER_VERSION=${{ inputs.e2xgrader_version }}
             FROM_REPO=${{ inputs.e2xgrader_installation_source == 'github' }}
