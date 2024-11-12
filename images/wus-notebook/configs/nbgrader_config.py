@@ -1,4 +1,3 @@
-from e2xgrader.config import configure_base
 from nbgrader.preprocessors import GetGrades
 from nbformat import NotebookNode
 from nbconvert.exporters.exporter import ResourcesDict
@@ -91,8 +90,6 @@ c.GenerateFeedback.preprocessors = [
     FilterTests,
     CSSHTMLHeaderPreprocessor
 ]
-
-#print("Local config is", c)
 
 c.SaveAutoGrades.graders = {
     'multiplechoice': WuSMultipleChoiceGrader(),
