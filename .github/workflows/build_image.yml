@@ -87,6 +87,12 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_SECRET }}
+      - name: Extract first base image tag
+        id: extract_base_tag
+        run: |
+          IFS=',' read -r -a base_tags <<< "${{ inputs.base_image_tag }}"
+          first_base_tag="${base_tags[0]}"
+          echo "first_base_tag=$first_base_tag" >> $GITHUB_OUTPUT
       - name: Set tags
         id: set_tags
         run: |
@@ -106,7 +112,7 @@ jobs:
           push: ${{ inputs.push }}
           tags: ${{ steps.set_tags.outputs.tags }}
           build-args: |
-            IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}
+            IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ steps.extract_base_tag.outputs.first_base_tag }}
       - name: List images
         if: ${{ inputs.force_build || steps.changes.outputs.image_changed == 'true' }}
         run: |
