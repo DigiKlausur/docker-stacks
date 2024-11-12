@@ -93,6 +93,7 @@ jobs:
           IFS=',' read -r -a base_tags <<< "${{ inputs.base_image_tag }}"
           first_base_tag="${base_tags[0]}"
           echo "first_base_tag=$first_base_tag" >> $GITHUB_OUTPUT
+          echo "First base tag is $first_base_tag"
       - name: Set tags
         id: set_tags
         run: |
