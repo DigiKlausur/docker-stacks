@@ -15,22 +15,18 @@ ENV TZ=Europe/Berlin
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
 
-RUN ln -snf /usr/share/zoneinfo/"$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
-
-# Create default config for ipython kernel config
-RUN mkdir /etc/ipython/ && \
-    chown root:"$NB_GID" /etc/ipython/ &&\
-    chmod g+rwX /etc/ipython/ &&\
-    chmod +6000 /etc/ipython/
-
-# Remove default work dir
-RUN rm -rf "$HOME"/work
-
-RUN apt-get update -y \
+# Set timezone and create default config for ipython kernel config
+RUN ln -snf /usr/share/zoneinfo/"$TZ" /etc/localtime && echo "$TZ" > /etc/timezone \
+    && mkdir /etc/ipython/ \
+    && chown root:"$NB_GID" /etc/ipython/ \
+    && chmod g+rwX /etc/ipython/ \
+    && chmod +6000 /etc/ipython/ \
+    && rm -rf "$HOME"/work \ 
+    && apt-get update -y \
     && apt-get install --yes \
        ncdu \
        vim \
@@ -40,29 +36,23 @@ RUN apt-get update -y \
 
 USER $NB_USER
 
-# Install git and graphviz
+# Install requirements and enable extenstions and Jupyter contrib extensions
+COPY requirements.txt /tmp/requirements.txt
+
+# Install git and graphviz and upgrade pip
 RUN mamba install -y gh --channel conda-forge \
     && mamba install -y graphviz --no-update-deps \
     && mamba clean -afy \
     && npm cache clean --force \
-    && find /opt/conda/ -follow -type f -name '*.js.map' -delete
-
-RUN pip install --no-cache-dir --upgrade pip \
-    && find /opt/conda/ -follow -type f -name '*.js.map' -delete
-
-# Install requirements
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt \
-    && find /opt/conda/ -follow -type f -name '*.js.map' -delete
-
-# Enable extenstions and Jupyter contrib extensions
-RUN cd /tmp \
+    && pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r /tmp/requirements.txt \
+    && pip uninstall "jupyter-server-terminals" -y \
+    && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
+    && cd /tmp \
     && git clone --depth 1 -b master https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git \
     && cd /tmp/jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions \
     && jupyter nbextension install --sys-prefix execute_time \
     && jupyter nbextension enable --sys-prefix execute_time/ExecuteTime \
     && jupyter nbextension list \
-    && rm -rf /tmp/jupyter_contrib_nbextensions
-
-# Jupyter extension list
-RUN jupyter nbextension list
+    && rm -rf /tmp/jupyter_contrib_nbextensions \
+    && jupyter nbextension list
