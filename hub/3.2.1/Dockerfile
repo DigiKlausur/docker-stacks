@@ -7,6 +7,7 @@ USER root
 RUN pip install --no-cache-dir pandas && \
     pip install --no-cache-dir jupyterhub-nativeauthenticator==1.1.0 && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/miaauth.git@main && \
-    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xhub.git@main
+    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xhub.git@main && \
+    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x_exam_hub.git@main
 
 USER $NB_USER
