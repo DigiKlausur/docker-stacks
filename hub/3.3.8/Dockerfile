@@ -1,7 +1,7 @@
-ARG IMAGE_SOURCE=jupyterhub/k8s-hub:3.2.1
+ARG IMAGE_SOURCE=jupyterhub/k8s-hub:3.3.8
 FROM $IMAGE_SOURCE
 
-LABEL maintainer="DigiKlausur (E2x) project HBRS <mohammad.wasil@h-brs.de>"
+LABEL maintainer="DigiKlausur (E2x) project HBRS <e2x@h-brs.de>"
 
 USER root
 RUN pip install --no-cache-dir pandas && \
