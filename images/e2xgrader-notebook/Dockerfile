@@ -8,6 +8,13 @@ ARG E2XGRADER_MODE="student"
 
 # Inherit from any image, then just install e2xgrader and activate a mode
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
+LABEL org.opencontainers.image.title="e2xgrader-notebook"
+LABEL org.opencontainers.image.description="A Docker image for the e2xgrader notebook, designed to facilitate grading and managing assignments in Jupyter Notebooks, with support for different user modes including student, student_exam, and teacher."
+LABEL org.opencontainers.image.vendor="H-BRS"
+LABEL org.opencontainers.image.url="https://github.com/DigiKlausur/docker-stacks/"
+LABEL org.opencontainers.image.source="https://github.com/DigiKlausur/docker-stacks/images/e2xgrader-notebook"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.mode="$E2XGRADER_MODE"
 
 USER root
 # Copy nbgrader base config
