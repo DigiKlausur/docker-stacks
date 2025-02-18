@@ -16,6 +16,8 @@ LABEL org.opencontainers.image.source="https://github.com/DigiKlausur/docker-sta
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.mode="$E2XGRADER_MODE"
 
+ENV JUPYTER_CONFIG_DIR=/opt/conda/etc/jupyter
+
 USER root
 # Copy nbgrader base config
 COPY configs/nbgrader_config.py /etc/jupyter/nbgrader_config.py
@@ -39,8 +41,8 @@ RUN pip install --no-cache-dir -r /tmp/mode_requirements.txt
 COPY custom/custom-preload.js /tmp/custom-preload.js
 RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
         echo "Copying custom-preload.js for student_exam mode"; \
-        mkdir -p ~/.jupyter/custom && \
-        cp /tmp/custom-preload.js ~/.jupyter/custom/; \
+        mkdir -p "$JUPYTER_CONFIG_DIR"/custom/; \
+        cp /tmp/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/; \
     fi
     
 USER root
