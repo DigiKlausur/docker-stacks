@@ -22,7 +22,7 @@ Optim
 Optimization
 OptimizationFlux
 OptimizationOptimJL
-OrdinaryDiffEq
+OrdinaryDiffEq@6.89.0
 Plots
 Pluto
 Random
