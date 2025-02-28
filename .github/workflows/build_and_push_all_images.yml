@@ -310,6 +310,35 @@ jobs:
       e2xgrader_version: ${{ inputs.e2xgrader_version }}
       e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
     secrets: inherit
-      
+  
+  julia_notebook:
+    needs: [minimal_notebook]
+    uses: ./.github/workflows/build_image.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.minimal_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
+      base_image_tag: ${{ inputs.tag }}      
+      image_path: images/julia-notebook
+      image_name: julia-notebook
+      image_tag: ${{ inputs.tag }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  e2x_julia_notebook:
+    needs: [julia_notebook]
+    uses: ./.github/workflows/build_e2xgrader_images.yml
+    with:
+      force_build: ${{ inputs.force_build || needs.julia_notebook.outputs.did_build_image == 'true' }}
+      registry: ${{ inputs.registry }}
+      image_name: julia-notebook
+      image_tag: ${{ inputs.tag }}
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/julia-notebook
+      base_image_tag: ${{ inputs.tag }}
+      push: ${{ inputs.push }}
+      e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
+      e2xgrader_version: ${{ inputs.e2xgrader_version }}
+      e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
+    secrets: inherit
 
   

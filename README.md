@@ -24,6 +24,7 @@ Currently all images are based on `notebook==6.5.4`.
 | [ml-notebook](images/ml-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/ml-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-exam) |
 | [nlp-notebook](images/nlp-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-exam) |
 | [sql-notebook](images/sql-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/sql-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-exam) |
+| [julia-notebook](images/julia-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/julia-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/julia-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/julia-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/julia-notebook-exam) |
 | [desktop-notebook](images/desktop-notebook)     | [base](https://ghcr.io/digiklausur/docker-stacks/desktop-notebook)     |                                                                                   |                                                                                   |                                                                             |
 
 The notebook images are:
@@ -33,6 +34,7 @@ The notebook images are:
 * [Machine Learning Notebook](images/ml-notebook/): Based on Data Science Notebook. Additional Python machine learning libraries (e.g., pytorch, gymnasium). 
 * [Natural Language Processing Notebook](images/nlp-notebook/): Based on Machine Learning Notebook. Additional Python NLP libraries (e.g., nltk, spacy, gensim, transformers). 
 * [SQL Notebook](images/sql-notebook/): Based on Data Science Notebook. Additional SQL libraries and kernels.
+* [Julia Notebook](images/julia-notebook/): Based on Minimal Notebook. Adds a Julia kernel and libraries.
 * [Desktop Notebook](images/desktop-notebook/): Based on Minimal Notebook. Customized version of the [Minimal Notebook](images/minimal-notebook) image, with an XFCE desktop installed using [Jupyter Remote Desktop Proxy](https://github.com/jupyterhub/jupyter-remote-desktop-proxy).
 * [DB Main Notebook (experimental)](images/dbmain-notebook/): Based on Desktop Notebook. With the DB Main application installed. Serves as an example for running an application in a desktop image.
 
