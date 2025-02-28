@@ -34,7 +34,12 @@ if [ -f "$JULIA_PACKAGES_FILE" ]; then
     Pkg.update();
     packages = readlines(\"$JULIA_PACKAGES_FILE\");
     for pkg in packages
-        Pkg.add(pkg);
+        if occursin(\"@\", pkg)
+            name, version = split(pkg, \"@\")
+            Pkg.add(name=name, version=String(version))
+        else
+            Pkg.add(pkg)
+        end
     end
     Pkg.precompile();
     "
