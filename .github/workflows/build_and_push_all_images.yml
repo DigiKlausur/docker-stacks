@@ -317,7 +317,7 @@ jobs:
     with:
       force_build: ${{ inputs.force_build || needs.datascience_notebook.outputs.did_build_image == 'true' }}
       registry: ${{ inputs.registry }}
-      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/tf-notebook
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
       base_image_tag: ${{ inputs.tag }}    
       image_path: images/tf-notebook
       image_name: tf-notebook
