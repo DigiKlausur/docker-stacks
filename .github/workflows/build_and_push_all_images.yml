@@ -325,7 +325,7 @@ jobs:
       push: ${{ inputs.push }}
     secrets: inherit
 
-  e2x_nlp_notebook:
+  e2x_tf_notebook:
     needs: [tf_notebook]
     uses: ./.github/workflows/build_e2xgrader_images.yml
     with:
