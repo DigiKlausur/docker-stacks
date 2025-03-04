@@ -6,13 +6,11 @@ LABEL description="e2x tensorflow machine learning notebook"
 
 USER root
 
-# Install requirements
+# Install requirements and list extensions
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt \
-    && find /opt/conda/ -follow -type f -name '*.js.map' -delete
-
-# Jupyter extension list
-RUN jupyter nbextension list
+    && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
+    && jupyter nbextension list
 
 USER root
 RUN rm /tmp/requirements.txt
