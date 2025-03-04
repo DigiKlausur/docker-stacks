@@ -125,6 +125,11 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_SECRET }}
+      - name: Image changed
+        run: |
+          echo "Image changed ${{ steps.changes.outputs.image_changed }}"
+          echo "Workflow changed ${{ steps.changes.outputs.workflow_changed }}"
+          echo "Force build ${{ inputs.force_build }}"
       - name: Build Docker image
         if: |
           ${{ inputs.force_build }}
