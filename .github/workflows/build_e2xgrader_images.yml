@@ -131,10 +131,7 @@ jobs:
           echo "Workflow changed ${{ steps.changes.outputs.workflow_changed }}"
           echo "Force build ${{ inputs.force_build }}"
       - name: Build Docker image
-        if: |
-          ${{ inputs.force_build }}
-          ${{ steps.changes.outputs.image_changed == 'true' }}
-          ${{ steps.changes.outputs.workflow_changed == 'true' }}
+        if: ${{ inputs.force_build || (steps.changes.outputs.image_changed == 'true' || steps.changes.outputs.workflow_changed == 'true') }}
         id: build_image
         uses: docker/build-push-action@v5
         with:
