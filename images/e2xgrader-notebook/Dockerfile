@@ -59,6 +59,11 @@ RUN rm /tmp/common_requirements.txt /tmp/mode_requirements.txt /tmp/custom-prelo
 
 USER $NB_USER
 
+RUN if [ "$E2XGRADER_MODE" = "teacher" ]; then \
+    echo "Enabling the nbdime git extension for teacher mode"; \
+    nbdime config-git --enable --global; \
+    fi
+
 # Install e2xgrader
 RUN if [ "$FROM_REPO" = "false" ] && [ -z "$E2XGRADER_VERSION" ]; then \
         echo "Installing e2xgrader from default source..."; \
