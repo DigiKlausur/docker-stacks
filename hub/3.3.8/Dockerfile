@@ -2,6 +2,8 @@ ARG IMAGE_SOURCE=jupyterhub/k8s-hub:3.3.8
 FROM $IMAGE_SOURCE
 
 LABEL maintainer="DigiKlausur (E2x) project HBRS <e2x@h-brs.de>"
+LABEL org.opencontainers.image.description="JupyterHub k8s 3.3.8 image for E2x project"
+LABEL org.opencontainers.image.authors="e2x project H-BRS <e2x@inf.h-brs.de>"
 
 ARG NB_USER=jovyan \
     NB_UID=1000 \
