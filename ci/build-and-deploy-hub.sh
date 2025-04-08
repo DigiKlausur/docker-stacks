@@ -62,6 +62,7 @@ DATE=$(date +"%Y-%m-%d")
 
 # Function to call the build-and-deploy-single-image.sh script
 call_build_and_deploy() {
+    echo "::group::Build and deploy image $2"
     local IMAGE_PATH="$1"
     local IMAGE_NAME="$2"
 
@@ -96,6 +97,7 @@ call_build_and_deploy() {
         echo "Build and deploy failed for image: $IMAGE_NAME. Exiting."
         exit 1
     fi
+    echo "::endgroup::"
 }
 
 # Build the images by iterating through the directories
