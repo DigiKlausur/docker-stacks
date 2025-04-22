@@ -11,7 +11,7 @@ ARG NB_USER=jovyan \
 
 USER root
 RUN pip install --no-cache-dir pandas && \
-    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-nativeauth.git@0.1.0-dev1 && \
+    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-nativeauth.git@v0.1.0-dev1 && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/miaauth.git@main && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xhub.git@main && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-exam-hub.git@v0.1.0-dev1
