@@ -1,0 +1,1 @@
+e2x-jupyter-backup @ git+https://github.com/DigiKlausur/e2x-jupyter-backup@v0.1.0

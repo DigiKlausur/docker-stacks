@@ -8,6 +8,15 @@ ARG E2XGRADER_MODE="student"
 
 # Inherit from any image, then just install e2xgrader and activate a mode
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
+LABEL org.opencontainers.image.title="e2xgrader-notebook"
+LABEL org.opencontainers.image.description="A Docker image for the e2xgrader notebook, designed to facilitate grading and managing assignments in Jupyter Notebooks, with support for different user modes including student, student_exam, and teacher."
+LABEL org.opencontainers.image.vendor="H-BRS"
+LABEL org.opencontainers.image.url="https://github.com/DigiKlausur/docker-stacks/"
+LABEL org.opencontainers.image.source="https://github.com/DigiKlausur/docker-stacks/images/e2xgrader-notebook"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.mode="$E2XGRADER_MODE"
+
+ENV JUPYTER_CONFIG_DIR=/opt/conda/etc/jupyter
 
 USER root
 # Copy nbgrader base config
@@ -20,14 +29,21 @@ USER $NB_USER
 # Install requirements shared between all modes
 RUN echo "Installing common requirements"
 COPY common_requirements.txt /tmp/common_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/common_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/common_requirements.txt && \
+    python -m java_syntax_kernel.install --sys-prefix
 
 # Install mode specific requirements
 RUN echo "Installing requirements for ${E2XGRADER_MODE}"
 COPY ${E2XGRADER_MODE}_requirements.txt /tmp/mode_requirements.txt
 RUN pip install --no-cache-dir -r /tmp/mode_requirements.txt
 
-
+# Copy custom-preload.js if mode equals student_exam
+COPY custom/custom-preload.js /tmp/custom-preload.js
+RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
+        echo "Copying custom-preload.js for student_exam mode"; \
+        mkdir -p "$JUPYTER_CONFIG_DIR"/custom/; \
+        cp /tmp/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/; \
+    fi
     
 USER root
 # If teacher mode is activated install wkhtmltopdf, needed for feedback PDFs
@@ -39,9 +55,14 @@ RUN if [ "$E2XGRADER_MODE" = "teacher" ]; then \
         && rm -rf /var/lib/apt/lists/*; \
     fi
 
-RUN rm /tmp/common_requirements.txt /tmp/mode_requirements.txt
+RUN rm /tmp/common_requirements.txt /tmp/mode_requirements.txt /tmp/custom-preload.js
 
 USER $NB_USER
+
+RUN if [ "$E2XGRADER_MODE" = "teacher" ]; then \
+    echo "Enabling the nbdime git extension for teacher mode"; \
+    nbdime config-git --enable --global; \
+    fi
 
 # Install e2xgrader
 RUN if [ "$FROM_REPO" = "false" ] && [ -z "$E2XGRADER_VERSION" ]; then \
@@ -53,8 +74,6 @@ RUN if [ "$FROM_REPO" = "false" ] && [ -z "$E2XGRADER_VERSION" ]; then \
     elif [ "$FROM_REPO" = "true" ]; then \
         echo "Installing e2xgrader from GitHub repository: https://github.com/DigiKlausur/e2xgrader.git@$E2XGRADER_BRANCH"; \
         pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@"${E2XGRADER_BRANCH}"; \
-    fi
-
-# Activate a mode
-RUN e2xgrader activate "$E2XGRADER_MODE" --sys-prefix
+    fi && \
+    e2xgrader activate "$E2XGRADER_MODE" --sys-prefix
 

@@ -12,26 +12,37 @@ on:
       - images/**
 
 jobs:
+
+  set_date:
+    runs-on: ubuntu-latest
+    outputs:
+      date: ${{ steps.set_date.outputs.date }}
+    steps:
+      - name: Set up date tag
+        id: set_date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
   
   build_and_push_to_ghcr:
     name: ghcr.io
+    needs: set_date
     uses: ./.github/workflows/build_and_push_all_images.yml
     with:
       force_build: false
       push: true
       registry: ghcr.io
-      tag: latest
+      tag: latest,${{ needs.set_date.outputs.date }}
       e2xgrader_installation_source: pypi
     secrets: inherit
 
   build_and_push_to_quay:
     name: quay.io
+    needs: set_date
     uses: ./.github/workflows/build_and_push_all_images.yml
     with:
       force_build: false
       push: true
       registry: quay.io
-      tag: latest
+      tag: latest,${{ needs.set_date.outputs.date }}
       e2xgrader_installation_source: pypi
     secrets: inherit
             
