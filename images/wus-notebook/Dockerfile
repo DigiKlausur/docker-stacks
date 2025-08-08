@@ -14,9 +14,8 @@ RUN chown root:"$NB_GID" /opt/conda/etc/jupyter/nbgrader_config.py &&\
 
 USER $NB_USER
 
-# Disable execute time extension and enable highlight word
-RUN jupyter nbextension disable --sys-prefix execute_time/ExecuteTime \
-    && pip install --no-cache-dir jupyter_highlight_selected_word \
+# Enable highlight word
+RUN pip install --no-cache-dir jupyter_highlight_selected_word \
     && jupyter nbextension install --py --sys-prefix jupyter_highlight_selected_word \
     && jupyter nbextension enable --sys-prefix highlight_selected_word/main \
     && jupyter nbextension list
