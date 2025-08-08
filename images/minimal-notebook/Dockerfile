@@ -48,12 +48,4 @@ RUN mamba install -y gh --channel conda-forge \
     && pip install --no-cache-dir -r /tmp/requirements.txt \
     && pip uninstall "jupyter-server-terminals" -y \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
-    && cd /tmp \
-    && git clone --depth 1 -b master https://github.com/ipython-contrib/jupyter_contrib_nbextensions.git \
-    && cd /tmp/jupyter_contrib_nbextensions/src/jupyter_contrib_nbextensions/nbextensions \
-    && jupyter nbextension install --sys-prefix execute_time \
-    && jupyter nbextension enable --sys-prefix execute_time/ExecuteTime \
-    && jupyter nbextension list \
-    && rm -rf /tmp/jupyter_contrib_nbextensions \
-    && jupyter nbextension list \
     && jupyter serverextension list
