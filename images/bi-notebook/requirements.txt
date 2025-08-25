@@ -1,0 +1,8 @@
+nbresuse
+jupyter-server<2.0.0
+pyspark>=4.0.0
+python-dotenv>=1.1.1
+watchfiles>=1.1.0
+ydata-profiling>=4.16.1
+httptools>=0.6.4
+websockets>=15.0.1
