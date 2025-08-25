@@ -6,3 +6,5 @@ watchfiles>=1.1.0
 ydata-profiling>=4.16.1
 httptools>=0.6.4
 websockets>=15.0.1
+vaex>=4.17.0
+numpy<2.0.0,>=1.26.4
