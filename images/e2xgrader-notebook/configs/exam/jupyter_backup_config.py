@@ -1,3 +1,12 @@
+"""
+e2x-jupyter-backup configuration file.
+
+This uses the environment variables:
+- E2X_BACKUP_ENABLED: Whether the backup functionality is enabled (default: false)
+- E2X_BACKUP_DIR: The directory where backups are stored relative to the notebook (default: '.backup')
+- E2X_BACKUP_MAX_FILES: The maximum number of backup files to keep per notebook (default: 10)
+"""
+
 import os
 from e2x_jupyter_backup import get_post_save_hook
 c = get_config() # noqa: F821
