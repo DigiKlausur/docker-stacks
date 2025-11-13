@@ -57,13 +57,20 @@ RUN pip install --no-cache-dir -r /tmp/mode_requirements.txt
 COPY custom/custom-preload.js /tmp/custom-preload.js
 # Copy jupyter_backup_config.py if mode equals student_exam
 COPY configs/exam/jupyter_backup_config.py /tmp/jupyter_backup_config.py
+
+USER root
 RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
-        echo "Copying custom-preload.js for student_exam mode"; \
-        mkdir -p "$JUPYTER_CONFIG_DIR"/custom/; \
-        cp /tmp/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/; \
+        echo "Copying jupyter_backup_config.py for student_exam mode as root"; \
         cp /tmp/jupyter_backup_config.py /etc/jupyter/jupyter_backup_config.py && \
         chown root:"$NB_GID" /etc/jupyter/jupyter_backup_config.py && \
         chmod g+rwX /etc/jupyter/jupyter_backup_config.py; \
+    fi
+USER $NB_USER
+
+RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
+        echo "Copying custom-preload.js for student_exam mode"; \
+        mkdir -p "$JUPYTER_CONFIG_DIR"/custom/; \
+        cp /tmp/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/; \        
     fi
     
 # ------------------------------------ #
