@@ -19,10 +19,22 @@ LABEL org.opencontainers.image.mode="$E2XGRADER_MODE"
 ENV JUPYTER_CONFIG_DIR=/opt/conda/etc/jupyter
 
 USER root
+
+# ------------------------------------ #
+#   Base configuration for all modes   #
+# ------------------------------------ #
+
 # Copy nbgrader base config
-COPY configs/nbgrader_config.py /etc/jupyter/nbgrader_config.py
+COPY configs/base/nbgrader_config.py /etc/jupyter/nbgrader_config.py
 RUN chown root:"$NB_GID" /etc/jupyter/nbgrader_config.py &&\
     chmod g+rwX /etc/jupyter/nbgrader_config.py
+
+# Copy and append jupyter notebook config override
+COPY configs/base/jupyter_notebook_config_override.py /tmp/jupyter_notebook_config_override.py
+RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_notebook_config.py && \
+    rm /tmp/jupyter_notebook_config_override.py && \
+    chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
+    chmod g+rwX /etc/jupyter/jupyter_notebook_config.py
     
 USER $NB_USER
 
@@ -37,14 +49,26 @@ RUN echo "Installing requirements for ${E2XGRADER_MODE}"
 COPY ${E2XGRADER_MODE}_requirements.txt /tmp/mode_requirements.txt
 RUN pip install --no-cache-dir -r /tmp/mode_requirements.txt
 
+# ------------------------------------ #
+#      Student Exam Configuration      #
+# ------------------------------------ #
+
 # Copy custom-preload.js if mode equals student_exam
 COPY custom/custom-preload.js /tmp/custom-preload.js
+# Copy jupyter_backup_config.py if mode equals student_exam
+COPY configs/exam/jupyter_backup_config.py /tmp/jupyter_backup_config.py
 RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
         echo "Copying custom-preload.js for student_exam mode"; \
         mkdir -p "$JUPYTER_CONFIG_DIR"/custom/; \
         cp /tmp/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/; \
+        cp /tmp/jupyter_backup_config.py /etc/jupyter/jupyter_backup_config.py && \
+        chown root:"$NB_GID" /etc/jupyter/jupyter_backup_config.py && \
+        chmod g+rwX /etc/jupyter/jupyter_backup_config.py; \
     fi
     
+# ------------------------------------ #
+#        Teacher Configuration         #
+# ------------------------------------ #
 USER root
 # If teacher mode is activated install wkhtmltopdf, needed for feedback PDFs
 RUN if [ "$E2XGRADER_MODE" = "teacher" ]; then \
@@ -55,7 +79,8 @@ RUN if [ "$E2XGRADER_MODE" = "teacher" ]; then \
         && rm -rf /var/lib/apt/lists/*; \
     fi
 
-RUN rm /tmp/common_requirements.txt /tmp/mode_requirements.txt /tmp/custom-preload.js
+# Clean up temporary files
+RUN rm -rf /tmp/*.txt /tmp/*.js /tmp/*.py
 
 USER $NB_USER
 
@@ -64,6 +89,9 @@ RUN if [ "$E2XGRADER_MODE" = "teacher" ]; then \
     nbdime config-git --enable --global; \
     fi
 
+# ------------------------------------ #
+#          E2xGrader Install           #
+# ------------------------------------ #
 # Install e2xgrader
 RUN if [ "$FROM_REPO" = "false" ] && [ -z "$E2XGRADER_VERSION" ]; then \
         echo "Installing e2xgrader from default source..."; \
