@@ -23,6 +23,28 @@ This image is designed to build e2xgrader end-point images for the other images 
     + [exam_kernel](https://github.com/DigiKlausur/exam_kernel) for providing a restricted and configurable Python kernel
     + [java_syntax_kernel](https://github.com/DigiKlausur/java_syntax_kernel) for providing a simple kernel that highlights JAVA code without executing it.
 
+### Environment Variables
+
+These images can be customized using environment variables. For all modes the following environment variables are present.
+
+* `LANGUAGE`: The language to use (default: en). This currently only affects the submission html generated in `student_exam` mode.
+
+* `NBGRADER_TIMEZONE`: The timezone to use (default: Europe/Berlin)
+
+* `NBGRADER_COURSE_DIR`: The root directory for the course (default: ~/course)
+* `NBGRADER_COURSE_ID`: The course id (default: course101)
+* `NBGRADER_GROUPSHARED`: Whether the course directory is group-shared (default: true)
+
+* `NBGRADER_EXCHANGE_DIR`: The exchange directory (default: /srv/nbgrader/exchange)
+* `NBGRADER_EXCHANGE_PERSONALIZED_INBOUND`: Whether to use personalized inbound exchange. If active students submit to their own directory.
+* `NBGRADER_EXCHANGE_PERSONALIZED_OUTBOUND`: Whether to use personalized outbound exchange. If active students fetch from their own directory. This can be used to provide each student with a personalized assignment.
+* `NBGRADER_EXCHANGE_PERSONALIZED_FEEDBACK`: Whether to use personalized feedback exchange. If active students fetch feedback from their own directory.
+
+* `NBGRADER_EXECUTE_TIMEOUT`: The timeout for executing notebooks in seconds (default: 300)
+
+* `E2X_DRAWIO_DOMAIN`: The domain to use for the diagram editor (default: None). If None is set then `https://embed.diagrams.net/` is used.
+* `E2X_DRAWIO_ORIGIN`: The origin to use for the diagram editor (default: None). If None is set then `https://embed.diagrams.net/` is used.
+
 ### Teacher mode
 
 If `E2XGRADER_MODE` is set to `teacher` it will:
@@ -45,6 +67,12 @@ If `E2XGRADER_MODE` is set to `student_exam` it will:
 * Activate student exam extensions, providing a restricted notebook environment.
 * Activate a custom submit toolbar in notebooks
 * Activate custom submit behavior that hashes student files on submission and provides HTML versions of all submitted notebooks
+
+In student exam mode the following additional environment variables can be used to configure automated backups using [E2X Jupyter Backup](https://github.com/DigiKlausur/e2x-jupyter-backup).
+
+* `E2X_BACKUP_ENABLED`: Whether the backup functionality is enabled (default: false)
+* `E2X_BACKUP_DIR`: The directory where backups are stored relative to the notebook (default: None)
+* `E2X_BACKUP_MAX_FILES`: The maximum number of backup files to keep per notebook (default: 10)
 
 ## Usage
 
