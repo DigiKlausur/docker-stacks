@@ -41,6 +41,7 @@ COPY requirements.txt /tmp/requirements.txt
 # Install git and graphviz and upgrade pip
 RUN mamba install -y gh --channel conda-forge \
     && mamba install -y graphviz --no-update-deps \
+    && mamba install -y datashader \
     && mamba clean -afy \
     && npm cache clean --force \
     && pip install --no-cache-dir --upgrade pip \
