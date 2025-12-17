@@ -17,7 +17,9 @@ RUN pip install --no-cache-dir pandas && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xhub.git@main && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-exam-hub.git@v0.1.0-dev1 && \
     curl -L -o /tmp/e2x_course_service-0.1.1rc0-py3-none-any.whl https://github.com/DigiKlausur/e2x-course-service/releases/download/v0.1.1rc0/e2x_course_service-0.1.1rc0-py3-none-any.whl && \
+    curl -L -o /tmp/e2x_course_hub-0.1.0-py3-none-any.whl https://github.com/DigiKlausur/e2x-course-hub/releases/download/v0.1.0/e2x_course_hub-0.1.0-py3-none-any.whl && \
     pip install --no-cache-dir /tmp/e2x_course_service-0.1.1rc0-py3-none-any.whl && \
+    pip install --no-cache-dir /tmp/e2x_course_hub-0.1.0-py3-none-any.whl && \
     rm /tmp/e2x_course_service-0.1.1rc0-py3-none-any.whl
 
 USER ${NB_USER}
