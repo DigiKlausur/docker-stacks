@@ -42,6 +42,7 @@ COPY requirements.txt /tmp/requirements.txt
 RUN mamba install -y gh --channel conda-forge \
     && mamba install -y graphviz --no-update-deps \
     && mamba install -y datashader \
+    && mamba install -y openjdk --channel conda-forge \
     && mamba clean -afy \
     && npm cache clean --force \
     && pip install --no-cache-dir --upgrade pip \
