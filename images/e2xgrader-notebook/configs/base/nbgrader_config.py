@@ -7,7 +7,7 @@ This uses the environment variables:
 - NBGRADER_TIMEZONE: The timezone to use (default: Europe/Berlin)
 
 - NBGRADER_COURSE_DIR: The root directory for the course (default: ~/course)
-- NBGRADER_COURSE_ID: The course id (default: course101)
+- NBGRADER_COURSE_ID: The course id (default: None)
 - NBGRADER_GROUPSHARED: Whether the course directory is group-shared (default: true)
 
 - NBGRADER_EXCHANGE_DIR: The exchange directory (default: /srv/nbgrader/exchange)
@@ -54,7 +54,9 @@ c.Exchange.timezone = os.getenv("NBGRADER_TIMEZONE", "Europe/Berlin")
 course_dir = os.getenv("NBGRADER_COURSE_DIR")
 if course_dir:
     c.CourseDirectory.root = os.path.expanduser(course_dir)
-c.CourseDirectory.course_id = os.getenv("NBGRADER_COURSE_ID", "course101")
+course_id = os.getenv("NBGRADER_COURSE_ID")
+if course_id:
+    c.CourseDirectory.course_id = course_id
 c.CourseDirectory.groupshared = os.getenv("NBGRADER_GROUPSHARED", "true").lower() in ("true")
 
 # ------------------------ #
