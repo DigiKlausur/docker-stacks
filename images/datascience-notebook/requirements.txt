@@ -16,7 +16,7 @@ openai>=1.78.0
 pandas==2.2.1
 pandas_summary
 pdfkit
-Pillow==10.3.0
+Pillow==12.1.1
 ply
 pyagrum
 pydantic
