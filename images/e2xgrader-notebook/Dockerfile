@@ -54,23 +54,29 @@ RUN pip install --no-cache-dir -r /tmp/mode_requirements.txt
 # ------------------------------------ #
 
 # Copy custom-preload.js if mode equals student_exam
-COPY custom/custom-preload.js /tmp/custom-preload.js
+COPY custom/custom-preload.js /tmp/exam/custom-preload.js
 # Copy jupyter_backup_config.py if mode equals student_exam
-COPY configs/exam/jupyter_backup_config.py /tmp/jupyter_backup_config.py
+COPY configs/exam/jupyter_backup_config.py /tmp/exam/jupyter_backup_config.py
+COPY configs/exam/jupyter_notebook_config_override.py /tmp/exam/jupyter_notebook_config_override.py
 
 USER root
 RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
         echo "Copying jupyter_backup_config.py for student_exam mode as root"; \
-        cp /tmp/jupyter_backup_config.py /etc/jupyter/jupyter_backup_config.py && \
+        cp /tmp/exam/jupyter_backup_config.py /etc/jupyter/jupyter_backup_config.py && \
         chown root:"$NB_GID" /etc/jupyter/jupyter_backup_config.py && \
         chmod g+rwX /etc/jupyter/jupyter_backup_config.py; \
+        echo "Copying jupyter_notebook_config_override.py for student_exam mode as root"; \
+        cat /tmp/exam/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_notebook_config.py && \
+        rm /tmp/exam/jupyter_notebook_config_override.py && \
+        chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
+        chmod g+rwX /etc/jupyter/jupyter_notebook_config.py; \
     fi
 USER $NB_USER
 
 RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
         echo "Copying custom-preload.js for student_exam mode"; \
         mkdir -p "$JUPYTER_CONFIG_DIR"/custom/; \
-        cp /tmp/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/; \        
+        cp /tmp/exam/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/; \
     fi
     
 # ------------------------------------ #
