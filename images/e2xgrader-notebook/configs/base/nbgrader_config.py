@@ -22,9 +22,9 @@ This uses the environment variables:
 """
 import os
 
-from e2xgrader.config import configure_base, configure_exchange
+from e2xgrader.config import configure_base, configure_exchange # type: ignore
 
-c = get_config()  # noqa: F821
+c = get_config()  # type: ignore # noqa: F821
 configure_base(c)
 configure_exchange(c)
 
