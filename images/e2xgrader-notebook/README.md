@@ -73,6 +73,8 @@ In student exam mode the following additional environment variables can be used 
 * `E2X_BACKUP_ENABLED`: Whether the backup functionality is enabled (default: false)
 * `E2X_BACKUP_DIR`: The directory where backups are stored relative to the notebook (default: None)
 * `E2X_BACKUP_MAX_FILES`: The maximum number of backup files to keep per notebook (default: 10)
+* `E2X_BACKUP_MAX_SIZE_MB`: The maximum size of backup files in megabytes (default: 100)
+* `E2X_MIN_SECONDS_BETWEEN_BACKUPS`: The minimum number of seconds between backups for the same notebook (default: 20)
 
 ## Usage
 
