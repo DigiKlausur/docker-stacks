@@ -115,6 +115,13 @@ RUN echo "Copying custom-preload.js for student_exam mode" && \
 RUN e2xgrader activate student_exam --sys-prefix
 
 USER root
+# Copy and append student_exam jupyter notebook config override
+COPY student_exam/jupyter_notebook_config_override.py /tmp/jupyter_notebook_config_override.py
+RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_notebook_config.py && \
+    rm /tmp/jupyter_notebook_config_override.py && \
+    chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
+    chmod g+rwX /etc/jupyter/jupyter_notebook_config.py
+
 RUN rm -rf /tmp/student_exam_requirements.txt && \
     rm /tmp/custom-preload.js
 
