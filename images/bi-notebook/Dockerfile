@@ -27,6 +27,7 @@ RUN ln -snf /usr/share/zoneinfo/"$TZ" /etc/localtime && echo "$TZ" > /etc/timezo
     && rm -rf "$HOME"/work \ 
     && apt-get update -y \
     && apt-get install --yes \
+       build-essential \
        ncdu \
        vim \
        zip \
