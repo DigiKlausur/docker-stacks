@@ -81,8 +81,10 @@ The `student_exam` target builds from the `base` stage and:
 In student exam mode the following additional environment variables can be used to configure automated backups using [E2X Jupyter Backup](https://github.com/DigiKlausur/e2x-jupyter-backup).
 
 * `E2X_BACKUP_ENABLED`: Whether the backup functionality is enabled (default: false)
-* `E2X_BACKUP_DIR`: The directory where backups are stored relative to the notebook (default: None)
+* `E2X_BACKUP_DIR`: The directory where backups are stored. Either relative or absolute, see [E2X Jupyter Backup](https://github.com/DigiKlausur/e2x-jupyter-backup) for details.
 * `E2X_BACKUP_MAX_FILES`: The maximum number of backup files to keep per notebook (default: 10)
+* `E2X_BACKUP_MAX_SIZE_MB`: The maximum size of backup files in megabytes
+* `E2X_MIN_SECONDS_BETWEEN_BACKUPS`: The minimum number of seconds between backups for the same notebook
 
 ## Usage
 
