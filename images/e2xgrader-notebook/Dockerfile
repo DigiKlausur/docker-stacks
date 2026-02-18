@@ -4,6 +4,7 @@ ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest
 #   Base configuration for all modes   #
 # ------------------------------------ #
 FROM $IMAGE_SOURCE AS base
+ARG IMAGE_SOURCE
 ARG FROM_REPO=false
 ARG E2XGRADER_VERSION=""
 ARG E2XGRADER_BRANCH="main"
@@ -22,12 +23,12 @@ ENV JUPYTER_CONFIG_DIR=/opt/conda/etc/jupyter
 USER root
 
 # Copy nbgrader base config
-COPY configs/base/nbgrader_config.py /etc/jupyter/nbgrader_config.py
+COPY base/nbgrader_config.py /etc/jupyter/nbgrader_config.py
 RUN chown root:"$NB_GID" /etc/jupyter/nbgrader_config.py &&\
     chmod g+rwX /etc/jupyter/nbgrader_config.py
 
 # Copy and append jupyter notebook config override
-COPY configs/base/jupyter_notebook_config_override.py /tmp/jupyter_notebook_config_override.py
+COPY base/jupyter_notebook_config_override.py /tmp/jupyter_notebook_config_override.py
 RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_notebook_config.py && \
     rm /tmp/jupyter_notebook_config_override.py && \
     chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
@@ -85,7 +86,7 @@ USER $NB_USER
 # ------------------------------------ #
 FROM base AS student_exam
 
-LABEL org.opencontainers.image.title ="e2xgrader-notebook:student_exam"
+LABEL org.opencontainers.image.title="e2xgrader-notebook:student_exam"
 LABEL org.opencontainers.image.description="The student exam mode of the e2xgrader notebook image, configured with specific settings and requirements for students in exam mode. e2xgrader is activated in student_exam mode. This mode includes additional configurations for automatic backup of notebooks and custom JavaScript injection to enhance the exam experience."
 LABEL org.opencontainers.image.mode="student_exam"
 ENV E2XGRADER_MODE=student_exam
@@ -97,7 +98,7 @@ RUN pip install --no-cache-dir -r /tmp/student_exam_requirements.txt
 
 
 # Copy jupyter_backup_config.py to configure automatic backup of notebooks for student_exam mode
-COPY configs/exam/jupyter_backup_config.py /etc/jupyter/jupyter_backup_config.py
+COPY student_exam/jupyter_backup_config.py /etc/jupyter/jupyter_backup_config.py
 USER root
 RUN echo "Copying jupyter_backup_config.py for student_exam mode as root" && \
     chown root:"$NB_GID" /etc/jupyter/jupyter_backup_config.py && \
@@ -105,7 +106,7 @@ RUN echo "Copying jupyter_backup_config.py for student_exam mode as root" && \
  
 USER $NB_USER
 # Copy custom-preload.js to inject custom JavaScript into the notebook interface for student_exam mode
-COPY custom/custom-preload.js /tmp/custom-preload.js
+COPY student_exam/custom-preload.js /tmp/custom-preload.js
 
 RUN echo "Copying custom-preload.js for student_exam mode" && \
     mkdir -p "$JUPYTER_CONFIG_DIR"/custom/ && \
