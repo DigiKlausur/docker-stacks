@@ -138,9 +138,9 @@ jobs:
           context: images/e2xgrader-notebook
           push: ${{ inputs.push }}
           tags: ${{ steps.set_tags.outputs.tags }}
+          target: ${{ matrix.e2xgrader_mode }}
           build-args: |
             IMAGE_SOURCE=${{ inputs.base_image_name }}:${{ steps.extract_base_tag.outputs.first_base_tag }}
-            E2XGRADER_MODE=${{ matrix.e2xgrader_mode }}
             E2XGRADER_VERSION=${{ inputs.e2xgrader_version }}
             FROM_REPO=${{ inputs.e2xgrader_installation_source == 'github' }}
             E2XGRADER_BRANCH=${{ inputs.e2xgrader_branch }}
