@@ -8,14 +8,16 @@ This uses the environment variables:
 """
 
 import os
-from e2x_jupyter_backup import get_post_save_hook
-c = get_config() # noqa: F821
+c = get_config() # type: ignore # noqa: F821
 
 backup_enabled = os.getenv("E2X_BACKUP_ENABLED", "false").lower() in ("true", "1")
 
-if backup_enabled == "true":
+if backup_enabled:
     if os.getenv("E2X_BACKUP_DIR"):
         c.E2xBackupApp.backup_dir = os.getenv("E2X_BACKUP_DIR")
-    if os.getenv("E2X_BACKUP_MAX_FILES"):
-        c.E2xBackupApp.max_backup_files = int(os.getenv("E2X_BACKUP_MAX_FILES"))
-    c.FileContentsManager.post_save_hook = get_post_save_hook()
+    max_files_str = os.getenv("E2X_BACKUP_MAX_FILES")
+    if max_files_str:
+        try:
+            c.E2xBackupApp.max_backup_files = int(max_files_str)
+        except ValueError:
+            pass
