@@ -64,7 +64,7 @@ USER $NB_USER
 # ------------------------------------ #
 FROM base AS student
 
-LABEL org.opencontainers.image.title ="e2xgrader-notebook:student"
+LABEL org.opencontainers.image.title="e2xgrader-notebook:student"
 LABEL org.opencontainers.image.description="The student mode of the e2xgrader notebook image, configured with specific settings and requirements for students. e2xgrader is activated in student mode."
 LABEL org.opencontainers.image.mode="student"
 ENV E2XGRADER_MODE=student
@@ -125,7 +125,7 @@ USER $NB_USER
 # ------------------------------------ #
 FROM base AS teacher
 
-LABEL org.opencontainers.image.title ="e2xgrader-notebook:teacher"
+LABEL org.opencontainers.image.title="e2xgrader-notebook:teacher"
 LABEL org.opencontainers.image.description="The teacher mode of the e2xgrader notebook image, configured with specific settings and requirements for teachers. Tools to grade, author, and manage assignments are available in this mode. e2xgrader is activated in teacher mode. This mode includes additional tools for grading and assignment management, as well as the installation of wkhtmltopdf for generating feedback PDFs."
 LABEL org.opencontainers.image.mode="teacher"
 
