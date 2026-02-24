@@ -2,14 +2,11 @@
  * Custom preload script to prevent students in exam mode from opening an assignment
  * in multiple tabs or windows. If a notebook is already open in another tab or window,
  * an alert message will be shown and the current tab/window will be redirected to a blank page.
- * It does also prevent unintentional navigation to different pages via links or forwards- / back-buttons.
  */
 
 console.log("Custom preload script for exam mode loaded!");
 
 const ALERT_MESSAGE = 'This notebook is already open in another tab or window!\nGo there and save us all a lot of trouble!';
-
-window.addEventListener('beforeunload', event => event.preventDefault()); //catch unintentional navigation to different pages
 
 if (window.location.href.endsWith(".ipynb")) {
     initializeBroadcastChannel();
