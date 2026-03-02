@@ -1,36 +1,34 @@
 ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest
-FROM $IMAGE_SOURCE
 
+# ------------------------------------ #
+#   Base configuration for all modes   #
+# ------------------------------------ #
+FROM $IMAGE_SOURCE AS base
+ARG IMAGE_SOURCE
 ARG FROM_REPO=false
 ARG E2XGRADER_VERSION=""
 ARG E2XGRADER_BRANCH="main"
-ARG E2XGRADER_MODE="student"
 
-# Inherit from any image, then just install e2xgrader and activate a mode
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 LABEL org.opencontainers.image.title="e2xgrader-notebook"
-LABEL org.opencontainers.image.description="A Docker image for the e2xgrader notebook, designed to facilitate grading and managing assignments in Jupyter Notebooks, with support for different user modes including student, student_exam, and teacher."
+LABEL org.opencontainers.image.description="The base image for the e2xgrader notebook, with common configurations and e2xgrader installation, designed to be extended for different user modes including student, student_exam, and teacher."
 LABEL org.opencontainers.image.vendor="H-BRS"
 LABEL org.opencontainers.image.url="https://github.com/DigiKlausur/docker-stacks/"
 LABEL org.opencontainers.image.source="https://github.com/DigiKlausur/docker-stacks/images/e2xgrader-notebook"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.mode="$E2XGRADER_MODE"
+LABEL org.opencontainers.image.base.image="$IMAGE_SOURCE"
 
 ENV JUPYTER_CONFIG_DIR=/opt/conda/etc/jupyter
 
 USER root
 
-# ------------------------------------ #
-#   Base configuration for all modes   #
-# ------------------------------------ #
-
 # Copy nbgrader base config
-COPY configs/base/nbgrader_config.py /etc/jupyter/nbgrader_config.py
+COPY base/nbgrader_config.py /etc/jupyter/nbgrader_config.py
 RUN chown root:"$NB_GID" /etc/jupyter/nbgrader_config.py &&\
     chmod g+rwX /etc/jupyter/nbgrader_config.py
 
 # Copy and append jupyter notebook config override
-COPY configs/base/jupyter_notebook_config_override.py /tmp/jupyter_notebook_config_override.py
+COPY base/jupyter_notebook_config_override.py /tmp/jupyter_notebook_config_override.py
 RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_notebook_config.py && \
     rm /tmp/jupyter_notebook_config_override.py && \
     chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
@@ -39,66 +37,11 @@ RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_noteboo
 USER $NB_USER
 
 # Install requirements shared between all modes
-RUN echo "Installing common requirements"
-COPY common_requirements.txt /tmp/common_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/common_requirements.txt && \
+RUN echo "Installing base requirements"
+COPY requirements/base.txt /tmp/base_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/base_requirements.txt && \
     python -m java_syntax_kernel.install --sys-prefix
 
-# Install mode specific requirements
-RUN echo "Installing requirements for ${E2XGRADER_MODE}"
-COPY ${E2XGRADER_MODE}_requirements.txt /tmp/mode_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/mode_requirements.txt
-
-# ------------------------------------ #
-#      Student Exam Configuration      #
-# ------------------------------------ #
-
-# Copy custom-preload.js if mode equals student_exam
-COPY custom/custom-preload.js /tmp/custom-preload.js
-# Copy jupyter_backup_config.py if mode equals student_exam
-COPY configs/exam/jupyter_backup_config.py /tmp/jupyter_backup_config.py
-
-USER root
-RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
-        echo "Copying jupyter_backup_config.py for student_exam mode as root"; \
-        cp /tmp/jupyter_backup_config.py /etc/jupyter/jupyter_backup_config.py && \
-        chown root:"$NB_GID" /etc/jupyter/jupyter_backup_config.py && \
-        chmod g+rwX /etc/jupyter/jupyter_backup_config.py; \
-    fi
-USER $NB_USER
-
-RUN if [ "$E2XGRADER_MODE" = "student_exam" ]; then \
-        echo "Copying custom-preload.js for student_exam mode"; \
-        mkdir -p "$JUPYTER_CONFIG_DIR"/custom/; \
-        cp /tmp/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/; \        
-    fi
-    
-# ------------------------------------ #
-#        Teacher Configuration         #
-# ------------------------------------ #
-USER root
-# If teacher mode is activated install wkhtmltopdf, needed for feedback PDFs
-RUN if [ "$E2XGRADER_MODE" = "teacher" ]; then \
-        echo "Installing wkhtmltopdf for teacher mode"; \
-        apt-get update \ 
-        && apt-get install -y wkhtmltopdf \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/*; \
-    fi
-
-# Clean up temporary files
-RUN rm -rf /tmp/*.txt /tmp/*.js /tmp/*.py
-
-USER $NB_USER
-
-RUN if [ "$E2XGRADER_MODE" = "teacher" ]; then \
-    echo "Enabling the nbdime git extension for teacher mode"; \
-    nbdime config-git --enable --global; \
-    fi
-
-# ------------------------------------ #
-#          E2xGrader Install           #
-# ------------------------------------ #
 # Install e2xgrader
 RUN if [ "$FROM_REPO" = "false" ] && [ -z "$E2XGRADER_VERSION" ]; then \
         echo "Installing e2xgrader from default source..."; \
@@ -109,6 +52,112 @@ RUN if [ "$FROM_REPO" = "false" ] && [ -z "$E2XGRADER_VERSION" ]; then \
     elif [ "$FROM_REPO" = "true" ]; then \
         echo "Installing e2xgrader from GitHub repository: https://github.com/DigiKlausur/e2xgrader.git@$E2XGRADER_BRANCH"; \
         pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@"${E2XGRADER_BRANCH}"; \
-    fi && \
-    e2xgrader activate "$E2XGRADER_MODE" --sys-prefix
+    fi
 
+USER root
+RUN rm -rf /tmp/base_requirements.txt
+
+USER $NB_USER
+
+# ------------------------------------ #
+#        Student configuration         #
+# ------------------------------------ #
+FROM base AS student
+
+LABEL org.opencontainers.image.title="e2xgrader-notebook:student"
+LABEL org.opencontainers.image.description="The student mode of the e2xgrader notebook image, configured with specific settings and requirements for students. e2xgrader is activated in student mode."
+LABEL org.opencontainers.image.mode="student"
+ENV E2XGRADER_MODE=student
+
+# Install requirements specific to student mode
+RUN echo "Installing requirements for student mode"
+COPY requirements/student.txt /tmp/student_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/student_requirements.txt
+
+RUN e2xgrader activate student --sys-prefix
+
+USER root
+RUN rm -rf /tmp/student_requirements.txt
+
+USER $NB_USER
+
+# ------------------------------------ #
+#      Student Exam configuration      #
+# ------------------------------------ #
+FROM base AS student_exam
+
+LABEL org.opencontainers.image.title="e2xgrader-notebook:student_exam"
+LABEL org.opencontainers.image.description="The student exam mode of the e2xgrader notebook image, configured with specific settings and requirements for students in exam mode. e2xgrader is activated in student_exam mode. This mode includes additional configurations for automatic backup of notebooks and custom JavaScript injection to enhance the exam experience."
+LABEL org.opencontainers.image.mode="student_exam"
+ENV E2XGRADER_MODE=student_exam
+
+# Install requirements specific to student_exam mode
+RUN echo "Installing requirements for student_exam mode"
+COPY requirements/student_exam.txt /tmp/student_exam_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/student_exam_requirements.txt
+
+
+# Copy jupyter_backup_config.py to configure automatic backup of notebooks for student_exam mode
+COPY student_exam/jupyter_backup_config.py /etc/jupyter/jupyter_backup_config.py
+USER root
+RUN echo "Copying jupyter_backup_config.py for student_exam mode as root" && \
+    chown root:"$NB_GID" /etc/jupyter/jupyter_backup_config.py && \
+    chmod g+rwX /etc/jupyter/jupyter_backup_config.py
+ 
+USER $NB_USER
+# Copy custom-preload.js to inject custom JavaScript into the notebook interface for student_exam mode
+COPY student_exam/custom-preload.js /tmp/custom-preload.js
+
+RUN echo "Copying custom-preload.js for student_exam mode" && \
+    mkdir -p "$JUPYTER_CONFIG_DIR"/custom/ && \
+    cp /tmp/custom-preload.js "$JUPYTER_CONFIG_DIR"/custom/
+    
+RUN e2xgrader activate student_exam --sys-prefix
+
+USER root
+# Copy and append student_exam jupyter notebook config override
+COPY student_exam/jupyter_notebook_config_override.py /tmp/jupyter_notebook_config_override.py
+RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_notebook_config.py && \
+    rm /tmp/jupyter_notebook_config_override.py && \
+    chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
+    chmod g+rwX /etc/jupyter/jupyter_notebook_config.py
+
+RUN rm -rf /tmp/student_exam_requirements.txt && \
+    rm /tmp/custom-preload.js
+
+USER $NB_USER
+
+# ------------------------------------ #
+#        Teacher configuration         #
+# ------------------------------------ #
+FROM base AS teacher
+
+LABEL org.opencontainers.image.title="e2xgrader-notebook:teacher"
+LABEL org.opencontainers.image.description="The teacher mode of the e2xgrader notebook image, configured with specific settings and requirements for teachers. Tools to grade, author, and manage assignments are available in this mode. e2xgrader is activated in teacher mode. This mode includes additional tools for grading and assignment management, as well as the installation of wkhtmltopdf for generating feedback PDFs."
+LABEL org.opencontainers.image.mode="teacher"
+
+ENV E2XGRADER_MODE=teacher
+
+USER root
+
+# Install wkhtmltopdf, needed for feedback PDFs
+RUN echo "Installing wkhtmltopdf for teacher mode" && \
+    apt-get update && \ 
+    apt-get install -y wkhtmltopdf && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*    
+
+USER $NB_USER
+
+# Install requirements specific to teacher mode and enable nbdime git extension
+RUN echo "Installing requirements for teacher mode"
+COPY requirements/teacher.txt /tmp/teacher_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/teacher_requirements.txt && \
+    nbdime config-git --enable --global
+
+RUN e2xgrader activate teacher --sys-prefix
+
+USER root
+RUN rm -rf /tmp/teacher_requirements.txt
+
+USER $NB_USER
