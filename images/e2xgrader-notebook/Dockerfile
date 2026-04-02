@@ -6,7 +6,7 @@ ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest
 FROM $IMAGE_SOURCE AS base
 ARG IMAGE_SOURCE
 ARG FROM_REPO=false
-ARG E2XGRADER_VERSION=""
+ARG E2XGRADER_VERSION="0.3.4"
 ARG E2XGRADER_BRANCH="main"
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
