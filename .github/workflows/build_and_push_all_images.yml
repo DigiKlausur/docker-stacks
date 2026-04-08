@@ -375,8 +375,8 @@ jobs:
     with:
       force_build: ${{ inputs.force_build }}
       registry: ${{ inputs.registry }}
-      base_image_name: jupyter/minimal-notebook
-      base_image_tag: notebook-6.5.3
+      base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
+      base_image_tag: ${{ inputs.tag }}    
       image_path: images/bidata-notebook
       image_name: bidata-notebook
       image_tag: ${{ inputs.tag }}
