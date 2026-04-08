@@ -1,0 +1,10 @@
+matplotlib
+seaborn
+scikit-learn
+missingno
+streamlit
+dbt-core
+dbt-duckdb
+prefect
+ydata-profiling>=4.16.1
+ipykernel
