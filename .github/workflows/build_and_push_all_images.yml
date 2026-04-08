@@ -371,6 +371,7 @@ jobs:
     secrets: inherit
 
   bidata_notebook:
+    needs: [minimal_notebook]
     uses: ./.github/workflows/build_image.yml
     with:
       force_build: ${{ inputs.force_build }}
