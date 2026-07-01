@@ -133,7 +133,7 @@ jobs:
       - name: Build Docker image
         if: ${{ inputs.force_build || (steps.changes.outputs.image_changed == 'true' || steps.changes.outputs.workflow_changed == 'true') }}
         id: build_image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7.2.0
         with:
           context: images/e2xgrader-notebook
           push: ${{ inputs.push }}
