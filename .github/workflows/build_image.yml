@@ -60,13 +60,13 @@ jobs:
       did_build_image: ${{ steps.set_output.outputs.image_built }}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Print the base image
         run: |
           echo "The base image to build from is ${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}"
       - name: Check if files changed
         if: ${{ ! inputs.force_build }}
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: changes
         with:
           filters: |
@@ -75,14 +75,14 @@ jobs:
           base: ${{ github.ref }}
       - name: Login to ghcr.io
         if: ${{ inputs.registry == 'ghcr.io' }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GH_TOKEN }}
       - name: Login to Quay Container Registry
         if: ${{ inputs.registry == 'quay.io' }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.2.0
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
@@ -107,7 +107,7 @@ jobs:
       - name: Build Docker image
         if: ${{ inputs.force_build || steps.changes.outputs.image_changed == 'true' }}
         id: build_image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7.2.0
         with:
           context: ${{ inputs.image_path }}
           push: ${{ inputs.push }}
