@@ -60,7 +60,7 @@ jobs:
       did_build_image: ${{ steps.set_output.outputs.image_built }}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Print the base image
         run: |
           echo "The base image to build from is ${{ inputs.base_image_name }}:${{ inputs.base_image_tag }}"
