@@ -6,6 +6,8 @@ ipywidgets
 matplotlib
 missingno
 mlxtend
+openpyxl
+pandas
 prefect
 scikit-learn
 seaborn
