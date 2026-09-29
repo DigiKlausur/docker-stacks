@@ -1,4 +1,8 @@
 ARG IMAGE_SOURCE=jupyterhub/k8s-hub:4.1.0
+ARG NODE_IMAGE=node:24-bookworm-slim
+
+FROM $NODE_IMAGE AS node
+
 FROM $IMAGE_SOURCE
 
 LABEL maintainer="DigiKlausur (E2x) project HBRS <e2x@h-brs.de>"
@@ -11,15 +15,20 @@ ARG NB_USER=jovyan \
 
 USER root
 
+# Modern Node.js (needed to build frontend assets of some packages)
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -sf /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx && \
+    ln -sf /usr/local/lib/node_modules/corepack/dist/corepack.js /usr/local/bin/corepack && \
+    node --version && npm --version
+
 RUN pip install --no-cache-dir pandas && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-nativeauth.git@v0.1.0-dev3 && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/miaauth.git@main && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xhub.git@main && \
     pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-exam-hub.git@v0.1.0-dev1 && \
-    curl -L -o /tmp/e2x_course_service-0.1.1rc0-py3-none-any.whl https://github.com/DigiKlausur/e2x-course-service/releases/download/v0.1.1rc0/e2x_course_service-0.1.1rc0-py3-none-any.whl && \
-    curl -L -o /tmp/e2x_course_hub-0.1.0-py3-none-any.whl https://github.com/DigiKlausur/e2x-course-hub/releases/download/v0.1.0/e2x_course_hub-0.1.0-py3-none-any.whl && \
-    pip install --no-cache-dir /tmp/e2x_course_service-0.1.1rc0-py3-none-any.whl && \
-    pip install --no-cache-dir /tmp/e2x_course_hub-0.1.0-py3-none-any.whl && \
-    rm /tmp/e2x_course_service-0.1.1rc0-py3-none-any.whl
+    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-course-hub.git@v0.2.0-dev && \
+    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-course-hub-kubespawner.git@main
 
 USER ${NB_USER}
