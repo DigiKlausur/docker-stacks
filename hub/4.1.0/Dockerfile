@@ -12,12 +12,13 @@ ARG NB_USER=jovyan \
 
 USER root
 
-RUN pip install --no-cache-dir pandas && \
-    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-nativeauth.git@v0.1.0-dev3 && \
-    pip install --no-cache-dir git+https://github.com/DigiKlausur/miaauth.git@main && \
-    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xhub.git@main && \
-    pip install --no-cache-dir git+https://github.com/DigiKlausur/e2x-exam-hub.git@v0.1.0-dev1 && \
-    pip install e2x-course-hub && \
-    pip install e2x-course-hub-kubespawner
+COPY requirements.txt /tmp/requirements.txt
+
+RUN apt update && \
+    apt install --only-upgrade ca-certificates && \
+    update-ca-certificates && \
+    python -m pip install --upgrade pip && \
+    pip install --no-cache-dir -r /tmp/requirements.txt && \
+    rm /tmp/requirements.txt
 
 USER ${NB_USER}
