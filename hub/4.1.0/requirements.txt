@@ -1,0 +1,7 @@
+pandas >= 3.0.0
+e2x-nativeauth @ git+https://github.com/DigiKlausur/e2x-nativeauth.git@v0.1.0-dev3
+miaauth @ git+https://github.com/DigiKlausur/miaauth.git@main
+e2xhub @ git+https://github.com/DigiKlausur/e2xhub.git@main
+e2x-exam-hub @ git+https://github.com/DigiKlausur/e2x-exam-hub.git@v0.1.0-dev1
+e2x-course-hub >= 0.2.0
+e2x-course-hub-kubespawner >= 0.1.1
