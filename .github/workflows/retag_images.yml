@@ -1,0 +1,61 @@
+# Give every image another tag in every registry, e.g. latest → summer-2026,
+# to pin a semester or an exam period. Runs in seconds: tags are written in
+# the registry (docker buildx imagetools), nothing is pulled or pushed.
+#
+# All or nothing: the script first checks that every source exists and that no
+# target exists yet (unless overwrite is ticked), and only then writes tags.
+name: Retag all images
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_tag:
+        description: >-
+          Existing tag. A per-commit tag (sha-abc1234) gives a guaranteed
+          consistent set; `latest` can be mixed if a master build is running.
+        type: string
+        default: latest
+      to_tag:
+        description: New fixed tag, e.g. summer-2026 (not latest, dev, a date or sha-…)
+        type: string
+        required: true
+      overwrite:
+        description: Replace the new tag where it already exists
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  retag:
+    name: ${{ inputs.from_tag }} → ${{ inputs.to_tag }}
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Login to quay.io
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_SECRET }}
+
+      - name: Retag
+        # Inputs reach the shell as environment variables (see _build_image.yml).
+        env:
+          FROM_TAG: ${{ inputs.from_tag }}
+          TO_TAG: ${{ inputs.to_tag }}
+          OVERWRITE_FLAG: ${{ inputs.overwrite && '--overwrite' || '' }}
+        # $OVERWRITE_FLAG is unquoted on purpose: when empty it must vanish.
+        run: >-
+          python3 scripts/image_builder retag
+          --from "$FROM_TAG" --to "$TO_TAG" $OVERWRITE_FLAG
