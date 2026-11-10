@@ -41,6 +41,16 @@ def test_e2x_variants_get_their_own_job(generated):
     assert "needs: [plan, base-nb]" in job(generated, "base-nb-exam")
 
 
+def test_tag_job_waits_for_every_build_and_only_runs_when_pushing(generated):
+    tag = job(generated, "tag")  # up to its first blank line: needs and if
+    needs_block = tag.split("needs:\n")[1].split("\n    if:")[0]
+    needs = [line.removeprefix("      - ") for line in needs_block.splitlines()]
+
+    assert needs == ["plan", "base-nb", "base-nb-exam", "base-nb-student", "child-nb"]
+    assert "if: ${{ !cancelled() && !failure() && inputs.push }}" in tag
+    assert 'complete-tags --plan "$PLAN"' in generated
+
+
 def test_reserved_job_names_are_rejected():
     images = {"plan": {"base": "x:1"}}
     with pytest.raises(GenerateError, match="reserved"):

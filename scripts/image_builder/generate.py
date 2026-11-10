@@ -20,7 +20,8 @@ WORKFLOW_HEADER = """\
 # DO NOT EDIT: change notebooks.toml or scripts/image_builder/generate.py instead.
 #
 # Builds the images selected by `image_builder plan`, one job per image, in
-# tree order. Called by docker_dev.yml, docker_main.yml and
+# tree order. When pushing, the final `tag` job gives the images that weren't
+# rebuilt this run's tags. Called by docker_dev.yml, docker_main.yml and
 # trigger_build_and_push.yml.
 name: Build all images
 
@@ -102,6 +103,40 @@ JOB_TEMPLATE = """
 """
 
 
+# Runs after every image job: gives the images this run didn't rebuild the
+# run's tags, so per-day and per-commit tags cover the whole image set.
+# `!failure()`: if any build failed, no half-built set is labelled as complete.
+TAG_JOB_TEMPLATE = """
+  tag:
+    needs:
+__NEEDS__
+    if: ${{ !cancelled() && !failure() && inputs.push }}
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Login to quay.io
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_SECRET }}
+
+      - name: Complete tag sets
+        env:
+          PLAN: ${{ needs.plan.outputs.plan }}
+        run: python3 scripts/image_builder complete-tags --plan "$PLAN"
+"""
+
+
 class GenerateError(Exception):
     """Raised when a file can't be generated, e.g. missing README markers."""
 
@@ -111,8 +146,9 @@ def workflow(manifest: Manifest) -> str:
     if reserved:
         raise GenerateError(f"image name(s) reserved for workflow jobs: {reserved}")
 
+    order = build_order(manifest.nodes)
     jobs = []
-    for name in build_order(manifest.nodes):
+    for name in order:
         parent = manifest.nodes[name].parent
         needs = "plan" if parent is None else f"plan, {parent}"
         jobs.append(
@@ -120,6 +156,8 @@ def workflow(manifest: Manifest) -> str:
             .replace("__NEEDS__", needs)
             .replace("__IMAGE__", name)
         )
+    tag_needs = "\n".join(f"      - {name}" for name in ["plan", *order])
+    jobs.append(TAG_JOB_TEMPLATE.replace("__NEEDS__", tag_needs))
     return WORKFLOW_HEADER + "".join(jobs)
 
 
