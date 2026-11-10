@@ -2,7 +2,8 @@
 # DO NOT EDIT: change notebooks.toml or scripts/image_builder/generate.py instead.
 #
 # Builds the images selected by `image_builder plan`, one job per image, in
-# tree order. Called by docker_dev.yml, docker_main.yml and
+# tree order. When pushing, the final `tag` job gives the images that weren't
+# rebuilt this run's tags. Called by docker_dev.yml, docker_main.yml and
 # trigger_build_and_push.yml.
 name: Build all images
 
@@ -549,3 +550,80 @@ jobs:
       plan: ${{ needs.plan.outputs.plan }}
       push: ${{ inputs.push }}
     secrets: inherit
+
+  tag:
+    needs:
+      - plan
+      - bi-notebook
+      - bi-notebook-exam
+      - bi-notebook-student
+      - bi-notebook-teacher
+      - minimal-notebook
+      - bidata-notebook
+      - bidata-notebook-exam
+      - bidata-notebook-student
+      - bidata-notebook-teacher
+      - datascience-notebook
+      - datascience-notebook-code
+      - datascience-notebook-code-exam
+      - datascience-notebook-code-student
+      - datascience-notebook-code-teacher
+      - datascience-notebook-exam
+      - datascience-notebook-student
+      - datascience-notebook-teacher
+      - ml-notebook
+      - ml-notebook-exam
+      - ml-notebook-student
+      - ml-notebook-teacher
+      - nlp-notebook
+      - nlp-notebook-exam
+      - nlp-notebook-student
+      - nlp-notebook-teacher
+      - sql-notebook
+      - sql-notebook-exam
+      - sql-notebook-student
+      - sql-notebook-teacher
+      - tf-notebook
+      - tf-notebook-exam
+      - tf-notebook-student
+      - tf-notebook-teacher
+      - wus-notebook
+      - wus-notebook-exam
+      - wus-notebook-student
+      - wus-notebook-teacher
+      - desktop-notebook
+      - dbmain-notebook
+      - dbmain-notebook-exam
+      - dbmain-notebook-student
+      - dbmain-notebook-teacher
+      - java-notebook
+      - java-notebook-exam
+      - java-notebook-student
+      - java-notebook-teacher
+      - minimal-notebook-exam
+      - minimal-notebook-student
+      - minimal-notebook-teacher
+    if: ${{ !cancelled() && !failure() && inputs.push }}
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Login to quay.io
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_SECRET }}
+
+      - name: Complete tag sets
+        env:
+          PLAN: ${{ needs.plan.outputs.plan }}
+        run: python3 scripts/image_builder complete-tags --plan "$PLAN"
