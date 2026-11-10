@@ -51,7 +51,7 @@ def local_run(
 
 def ci_run(manifest: Manifest, image: str, plan_json: str, push: bool) -> Run:
     """One node, with tags and parents taken from the plan job's JSON."""
-    summary = _parse_plan(plan_json)
+    summary = parse_plan(plan_json)
     if image not in manifest.nodes:
         raise BuildError(f"unknown image '{image}'")
     if image not in summary["images"]:
@@ -151,7 +151,8 @@ def parse_build_args(pairs: list[str]) -> dict[str, str]:
     return result
 
 
-def _parse_plan(plan_json: str) -> dict:
+def parse_plan(plan_json: str) -> dict:
+    """Read the JSON printed by `plan`; only plans of tag sets that can push."""
     try:
         summary = json.loads(plan_json)
     except json.JSONDecodeError as error:

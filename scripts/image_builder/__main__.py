@@ -83,6 +83,8 @@ def main(argv: list[str] | None = None) -> int:
             return _generate(loaded, check=args.check)
         elif args.command == "retag":
             return _retag(loaded, args)
+        elif args.command == "complete-tags":
+            return _complete_tags(loaded, args)
     except (
         manifest.ManifestError,
         repo.RepoError,
@@ -146,14 +148,39 @@ def _generate(loaded: manifest.Manifest, check: bool) -> int:
 def _retag(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
     retag.check_tags(loaded, args.from_tag, args.to_tags)
     pairs = retag.pairs(loaded, args.from_tag, args.to_tags)
+    return _write_tags(
+        pairs,
+        overwrite=args.overwrite,
+        dry_run=args.dry_run,
+        rerun_hint="fix it and rerun with --overwrite",
+    )
 
-    if args.dry_run:
+
+def _complete_tags(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
+    summary = build.parse_plan(args.plan)
+    if not summary["images"]:
+        print("nothing was built in this run, so no tags to complete", file=sys.stderr)
+        return 0
+    pairs = retag.completion_pairs(loaded, summary)
+    if not pairs:
+        print("every image was rebuilt, so no tags to complete", file=sys.stderr)
+        return 0
+    # Overwriting is expected here: a later run on the same day moves the date tag.
+    return _write_tags(
+        pairs, overwrite=True, dry_run=args.dry_run, rerun_hint="rerun the workflow"
+    )
+
+
+def _write_tags(
+    pairs: list[tuple[str, list[str]]], overwrite: bool, dry_run: bool, rerun_hint: str
+) -> int:
+    if dry_run:
         for source, targets in pairs:
             print(shlex.join(retag.create_command(source, targets)))
         return 0
 
     # All or nothing: find every problem before writing a single tag.
-    problems = _preflight(pairs, overwrite=args.overwrite)
+    problems = _preflight(pairs, overwrite=overwrite)
     if problems:
         for problem in problems:
             print(f"error: {problem}", file=sys.stderr)
@@ -166,8 +193,8 @@ def _retag(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
         returncode = subprocess.run(cmd, check=False).returncode
         if returncode != 0:
             print(
-                f"error: retagging {source} failed after {index - 1} of {len(pairs)} "
-                "images; fix it and rerun with --overwrite",
+                f"error: tagging {source} failed after {index - 1} of {len(pairs)} "
+                f"images; {rerun_hint}",
                 file=sys.stderr,
             )
             return returncode
@@ -378,6 +405,23 @@ def _make_parser() -> argparse.ArgumentParser:
         help="allow replacing a target tag that already exists",
     )
     retag_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="only print the commands (no registry access)",
+    )
+
+    complete_parser = commands.add_parser(
+        "complete-tags",
+        help="CI: give the images a run didn't rebuild that run's tags",
+        description="After a pushing CI run, tag every image that wasn't rebuilt "
+        "(still at the tag set's parent_tag, e.g. dev) with the run's other tags "
+        "(e.g. dev-2026-11-10, dev-sha-abc1234), so they cover the whole image set. "
+        "Does nothing if the run built nothing.",
+    )
+    complete_parser.add_argument(
+        "--plan", required=True, metavar="JSON", help="the JSON printed by `plan`"
+    )
+    complete_parser.add_argument(
         "--dry-run",
         action="store_true",
         help="only print the commands (no registry access)",

@@ -36,16 +36,37 @@ def check_tags(manifest: Manifest, from_tag: str, to_tags: list[str]) -> None:
 
 
 def pairs(
-    manifest: Manifest, from_tag: str, to_tags: list[str]
+    manifest: Manifest,
+    from_tag: str,
+    to_tags: list[str],
+    only: list[str] | None = None,
 ) -> list[tuple[str, list[str]]]:
-    """(source, targets) for every enabled node × registry, in build order."""
+    """(source, targets) for every enabled node (or `only` these) × registry."""
+    names = build_order(manifest.nodes) if only is None else only
     result = []
-    for name in build_order(manifest.nodes):
+    for name in names:
         for host in manifest.registry.hosts:
             source = image_ref(manifest, name, from_tag, host)
             targets = [image_ref(manifest, name, tag, host) for tag in to_tags]
             result.append((source, targets))
     return result
+
+
+def completion_pairs(manifest: Manifest, summary: dict) -> list[tuple[str, list[str]]]:
+    """After a pushing run: give every image that wasn't rebuilt the run's new tags.
+
+    Images that weren't rebuilt still carry the tag set's parent_tag (e.g. `dev`).
+    They get every other tag of the run (`dev-2026-11-10`, `dev-sha-abc1234`), so
+    those tags cover the whole image set. A run that built nothing adds no tags.
+    """
+    if not summary["images"]:
+        return []
+    rebuilt = set(summary["images"])
+    not_rebuilt = [name for name in build_order(manifest.nodes) if name not in rebuilt]
+    new_tags = [tag for tag in summary["tags"] if tag != summary["parent_tag"]]
+    if not new_tags:
+        return []
+    return pairs(manifest, summary["parent_tag"], new_tags, only=not_rebuilt)
 
 
 def create_command(source: str, targets: list[str]) -> list[str]:
