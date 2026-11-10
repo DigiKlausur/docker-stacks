@@ -23,7 +23,7 @@ def test_pairs_cover_every_node_in_every_registry(small_manifest):
 
 def test_create_command():
     assert create_command("r/a:latest", ["r/a:x", "r/a:y"]) == [
-        "docker", "buildx", "imagetools", "create",
+        "docker", "buildx", "imagetools", "create", "--prefer-index=false",
         "--tag", "r/a:x", "--tag", "r/a:y",
         "r/a:latest",
     ]  # fmt: skip
