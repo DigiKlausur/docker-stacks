@@ -1,37 +1,26 @@
-name: Build and push dev images to ghcr.io and quay.io
+# Builds what changed on dev and pushes it to every registry with the dev tags.
+# No `paths:` filter on purpose: `image_builder plan` decides what to build
+# (a push with nothing relevant builds nothing).
+name: Build and push dev images
 
 on:
   push:
     branches:
       - dev
-    paths:
-      - .github/workflows/docker_dev.yml
-      - .github/workflows/build_and_push_all_images.yml
-      - .github/workflows/build_e2xgrader_images.yml
-      - .github/workflows/build_image.yml
-      - notebooks/**
+
+# One run per tag set at a time, so an older run can't finish last and move
+# `dev` back to its images. A newer queued run replaces an older queued one.
+concurrency:
+  group: build-images-dev
+  cancel-in-progress: false
 
 jobs:
-  
-  build_and_push_to_ghcr:
-    name: ghcr.io
-    uses: ./.github/workflows/build_and_push_all_images.yml
+  build:
+    uses: ./.github/workflows/build_all_images.yml
     with:
-      force_build: false
+      tag_set: dev
+      # No fallback: if this ref is unknown (e.g. after a force push), the plan
+      # fails visibly. Fix it with a manual run without `since`.
+      since: ${{ github.event.before }}
       push: true
-      registry: ghcr.io
-      tag: dev
-      e2xgrader_installation_source: pypi
     secrets: inherit
-
-  build_and_push_to_quay:
-    name: quay.io
-    uses: ./.github/workflows/build_and_push_all_images.yml
-    with:
-      force_build: false
-      push: true
-      registry: quay.io
-      tag: dev
-      e2xgrader_installation_source: pypi
-    secrets: inherit
-            
