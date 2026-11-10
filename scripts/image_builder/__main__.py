@@ -36,6 +36,8 @@ examples:
       build one image locally (parent comes from the registry)
   python scripts/image_builder build datascience-notebook --with-dependents
       build an image and everything below it, each on its local parent
+  python scripts/image_builder build --all --dry-run
+      print the commands for building every image
   python scripts/image_builder build ml-notebook --dry-run
       only print the docker command
   python scripts/image_builder plan --tag-set dev --since origin/dev
@@ -83,17 +85,24 @@ def _plan(loaded: manifest.Manifest, args: argparse.Namespace) -> dict:
     return plan.summary(loaded.tag_sets[args.tag_set], images, repo.short_sha(REPO_ROOT), now)
 
 
-def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
-    node = loaded.nodes.get(args.image)
-    if node is None:
+def _build_selection(loaded: manifest.Manifest, args: argparse.Namespace) -> set[str]:
+    """The nodes `build` should build: everything, or one image (plus what's below it)."""
+    if args.all:
+        return set(loaded.nodes)
+    if args.image not in loaded.nodes:
         raise build.BuildError(f"unknown image '{args.image}' (see `python scripts/image_builder tree`)")
+    selected = {args.image}
+    if args.with_dependents:
+        selected |= plan.descendants(loaded.nodes, selected)
+    return selected
+
+
+def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
+    selected = _build_selection(loaded, args)
 
     tag_set = loaded.tag_sets.get(LOCAL_TAG_SET)
     if tag_set is None:
         raise build.BuildError(f"notebooks.toml needs a [tag_sets.{LOCAL_TAG_SET}] for local builds")
-    selected = {node.name}
-    if args.with_dependents:
-        selected |= plan.descendants(loaded.nodes, selected)
     names = plan.in_build_order(loaded.nodes, selected)
 
     now = datetime.now(timezone.utc)
@@ -166,7 +175,9 @@ def _make_parser() -> argparse.ArgumentParser:
         "A parent built in the same call is used as ':local'; any other parent is pulled from "
         "the registry (tag 'latest'). Results are tagged ':local' and never pushed.",
     )
-    build_parser.add_argument("image", help="image name, e.g. ml-notebook or ml-notebook-student (see `tree`)")
+    what = build_parser.add_mutually_exclusive_group(required=True)
+    what.add_argument("image", nargs="?", help="image name, e.g. ml-notebook or ml-notebook-student (see `tree`)")
+    what.add_argument("--all", action="store_true", help="build every image, in build order")
     build_parser.add_argument(
         "--with-dependents",
         action="store_true",

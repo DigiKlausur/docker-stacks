@@ -69,7 +69,13 @@ python scripts/image_builder build ml-notebook
 # e2xgrader variants are images of their own
 python scripts/image_builder build ml-notebook-student
 
-# Only print the docker command
+# An image and everything below it, each on its fresh :local parent
+python scripts/image_builder build datascience-notebook --with-dependents
+
+# Every image, in build order
+python scripts/image_builder build --all
+
+# Only print the docker command(s)
 python scripts/image_builder build ml-notebook --dry-run
 
 # Try another e2xgrader version
@@ -79,8 +85,8 @@ python scripts/image_builder build ml-notebook-student --build-arg E2XGRADER_VER
 python scripts/image_builder plan --tag-set dev --since origin/dev
 ```
 
-- A local build pulls the image's parent from the registry (tag `latest`) and tags the result `:local`.
-  Local builds are never pushed.
+- Results are tagged `:local` and never pushed. A parent built in the same call is used as `:local`;
+  any other parent is pulled from the registry (tag `latest`).
 - To add an image, create `notebooks/images/<name>/` and add an `[images.<name>]` entry to
   `notebooks.toml`. Run `python scripts/image_builder tree` to check it.
 - Tests: `pip install pytest`, then `python -m pytest`.
