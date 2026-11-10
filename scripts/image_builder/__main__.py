@@ -21,7 +21,6 @@ import build
 import manifest
 import plan
 import repo
-import tags
 import tree
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -44,6 +43,9 @@ examples:
       what CI would build for the changes on your branch
   python scripts/image_builder plan --tag-set master --all
       plan a full rebuild
+  python scripts/image_builder build ml-notebook --dry-run \\
+      --plan "$(python scripts/image_builder plan --tag-set dev --all)"
+      what CI would run for one image
   python scripts/image_builder <command> -h
       help for a single command
 """
@@ -105,33 +107,39 @@ def _build_selection(loaded: manifest.Manifest, args: argparse.Namespace) -> set
     return selected
 
 
-def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
-    selected = _build_selection(loaded, args)
-
+def _local_tag_set(loaded: manifest.Manifest) -> manifest.TagSet:
     tag_set = loaded.tag_sets.get(LOCAL_TAG_SET)
     if tag_set is None:
         raise build.BuildError(
             f"notebooks.toml needs a [tag_sets.{LOCAL_TAG_SET}] for local builds"
         )
-    names = plan.in_build_order(loaded.nodes, selected)
+    return tag_set
 
+
+def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
     now = datetime.now(UTC)
-    resolved_tags = tags.resolve(tag_set, repo.short_sha(REPO_ROOT), now)
+    if args.plan is not None:
+        if args.image is None or args.with_dependents:
+            raise build.BuildError(
+                "--plan builds exactly one image (no --all or --with-dependents)"
+            )
+        run = build.ci_run(loaded, args.image, args.plan, push=args.push)
+    else:
+        if args.push:
+            raise build.BuildError("--push needs --plan: pushing only happens in CI")
+        run = build.local_run(
+            loaded,
+            _build_selection(loaded, args),
+            _local_tag_set(loaded),
+            repo.short_sha(REPO_ROOT),
+            now,
+        )
+
     labels = build.oci_labels(repo.full_sha(REPO_ROOT), now)
     build_args = build.parse_build_args(args.build_arg)
     commands = {
-        name: build.command(
-            loaded,
-            loaded.nodes[name],
-            tags=resolved_tags,
-            # Children build on their parent's fresh :local image.
-            parent_tag=build.parent_tag(
-                loaded.nodes[name], selected, resolved_tags[0], tag_set.parent_tag
-            ),
-            labels=labels,
-            build_args=build_args,
-        )
-        for name in names
+        name: build.command(loaded, loaded.nodes[name], run, labels, build_args)
+        for name in run.names
     }
 
     if args.dry_run:
@@ -191,10 +199,12 @@ def _make_parser() -> argparse.ArgumentParser:
 
     build_parser = commands.add_parser(
         "build",
-        help="build images locally (tagged :local, never pushed)",
+        help="build images (locally, or in CI with --plan)",
         description="Build an image on your machine, optionally with everything below it. "
         "A parent built in the same call is used as ':local'; any other parent is pulled from "
-        "the registry (tag 'latest'). Results are tagged ':local' and never pushed.",
+        "the registry (tag 'latest'). Results are tagged ':local' and never pushed. "
+        "In CI, --plan takes the JSON printed by `plan`: one image, with the plan's tags, "
+        "pushed to every registry with --push.",
     )
     what = build_parser.add_mutually_exclusive_group(required=True)
     what.add_argument(
@@ -219,6 +229,16 @@ def _make_parser() -> argparse.ArgumentParser:
     )
     build_parser.add_argument(
         "--dry-run", action="store_true", help="only print the docker command"
+    )
+    build_parser.add_argument(
+        "--plan",
+        metavar="JSON",
+        help="CI: the JSON printed by `plan`; tags and parents come from it",
+    )
+    build_parser.add_argument(
+        "--push",
+        action="store_true",
+        help="CI: push to every registry instead of loading locally (needs --plan)",
     )
     return parser
 
