@@ -37,15 +37,25 @@ class Run:
 
 
 def local_run(
-    manifest: Manifest, selected: set[str], tag_set: TagSet, sha: str, now: datetime
+    manifest: Manifest,
+    selected: set[str],
+    tag_set: TagSet,
+    sha: str,
+    now: datetime,
+    parent_tag: str | None = None,
 ) -> Run:
+    """A local build. `parent_tag` replaces the tag set's parent_tag for parents
+    that aren't built in this call (e.g. `local`, or `dev-sha-abc1234` to
+    reproduce a CI build)."""
+    if parent_tag is not None and not tags.VALID_TAG.fullmatch(parent_tag):
+        raise BuildError(f"--parent-tag '{parent_tag}' is not a valid Docker tag")
     resolved = tags.resolve(tag_set, sha, now)
     return Run(
         names=in_build_order(manifest.nodes, selected),
         tags=resolved,
         in_run=selected,
         same_run_tag=resolved[0],  # children build on their parent's fresh :local
-        parent_tag=tag_set.parent_tag,
+        parent_tag=parent_tag or tag_set.parent_tag,
     )
 
 

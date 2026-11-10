@@ -86,6 +86,11 @@ python scripts/image_builder build datascience-notebook --with-dependents
 # Every image, in build order
 python scripts/image_builder build --all
 
+# Build on another parent tag instead of `latest`: your own local build,
+# or exactly the parent of a CI run (to reproduce a failure)
+python scripts/image_builder build minimal-notebook-exam --parent-tag local
+python scripts/image_builder build ml-notebook-exam --parent-tag dev-sha-a10dab6
+
 # Only print the docker command(s)
 python scripts/image_builder build ml-notebook --dry-run
 

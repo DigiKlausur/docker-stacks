@@ -40,6 +40,10 @@ examples:
       build one image locally (parent comes from the registry)
   python scripts/image_builder build datascience-notebook --with-dependents
       build an image and everything below it, each on its local parent
+  python scripts/image_builder build minimal-notebook-exam --parent-tag local
+      build on your locally built parent instead of the registry's 'latest'
+  python scripts/image_builder build ml-notebook-exam --parent-tag dev-sha-a10dab6
+      reproduce a CI build exactly (parent from that run)
   python scripts/image_builder build --all --dry-run
       print the commands for building every image
   python scripts/image_builder build ml-notebook --dry-run
@@ -249,6 +253,10 @@ def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
             raise build.BuildError(
                 "--plan builds exactly one image (no --all or --with-dependents)"
             )
+        if args.parent_tag is not None:
+            raise build.BuildError(
+                "--parent-tag is for local builds; with --plan the plan sets parents"
+            )
         run = build.ci_run(loaded, args.image, args.plan, push=args.push)
     else:
         if args.push:
@@ -259,6 +267,7 @@ def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
             _local_tag_set(loaded),
             repo.short_sha(REPO_ROOT),
             now,
+            parent_tag=args.parent_tag,
         )
 
     labels = build.oci_labels(repo.full_sha(REPO_ROOT), now)
@@ -359,6 +368,12 @@ def _make_parser() -> argparse.ArgumentParser:
         "--with-dependents",
         action="store_true",
         help="also build every image below it (incl. e2x variants), each on its fresh :local parent",
+    )
+    build_parser.add_argument(
+        "--parent-tag",
+        metavar="TAG",
+        help="tag of the parent to build on, instead of 'latest': e.g. 'local' for your "
+        "own build, or 'dev-sha-abc1234' to reproduce a CI build",
     )
     build_parser.add_argument(
         "--build-arg",

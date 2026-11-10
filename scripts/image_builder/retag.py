@@ -7,14 +7,9 @@ Pure: functions check names and return commands. __main__ runs the preflight
 (via registry.py) and then the commands.
 """
 
-import re
-
 import tags
 from build import image_ref
 from manifest import Manifest, build_order
-
-# Docker's rule for a tag name.
-VALID_TAG = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}")
 
 
 class RetagError(Exception):
@@ -24,7 +19,7 @@ class RetagError(Exception):
 def check_tags(manifest: Manifest, from_tag: str, to_tags: list[str]) -> None:
     """Fail before touching the registry if a tag name is invalid or forbidden."""
     for tag in [from_tag, *to_tags]:
-        if not VALID_TAG.fullmatch(tag):
+        if not tags.VALID_TAG.fullmatch(tag):
             raise RetagError(f"'{tag}' is not a valid Docker tag")
     for tag in to_tags:
         owner = _managing_tag_set(manifest, tag)

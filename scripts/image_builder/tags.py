@@ -10,6 +10,9 @@ from datetime import datetime, timezone
 
 from manifest import TagSet
 
+# Docker's rule for a tag name.
+VALID_TAG = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}")
+
 # What each placeholder turns into, as a regex (must match format_tag below).
 PLACEHOLDER_REGEX = {"date": r"\d{4}-\d{2}-\d{2}", "sha": r"[0-9a-f]{7,40}"}
 
