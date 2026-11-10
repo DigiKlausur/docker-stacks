@@ -159,3 +159,20 @@ def test_local_run_builds_in_order_on_local_parents(small_manifest):
         "latest",
     )
     assert not run.push
+
+
+def test_parent_tag_replaces_the_registry_tag_only(small_manifest):
+    tag_set = small_manifest.tag_sets["local"]
+    now = datetime(2026, 11, 10, tzinfo=timezone.utc)
+    run = local_run(small_manifest, {"base-nb-exam"}, tag_set, "abc", now, "dev-sha-x1")
+
+    cmd = build_command(small_manifest, "base-nb-exam", run=run)
+    assert "IMAGE_SOURCE=ghcr.io/org/stack/base-nb:dev-sha-x1" in cmd
+    assert run.same_run_tag == "local"  # parents built in the same call stay :local
+
+
+def test_invalid_parent_tag_is_rejected(small_manifest):
+    tag_set = small_manifest.tag_sets["local"]
+    now = datetime(2026, 11, 10, tzinfo=timezone.utc)
+    with pytest.raises(BuildError, match="not a valid Docker tag"):
+        local_run(small_manifest, {"base-nb"}, tag_set, "abc", now, "bad tag")
