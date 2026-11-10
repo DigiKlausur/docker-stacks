@@ -23,6 +23,10 @@ def short_sha(root: Path) -> str:
     return _git(root, "rev-parse", "--short=7", "HEAD")
 
 
+def full_sha(root: Path) -> str:
+    return _git(root, "rev-parse", "HEAD")
+
+
 def _git(root: Path, *args: str, error: str | None = None) -> str:
     result = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True)
     if result.returncode != 0:

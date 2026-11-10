@@ -11,22 +11,31 @@ folder on sys.path, which is why the modules are imported flat (`import manifest
 
 import argparse
 import json
+import shlex
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import build
 import manifest
 import plan
+import tags
 import repo
 import tree
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "notebooks.toml"
+LOCAL_TAG_SET = "local"  # tag set used by `build` on your machine
 
 EXAMPLES = """\
 examples:
   python scripts/image_builder tree
       show which image builds on which
+  python scripts/image_builder build ml-notebook-student
+      build one image locally (parent comes from the registry)
+  python scripts/image_builder build ml-notebook --dry-run
+      only print the docker command
   python scripts/image_builder plan --tag-set dev --since origin/dev
       what CI would build for the changes on your branch
   python scripts/image_builder plan --tag-set master --all
@@ -50,7 +59,9 @@ def main(argv: list[str] | None = None) -> int:
             print(tree.render(loaded))
         elif args.command == "plan":
             print(json.dumps(_plan(loaded, args), indent=2))
-    except (manifest.ManifestError, repo.RepoError) as error:
+        elif args.command == "build":
+            return _build(loaded, args)
+    except (manifest.ManifestError, repo.RepoError, build.BuildError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     return 0
@@ -68,6 +79,31 @@ def _plan(loaded: manifest.Manifest, args: argparse.Namespace) -> dict:
 
     now = datetime.now(timezone.utc)
     return plan.summary(loaded.tag_sets[args.tag_set], images, repo.short_sha(REPO_ROOT), now)
+
+
+def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
+    node = loaded.nodes.get(args.image)
+    if node is None:
+        raise build.BuildError(f"unknown image '{args.image}' (see `python scripts/image_builder tree`)")
+
+    tag_set = loaded.tag_sets.get(LOCAL_TAG_SET)
+    if tag_set is None:
+        raise build.BuildError(f"notebooks.toml needs a [tag_sets.{LOCAL_TAG_SET}] for local builds")
+    now = datetime.now(timezone.utc)
+    cmd = build.command(
+        loaded,
+        node,
+        tags=tags.resolve(tag_set, repo.short_sha(REPO_ROOT), now),
+        parent_tag=tag_set.parent_tag,
+        labels=build.oci_labels(repo.full_sha(REPO_ROOT), now),
+        build_args=build.parse_build_args(args.build_arg),
+    )
+
+    if args.dry_run:
+        print(shlex.join(cmd))
+        return 0
+    # Folders in notebooks.toml are relative to the repo root.
+    return subprocess.run(cmd, cwd=REPO_ROOT).returncode
 
 
 def _make_parser() -> argparse.ArgumentParser:
@@ -100,6 +136,22 @@ def _make_parser() -> argparse.ArgumentParser:
         help="images changed on this branch since REF (compared against the merge base); fails if REF is unknown",
     )
     scope.add_argument("--all", action="store_true", help="every image")
+
+    build_parser = commands.add_parser(
+        "build",
+        help="build one image locally (tagged :local, never pushed)",
+        description="Build one image on your machine. Its parent is pulled from the registry "
+        "(tag 'latest'); the result is tagged ':local' and never pushed.",
+    )
+    build_parser.add_argument("image", help="image name, e.g. ml-notebook or ml-notebook-student (see `tree`)")
+    build_parser.add_argument(
+        "--build-arg",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="extra Docker build arg, e.g. E2XGRADER_VERSION=0.4.0 (repeatable)",
+    )
+    build_parser.add_argument("--dry-run", action="store_true", help="only print the docker command")
     return parser
 
 
