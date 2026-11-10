@@ -18,6 +18,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import build
+import generate
 import manifest
 import plan
 import repo
@@ -25,6 +26,8 @@ import tree
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "notebooks.toml"
+WORKFLOW_PATH = REPO_ROOT / ".github/workflows/build_all_images.yml"  # generated
+README_PATH = REPO_ROOT / "README.md"  # its image tree is generated
 LOCAL_TAG_SET = "local"  # tag set used by `build` on your machine
 
 EXAMPLES = """\
@@ -46,6 +49,8 @@ examples:
   python scripts/image_builder build ml-notebook --dry-run \\
       --plan "$(python scripts/image_builder plan --tag-set dev --all)"
       what CI would run for one image
+  python scripts/image_builder generate
+      update build_all_images.yml and the README tree after changing notebooks.toml
   python scripts/image_builder <command> -h
       help for a single command
 """
@@ -66,10 +71,18 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "tree":
             print(tree.render(loaded))
         elif args.command == "plan":
-            print(json.dumps(_plan(loaded, args), indent=2))
+            # --compact: one line, as $GITHUB_OUTPUT expects name=value per line
+            print(json.dumps(_plan(loaded, args), indent=None if args.compact else 2))
         elif args.command == "build":
             return _build(loaded, args)
-    except (manifest.ManifestError, repo.RepoError, build.BuildError) as error:
+        elif args.command == "generate":
+            return _generate(loaded, check=args.check)
+    except (
+        manifest.ManifestError,
+        repo.RepoError,
+        build.BuildError,
+        generate.GenerateError,
+    ) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     return 0
@@ -91,6 +104,36 @@ def _plan(loaded: manifest.Manifest, args: argparse.Namespace) -> dict:
     return plan.summary(
         loaded.tag_sets[args.tag_set], images, repo.short_sha(REPO_ROOT), now
     )
+
+
+def _generate(loaded: manifest.Manifest, check: bool) -> int:
+    expected = {
+        WORKFLOW_PATH: generate.workflow(loaded),
+        README_PATH: generate.readme_with_tree(
+            README_PATH.read_text(), tree.render(loaded)
+        ),
+    }
+    stale = [
+        path
+        for path, content in expected.items()
+        if not path.exists() or path.read_text() != content
+    ]
+
+    if check:
+        for path in stale:
+            print(
+                f"error: {path.relative_to(REPO_ROOT)} is out of date; "
+                "run `python scripts/image_builder generate`",
+                file=sys.stderr,
+            )
+        return 1 if stale else 0
+
+    for path in stale:
+        path.write_text(expected[path])
+        print(f"updated {path.relative_to(REPO_ROOT)}")
+    if not stale:
+        print("everything is up to date")
+    return 0
 
 
 def _build_selection(loaded: manifest.Manifest, args: argparse.Namespace) -> set[str]:
@@ -196,6 +239,21 @@ def _make_parser() -> argparse.ArgumentParser:
         help="images changed on this branch since REF (compared against the merge base); fails if REF is unknown",
     )
     scope.add_argument("--all", action="store_true", help="every image")
+    plan_parser.add_argument(
+        "--compact", action="store_true", help="print the JSON on one line (for CI)"
+    )
+
+    generate_parser = commands.add_parser(
+        "generate",
+        help="write the files derived from notebooks.toml",
+        description="Write .github/workflows/build_all_images.yml and the image tree "
+        "in README.md from notebooks.toml.",
+    )
+    generate_parser.add_argument(
+        "--check",
+        action="store_true",
+        help="write nothing; fail if a generated file is out of date (for CI)",
+    )
 
     build_parser = commands.add_parser(
         "build",
