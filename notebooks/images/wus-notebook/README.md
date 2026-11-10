@@ -1,6 +1,6 @@
-# e2x Data Science Notebook
+# e2x WuS Notebook
 
-TThis Docker image is a customized version of the [e2x Data Science Notebook](../datascience-notebook) image, with certain extensions specific to the WuS course at H-BRS installed.
+This Docker image is a customized version of the [e2x Data Science Notebook](../datascience-notebook) image, with certain extensions specific to the WuS course at H-BRS installed.
 
 ## Description
 
