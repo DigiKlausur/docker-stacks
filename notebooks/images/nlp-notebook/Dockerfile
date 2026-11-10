@@ -1,4 +1,7 @@
-ARG IMAGE_SOURCE=ghcr.io/digiklausur/docker-stacks/ml-notebook:latest
+# check=skip=InvalidDefaultArgInFrom
+# IMAGE_SOURCE has no default on purpose: scripts/image_builder sets it from
+# notebooks.toml. Build with: python scripts/image_builder build <image>
+ARG IMAGE_SOURCE
 FROM $IMAGE_SOURCE
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"

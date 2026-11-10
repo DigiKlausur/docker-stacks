@@ -1,4 +1,7 @@
-ARG IMAGE_SOURCE=jupyter/minimal-notebook:notebook-6.5.3
+# check=skip=InvalidDefaultArgInFrom
+# IMAGE_SOURCE has no default on purpose: scripts/image_builder sets it from
+# notebooks.toml. Build with: python scripts/image_builder build <image>
+ARG IMAGE_SOURCE
 FROM $IMAGE_SOURCE
 
 # USe 6.5.3 minimal-notebook as base image for Python 3.10 needed by vaex
