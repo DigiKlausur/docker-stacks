@@ -1,0 +1,67 @@
+# Builds one node of notebooks.toml (an image or an e2x variant) and optionally
+# pushes it to every registry. Called once per node by the generated
+# build_all_images.yml.
+#
+# All logic lives in scripts/image_builder. This file only checks out the repo,
+# logs in to the registries and calls the script.
+name: Build one image
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: Node from notebooks.toml, e.g. ml-notebook or ml-notebook-student
+        type: string
+        required: true
+      plan:
+        description: JSON printed by `image_builder plan` (tags, run tag, images in this run)
+        type: string
+        required: true
+      push:
+        description: Push to every registry (otherwise only build)
+        type: boolean
+        default: false
+    secrets:
+      GH_TOKEN:
+        required: true
+      QUAY_USERNAME:
+        required: true
+      QUAY_SECRET:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ inputs.image }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Login to quay.io
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_SECRET }}
+
+      - name: Build ${{ inputs.image }}
+        # Inputs reach the shell as environment variables, not as ${{ }} inside
+        # `run`: ${{ }} is pasted into the script before the shell starts, so
+        # quotes in the plan JSON could break (or inject into) the command.
+        env:
+          IMAGE: ${{ inputs.image }}
+          PLAN: ${{ inputs.plan }}
+          PUSH_FLAG: ${{ inputs.push && '--push' || '' }}
+        # $PUSH_FLAG is unquoted on purpose: when empty it must vanish, not
+        # become an empty argument.
+        run: python3 scripts/image_builder build "$IMAGE" --plan "$PLAN" $PUSH_FLAG
