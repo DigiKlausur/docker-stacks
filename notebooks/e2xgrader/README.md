@@ -7,7 +7,7 @@ More information on e2xgrader can be found [here](https://github.com/Digiklausur
 
 The following build args are available:
 
-* `E2XGRADER_VERSION`: The specific e2xgrader version to install from PyPI. If not set defaults to the latest version. Does take no effect if `FROM_REPO` is `true`.
+* `E2XGRADER_VERSION`: The e2xgrader version to install from PyPI. Pinned by its default in the [Dockerfile](Dockerfile); bump it there to update all e2x images. An empty value installs the latest version. Has no effect if `FROM_REPO` is `true`.
 * `FROM_REPO`: If e2xgrader should be installed from the [GitHub repository](https://github.com/Digiklausur/e2xgrader). Defaults to `false`.
 * `E2XGRADER_BRANCH`: Specifies the branch to install from if `FROM_REPO` is `true`. Defaults to `main`.
 
