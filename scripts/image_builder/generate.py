@@ -171,3 +171,7 @@ def readme_with_tree(readme: str, tree: str) -> str:
         )
     after_start_line = readme.index("\n", start) + 1
     return readme[:after_start_line] + f"```\n{tree}\n```\n" + readme[end:]
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")

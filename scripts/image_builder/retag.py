@@ -82,3 +82,7 @@ def _managing_tag_set(manifest: Manifest, tag: str) -> str | None:
         if any(tags.tag_regex(pattern).fullmatch(tag) for pattern in tag_set.tags):
             return tag_set.name
     return None
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")

@@ -29,3 +29,7 @@ def render(manifest: Manifest) -> str:
             sorted(name for name, node in nodes.items() if node.base == base), prefix=""
         )
     return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")

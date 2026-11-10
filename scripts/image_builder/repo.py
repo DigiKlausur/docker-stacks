@@ -43,3 +43,7 @@ def _git(root: Path, *args: str, error: str | None = None) -> str:
             error or f"git {' '.join(args)} failed: {result.stderr.strip()}"
         )
     return result.stdout.strip()
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")

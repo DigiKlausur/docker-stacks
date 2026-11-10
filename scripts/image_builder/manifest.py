@@ -253,3 +253,7 @@ def _check_folders(images: dict, root: Path) -> None:
         raise ManifestError(
             f"folders in {IMAGES_DIR} missing from notebooks.toml: {', '.join(unlisted)}"
         )
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")

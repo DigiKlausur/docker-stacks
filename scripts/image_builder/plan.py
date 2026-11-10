@@ -77,3 +77,7 @@ def _needs_full_rebuild(path: str) -> bool:
 def _is_in(path: str, node: Node) -> bool:
     # The trailing slash keeps "notebooks/images/b" from matching "notebooks/images/bb/...".
     return path.startswith(f"{node.folder.as_posix()}/")
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")

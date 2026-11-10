@@ -28,3 +28,7 @@ def tag_regex(tag: str) -> re.Pattern:
     for name, part in PLACEHOLDER_REGEX.items():
         regex = regex.replace(re.escape(f"{{{name}}}"), part)
     return re.compile(regex)
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")

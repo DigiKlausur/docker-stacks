@@ -11,3 +11,7 @@ def exists(ref: str) -> bool:
         capture_output=True,
     )
     return result.returncode == 0
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")

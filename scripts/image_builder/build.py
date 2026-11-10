@@ -168,3 +168,7 @@ def parse_plan(plan_json: str) -> dict:
             "so its plan can't be used for CI builds"
         )
     return summary
+
+
+if __name__ == "__main__":
+    raise SystemExit("not a script: run `python scripts/image_builder -h` instead")
