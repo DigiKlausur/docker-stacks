@@ -12,46 +12,49 @@ All images are hosted on `ghcr.io` and `quay.io`.
 
 All [hub images](hub) contain JupyterHub, [e2xhub](https://github.com/DigiKlausur/e2xhub), as well as authenticators.
 
-## Jupyter Notebook Images
+## Images
 
-There are several Jupyter Notebook images for different use cases.
-Currently all images are based on `notebook==6.5.4`.
+Jupyter Notebook images for different use cases, defined in [`notebooks.toml`](notebooks.toml).
+External base images are the roots; each image builds on the one above it.
+What an image adds is described in its folder under [`notebooks/images`](notebooks/images).
 
-| Image                | Base                                                                   | Teacher                                                                           | Student                                                                           | Exam                                                                        |
-|----------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [minimal-notebook](notebooks/images/minimal-notebook)     | [base](https://ghcr.io/digiklausur/docker-stacks/minimal-notebook)     |                                                                                   |                                                                                   |                                                                             |
-| [datascience-notebook](notebooks/images/datascience-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/datascience-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/datascience-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/datascience-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/datascience-notebook-exam) |
-| [ml-notebook](notebooks/images/ml-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/ml-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/ml-notebook-exam) |
-| [nlp-notebook](notebooks/images/nlp-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/nlp-notebook-exam) |
-| [sql-notebook](notebooks/images/sql-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/sql-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/sql-notebook-exam) |
-| [julia-notebook](notebooks/images/julia-notebook) | [base](https://ghcr.io/digiklausur/docker-stacks/julia-notebook) | [teacher](https://ghcr.io/digiklausur/docker-stacks/julia-notebook-teacher) | [student](https://ghcr.io/digiklausur/docker-stacks/julia-notebook-student) | [exam](https://ghcr.io/digiklausur/docker-stacks/julia-notebook-exam) |
-| [desktop-notebook](notebooks/images/desktop-notebook)     | [base](https://ghcr.io/digiklausur/docker-stacks/desktop-notebook)     |                                                                                   |                                                                                   |                                                                             |
-
-The notebook images are:
-
-* [Minimal Notebook](notebooks/images/minimal-notebook/): Base image used for all other images here.
-* [Data Science Notebook](notebooks/images/datascience-notebook/): Based on Minimal Notebook. Additional Python data science libraries (e.g., numpy, scipy, pandas, sklearn, statsmodels). 
-* [Machine Learning Notebook](notebooks/images/ml-notebook/): Based on Data Science Notebook. Additional Python machine learning libraries (e.g., pytorch, gymnasium). 
-* [Natural Language Processing Notebook](notebooks/images/nlp-notebook/): Based on Machine Learning Notebook. Additional Python NLP libraries (e.g., nltk, spacy, gensim, transformers). 
-* [SQL Notebook](notebooks/images/sql-notebook/): Based on Data Science Notebook. Additional SQL libraries and kernels.
-* [Julia Notebook](notebooks/images/julia-notebook/): Based on Minimal Notebook. Adds a Julia kernel and libraries.
-* [Desktop Notebook](notebooks/images/desktop-notebook/): Based on Minimal Notebook. Customized version of the [Minimal Notebook](notebooks/images/minimal-notebook) image, with an XFCE desktop installed using [Jupyter Remote Desktop Proxy](https://github.com/jupyterhub/jupyter-remote-desktop-proxy).
-* [DB Main Notebook (experimental)](notebooks/images/dbmain-notebook/): Based on Desktop Notebook. With the DB Main application installed. Serves as an example for running an application in a desktop image.
+<!-- tree:start (output of `python scripts/image_builder tree`) -->
+```
+jupyter/minimal-notebook:notebook-6.5.3
+└── bi-notebook [e2x]
+jupyter/minimal-notebook:notebook-6.5.4
+└── minimal-notebook [e2x]
+    ├── bidata-notebook [e2x]
+    ├── datascience-notebook [e2x]
+    │   ├── datascience-notebook-code [e2x]
+    │   ├── ml-notebook [e2x]
+    │   │   └── nlp-notebook [e2x]
+    │   ├── sql-notebook [e2x]
+    │   ├── tf-notebook [e2x]
+    │   └── wus-notebook [e2x]
+    ├── desktop-notebook
+    │   └── dbmain-notebook [e2x]
+    └── java-notebook [e2x]
+```
+<!-- tree:end -->
 
 ## E2xGrader Images
 
-Each end-point image comes in four different flavors:
+Every image marked `[e2x]` also comes in three flavors with [e2xgrader](notebooks/e2xgrader)
+installed, named `<image>-<flavor>` (e.g. `ml-notebook-exam`):
 
-* Vanilla: Basic image without any e2xgrader extensions.
-* Teacher: Includes `e2xgrader` with teacher mode activated and is intended for instructors for creating and grading assignments.
-* Student: Includes `e2xgrader` with student mode activated and is intended for students for working on assignments.
-* Exam: Includes `e2xgrader` with student_exam mode activated and is intended for students for working on exams, providing a restricted notebook.
+* `-teacher`: teacher mode, for instructors creating and grading assignments.
+* `-student`: student mode, for students working on assignments.
+* `-exam`: student_exam mode, for students working on exams, with a restricted notebook.
 
-## Build Tree
+## Pull and Run
 
-The following diagram illustrates the dependencies between the different images:
+```bash
+docker run -p 8888:8888 ghcr.io/digiklausur/docker-stacks/<image>:latest
+```
 
-![build tree](architecture.png)
+* Registries: `ghcr.io` and `quay.io`.
+* Tags: `latest` and `YYYY-MM-DD` are built from `master`, `dev` from the `dev` branch.
 
 ## Building Locally
 
@@ -95,10 +98,6 @@ python scripts/image_builder plan --tag-set dev --since origin/dev
 - To add an image, create `notebooks/images/<name>/` and add an `[images.<name>]` entry to
   `notebooks.toml`. Run `python scripts/image_builder tree` to check it.
 - Tests: `pip install pytest`, then `python -m pytest`.
-
-## Branches
-
-The `dev` branch will always reflect `ghcr.io/digiklausur/docker-stacks/{image_name}:dev` on the GitHub container registry, and the `master` branch reflects `ghcr.io/digiklausur/docker-stacks/{image_name}:latest`. 
 
 ## Contributing
 
