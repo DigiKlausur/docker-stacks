@@ -9,6 +9,7 @@ no other module needs to know about e2x.
 `load` adds the parts that touch the file system.
 """
 
+import string
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,7 @@ from pathlib import Path
 IMAGES_DIR = Path("notebooks/images")
 E2X_DIR = Path("notebooks/e2xgrader")
 SHA_PLACEHOLDER = "{sha}"
+PLACEHOLDERS = {"date", "sha"}  # allowed in tags, filled in by tags.py
 
 TOP_LEVEL_KEYS = {"registry", "e2x", "tag_sets", "images"}
 REGISTRY_KEYS = {"namespace", "hosts", "primary"}
@@ -185,10 +187,22 @@ def _parse_registry(raw: dict) -> Registry:
 def _parse_tag_set(name: str, raw: dict) -> TagSet:
     where = f"[tag_sets.{name}]"
     _check_keys(where, raw, allowed=TAG_SET_KEYS, required=TAG_SET_KEYS)
+    for tag in raw["tags"]:
+        _check_placeholders(where, tag)
     sha_tags = [tag for tag in raw["tags"] if SHA_PLACEHOLDER in tag]
     if len(sha_tags) > 1:
         raise ManifestError(f"{where}: at most one tag may contain {SHA_PLACEHOLDER}")
     return TagSet(name, tuple(raw["tags"]), raw["parent_tag"])
+
+
+def _check_placeholders(where: str, tag: str) -> None:
+    try:
+        fields = {field for _, field, _, _ in string.Formatter().parse(tag) if field is not None}
+    except ValueError as error:
+        raise ManifestError(f"{where}: invalid tag '{tag}' ({error})") from error
+    unknown = sorted(fields - PLACEHOLDERS)
+    if unknown:
+        raise ManifestError(f"{where}: unknown placeholder(s) in '{tag}': {', '.join(unknown)}")
 
 
 def _parse_e2x_modes(raw: dict) -> dict[str, str]:

@@ -48,6 +48,10 @@ def test_only_tag_sets_with_sha_can_push():
         pytest.param(lambda d: d["images"]["base-nb"].update(enabled=False), "disabled", id="disabled parent"),
         pytest.param(lambda d: d["images"]["base-nb"].update(e2x="true"), "true or false", id="e2x not a bool"),
         pytest.param(lambda d: d["tag_sets"]["master"]["tags"].append("x-{sha}"), "at most one", id="two sha tags"),
+        pytest.param(
+            lambda d: d["tag_sets"]["master"]["tags"].append("v-{dat}"), "unknown placeholder", id="placeholder typo"
+        ),
+        pytest.param(lambda d: d["tag_sets"]["master"]["tags"].append("v-{"), "invalid tag", id="broken braces"),
         pytest.param(lambda d: d["registry"].update(primary="docker.io"), "primary", id="primary not in hosts"),
         pytest.param(
             lambda d: d["images"].update({"base-nb-exam": {"parent": "base-nb"}}), "duplicate", id="name collision"
