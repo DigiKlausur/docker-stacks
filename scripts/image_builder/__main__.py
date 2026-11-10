@@ -21,7 +21,9 @@ import build
 import generate
 import manifest
 import plan
+import registry
 import repo
+import retag
 import tree
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -51,6 +53,8 @@ examples:
       what CI would run for one image
   python scripts/image_builder generate
       update build_all_images.yml and the README tree after changing notebooks.toml
+  python scripts/image_builder retag --from latest --to summer-2026
+      give every image a fixed tag for a semester or an exam
   python scripts/image_builder <command> -h
       help for a single command
 """
@@ -77,11 +81,14 @@ def main(argv: list[str] | None = None) -> int:
             return _build(loaded, args)
         elif args.command == "generate":
             return _generate(loaded, check=args.check)
+        elif args.command == "retag":
+            return _retag(loaded, args)
     except (
         manifest.ManifestError,
         repo.RepoError,
         build.BuildError,
         generate.GenerateError,
+        retag.RetagError,
     ) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
@@ -134,6 +141,55 @@ def _generate(loaded: manifest.Manifest, check: bool) -> int:
     if not stale:
         print("everything is up to date")
     return 0
+
+
+def _retag(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
+    retag.check_tags(loaded, args.from_tag, args.to_tags)
+    pairs = retag.pairs(loaded, args.from_tag, args.to_tags)
+
+    if args.dry_run:
+        for source, targets in pairs:
+            print(shlex.join(retag.create_command(source, targets)))
+        return 0
+
+    # All or nothing: find every problem before writing a single tag.
+    problems = _preflight(pairs, overwrite=args.overwrite)
+    if problems:
+        for problem in problems:
+            print(f"error: {problem}", file=sys.stderr)
+        print(f"error: {len(problems)} problem(s), no tag was written", file=sys.stderr)
+        return 1
+
+    for index, (source, targets) in enumerate(pairs, start=1):
+        print(f"==> {index}/{len(pairs)} {source}", file=sys.stderr)
+        cmd = retag.create_command(source, targets)
+        returncode = subprocess.run(cmd, check=False).returncode
+        if returncode != 0:
+            print(
+                f"error: retagging {source} failed after {index - 1} of {len(pairs)} "
+                "images; fix it and rerun with --overwrite",
+                file=sys.stderr,
+            )
+            return returncode
+    return 0
+
+
+def _preflight(pairs: list[tuple[str, list[str]]], overwrite: bool) -> list[str]:
+    """Every source must exist; without --overwrite no target may exist yet."""
+    target_count = 0 if overwrite else sum(len(targets) for _, targets in pairs)
+    refs = len(pairs) + target_count
+    print(f"checking {refs} image references in the registry ...", file=sys.stderr)
+    problems = []
+    for source, targets in pairs:
+        if not registry.exists(source):
+            problems.append(f"source missing: {source}")
+        if not overwrite:
+            problems += [
+                f"target exists (use --overwrite to replace it): {target}"
+                for target in targets
+                if registry.exists(target)
+            ]
+    return problems
 
 
 def _build_selection(loaded: manifest.Manifest, args: argparse.Namespace) -> set[str]:
@@ -296,6 +352,35 @@ def _make_parser() -> argparse.ArgumentParser:
         "--push",
         action="store_true",
         help="CI: push to every registry instead of loading locally (needs --plan)",
+    )
+
+    retag_parser = commands.add_parser(
+        "retag",
+        help="give every image another tag in the registry (e.g. latest → summer-2026)",
+        description="Tag every enabled image in every registry, without pulling or "
+        "pushing layers. Checks first that every source exists and no target exists "
+        "yet, so either all tags are written or none. Needs `docker login`.",
+    )
+    retag_parser.add_argument(
+        "--from", dest="from_tag", required=True, metavar="TAG", help="existing tag"
+    )
+    retag_parser.add_argument(
+        "--to",
+        dest="to_tags",
+        action="append",
+        required=True,
+        metavar="TAG",
+        help="new tag, e.g. summer-2026 (repeatable); not a tag from a tag set",
+    )
+    retag_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="allow replacing a target tag that already exists",
+    )
+    retag_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="only print the commands (no registry access)",
     )
     return parser
 
