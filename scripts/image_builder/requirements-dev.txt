@@ -1,0 +1,3 @@
+# Only for development (running the tests). image_builder itself needs no
+# packages: just Python >= 3.11 and Docker.
+pytest

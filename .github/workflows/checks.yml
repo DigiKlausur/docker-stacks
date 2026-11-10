@@ -34,10 +34,10 @@ jobs:
 
       # A venv, because the runner's system Python refuses `pip install`
       # (PEP 668, "externally-managed-environment").
-      - name: Install pytest
+      - name: Install test dependencies
         run: |
           python3 -m venv .venv
-          .venv/bin/pip install --quiet pytest
+          .venv/bin/pip install --quiet -r scripts/image_builder/requirements-dev.txt
 
       - name: Run tests
         run: .venv/bin/python -m pytest

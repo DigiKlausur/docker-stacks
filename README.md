@@ -105,7 +105,7 @@ python scripts/image_builder plan --tag-set dev --since origin/dev
   any other parent is pulled from the registry (tag `latest`).
 - To add an image, create `notebooks/images/<name>/` and add an `[images.<name>]` entry to
   `notebooks.toml`. Run `python scripts/image_builder tree` to check it.
-- Tests: `pip install pytest`, then `python -m pytest`.
+- Tests: `pip install -r scripts/image_builder/requirements-dev.txt`, then `python -m pytest`.
 
 ## Contributing
 
