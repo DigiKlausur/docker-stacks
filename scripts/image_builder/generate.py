@@ -29,7 +29,7 @@ on:
   workflow_call:
     inputs:
       tag_set:
-        description: Tag set from notebooks.toml, e.g. dev or master
+        description: Tag set from notebooks.toml, e.g. dev or main
         type: string
         required: true
       since:

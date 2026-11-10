@@ -1,4 +1,4 @@
-# Fast checks for every pull request and for pushes to dev/master.
+# Fast checks for every pull request and for pushes to dev/main.
 # Two jobs, two concerns, two separate status checks.
 name: Checks
 
@@ -7,7 +7,7 @@ on:
   push:
     branches:
       - dev
-      - master
+      - main
 
 permissions:
   contents: read

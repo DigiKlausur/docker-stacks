@@ -58,7 +58,7 @@ docker run -p 8888:8888 ghcr.io/digiklausur/docker-stacks/<image>:latest
 
   | Branch   | Moving tag | Per day (UTC)    | Per commit          |
   |----------|------------|------------------|---------------------|
-  | `master` | `latest`   | `YYYY-MM-DD`     | `sha-<commit>`      |
+  | `main`   | `latest`   | `YYYY-MM-DD`     | `sha-<commit>`      |
   | `dev`    | `dev`      | `dev-YYYY-MM-DD` | `dev-sha-<commit>`  |
 
   Per-commit tags never move, so they are the safest way to pin a course or an exam

@@ -38,8 +38,8 @@ def test_only_tag_sets_with_sha_can_push():
     tag_sets = parse(make_data()).tag_sets
 
     assert not tag_sets["local"].can_push
-    assert tag_sets["master"].can_push
-    assert tag_sets["master"].run_tag == "sha-{sha}"
+    assert tag_sets["main"].can_push
+    assert tag_sets["main"].run_tag == "sha-{sha}"
 
 
 @pytest.mark.parametrize(
@@ -76,17 +76,17 @@ def test_only_tag_sets_with_sha_can_push():
             id="e2x not a bool",
         ),
         pytest.param(
-            lambda d: d["tag_sets"]["master"]["tags"].append("x-{sha}"),
+            lambda d: d["tag_sets"]["main"]["tags"].append("x-{sha}"),
             "at most one",
             id="two sha tags",
         ),
         pytest.param(
-            lambda d: d["tag_sets"]["master"]["tags"].append("v-{dat}"),
+            lambda d: d["tag_sets"]["main"]["tags"].append("v-{dat}"),
             "unknown placeholder",
             id="placeholder typo",
         ),
         pytest.param(
-            lambda d: d["tag_sets"]["master"]["tags"].append("v-{"),
+            lambda d: d["tag_sets"]["main"]["tags"].append("v-{"),
             "invalid tag",
             id="broken braces",
         ),
