@@ -1,7 +1,8 @@
 """Give every enabled image another tag in the registry, e.g. latest → summer-2026.
 
 `docker buildx imagetools create` writes a new tag for an existing manifest
-directly in the registry: no pull, no push of layers, the digest stays the same.
+directly in the registry: no pull, no push of layers. With --prefer-index=false
+it is an exact copy, so the new tag has the same digest as the source.
 
 Pure: functions check names and return commands. __main__ runs the preflight
 (via registry.py) and then the commands.
@@ -65,7 +66,10 @@ def completion_pairs(manifest: Manifest, summary: dict) -> list[tuple[str, list[
 
 
 def create_command(source: str, targets: list[str]) -> list[str]:
-    cmd = ["docker", "buildx", "imagetools", "create"]
+    # --prefer-index=false: copy the source manifest exactly (same digest). By
+    # default imagetools wraps a single-platform manifest in a new image index,
+    # which has a different digest even though the image inside is the same.
+    cmd = ["docker", "buildx", "imagetools", "create", "--prefer-index=false"]
     for target in targets:
         cmd += ["--tag", target]
     return [*cmd, source]
