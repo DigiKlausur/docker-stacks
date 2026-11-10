@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import pytest
 from helpers import make_data
 from manifest import parse
-from plan import descendants, select, summary
+from plan import descendants, in_build_order, select, summary
 
 # a (base, e2x) ─┬─ b ── c
 #                └─ d
@@ -44,6 +44,10 @@ def test_select(small_manifest, changed, expected):
 def test_descendants(small_manifest):
     assert descendants(small_manifest.nodes, {"b"}) == {"c"}
     assert descendants(small_manifest.nodes, {"c"}) == set()
+
+
+def test_in_build_order(small_manifest):
+    assert in_build_order(small_manifest.nodes, {"c", "a", "b"}) == ["a", "b", "c"]
 
 
 def test_summary_resolves_tags():

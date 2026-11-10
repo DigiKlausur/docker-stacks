@@ -22,13 +22,16 @@ TESTS_DIR = "scripts/image_builder/tests/"
 def select(manifest: Manifest, changed_files: list[str]) -> list[str]:
     """Nodes to build, in build order: changed nodes plus their descendants."""
     relevant = [path for path in changed_files if not _is_ignored(path)]
-    order = build_order(manifest.nodes)
     if any(_needs_full_rebuild(path) for path in relevant):
-        return order
+        return build_order(manifest.nodes)
 
     changed = {name for name, node in manifest.nodes.items() if any(_is_in(path, node) for path in relevant)}
-    selected = changed | descendants(manifest.nodes, changed)
-    return [name for name in order if name in selected]
+    return in_build_order(manifest.nodes, changed | descendants(manifest.nodes, changed))
+
+
+def in_build_order(nodes: dict[str, Node], names: set[str]) -> list[str]:
+    """The given names, sorted so that every parent comes before its children."""
+    return [name for name in build_order(nodes) if name in names]
 
 
 def descendants(nodes: dict[str, Node], names: set[str]) -> set[str]:

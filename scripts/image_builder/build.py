@@ -48,6 +48,16 @@ def image_ref(manifest: Manifest, name: str, tag: str) -> str:
     return f"{manifest.registry.primary}/{manifest.registry.namespace}/{name}:{tag}"
 
 
+def parent_tag(node: Node, built_in_this_run: set[str], same_run_tag: str, fallback_tag: str) -> str:
+    """Which tag of the parent to build on.
+
+    A parent built in the same run is used by that run's tag (local: `local`,
+    CI: the run tag). Any other parent is taken from the registry by
+    `fallback_tag` (the tag set's parent_tag).
+    """
+    return same_run_tag if node.parent in built_in_this_run else fallback_tag
+
+
 def base_image(manifest: Manifest, node: Node, parent_tag: str) -> str:
     """What the node builds FROM: its external base, or its parent from the registry."""
     if node.base is not None:

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 import pytest
-from build import BuildError, command, oci_labels, parse_build_args
+from build import BuildError, command, oci_labels, parent_tag, parse_build_args
 from helpers import make_data
 from manifest import parse
 
@@ -51,6 +51,16 @@ def test_extra_build_args_are_passed_through(small_manifest):
 def test_image_source_cannot_be_overridden(small_manifest):
     with pytest.raises(BuildError, match="IMAGE_SOURCE"):
         build_command(small_manifest, "child-nb", {"IMAGE_SOURCE": "evil:1"})
+
+
+def test_parent_built_in_same_run_is_used_by_run_tag(small_manifest):
+    child = small_manifest.nodes["child-nb"]
+    assert parent_tag(child, {"base-nb", "child-nb"}, "local", "latest") == "local"
+
+
+def test_other_parents_come_from_the_registry(small_manifest):
+    child = small_manifest.nodes["child-nb"]
+    assert parent_tag(child, {"child-nb"}, "local", "latest") == "latest"
 
 
 def test_parse_build_args():

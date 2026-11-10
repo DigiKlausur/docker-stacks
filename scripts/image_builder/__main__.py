@@ -34,6 +34,8 @@ examples:
       show which image builds on which
   python scripts/image_builder build ml-notebook-student
       build one image locally (parent comes from the registry)
+  python scripts/image_builder build datascience-notebook --with-dependents
+      build an image and everything below it, each on its local parent
   python scripts/image_builder build ml-notebook --dry-run
       only print the docker command
   python scripts/image_builder plan --tag-set dev --since origin/dev
@@ -89,21 +91,41 @@ def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
     tag_set = loaded.tag_sets.get(LOCAL_TAG_SET)
     if tag_set is None:
         raise build.BuildError(f"notebooks.toml needs a [tag_sets.{LOCAL_TAG_SET}] for local builds")
+    selected = {node.name}
+    if args.with_dependents:
+        selected |= plan.descendants(loaded.nodes, selected)
+    names = plan.in_build_order(loaded.nodes, selected)
+
     now = datetime.now(timezone.utc)
-    cmd = build.command(
-        loaded,
-        node,
-        tags=tags.resolve(tag_set, repo.short_sha(REPO_ROOT), now),
-        parent_tag=tag_set.parent_tag,
-        labels=build.oci_labels(repo.full_sha(REPO_ROOT), now),
-        build_args=build.parse_build_args(args.build_arg),
-    )
+    resolved_tags = tags.resolve(tag_set, repo.short_sha(REPO_ROOT), now)
+    labels = build.oci_labels(repo.full_sha(REPO_ROOT), now)
+    build_args = build.parse_build_args(args.build_arg)
+    commands = {
+        name: build.command(
+            loaded,
+            loaded.nodes[name],
+            tags=resolved_tags,
+            # Children build on their parent's fresh :local image.
+            parent_tag=build.parent_tag(loaded.nodes[name], selected, resolved_tags[0], tag_set.parent_tag),
+            labels=labels,
+            build_args=build_args,
+        )
+        for name in names
+    }
 
     if args.dry_run:
-        print(shlex.join(cmd))
+        for name, cmd in commands.items():
+            print(f"# {name}\n{shlex.join(cmd)}")
         return 0
-    # Folders in notebooks.toml are relative to the repo root.
-    return subprocess.run(cmd, cwd=REPO_ROOT).returncode
+
+    for index, (name, cmd) in enumerate(commands.items(), start=1):
+        print(f"==> {index}/{len(commands)} {name}", file=sys.stderr)
+        # Folders in notebooks.toml are relative to the repo root.
+        returncode = subprocess.run(cmd, cwd=REPO_ROOT).returncode
+        if returncode != 0:
+            print(f"error: building {name} failed; its children were not built", file=sys.stderr)
+            return returncode
+    return 0
 
 
 def _make_parser() -> argparse.ArgumentParser:
@@ -139,11 +161,17 @@ def _make_parser() -> argparse.ArgumentParser:
 
     build_parser = commands.add_parser(
         "build",
-        help="build one image locally (tagged :local, never pushed)",
-        description="Build one image on your machine. Its parent is pulled from the registry "
-        "(tag 'latest'); the result is tagged ':local' and never pushed.",
+        help="build images locally (tagged :local, never pushed)",
+        description="Build an image on your machine, optionally with everything below it. "
+        "A parent built in the same call is used as ':local'; any other parent is pulled from "
+        "the registry (tag 'latest'). Results are tagged ':local' and never pushed.",
     )
     build_parser.add_argument("image", help="image name, e.g. ml-notebook or ml-notebook-student (see `tree`)")
+    build_parser.add_argument(
+        "--with-dependents",
+        action="store_true",
+        help="also build every image below it (incl. e2x variants), each on its fresh :local parent",
+    )
     build_parser.add_argument(
         "--build-arg",
         action="append",
