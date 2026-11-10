@@ -153,5 +153,9 @@ def test_local_run_builds_in_order_on_local_parents(small_manifest):
     run = local_run(small_manifest, {"child-nb", "base-nb"}, tag_set, "abc1234", now)
 
     assert run.names == ["base-nb", "child-nb"]
-    assert (run.tags, run.same_run_tag, run.parent_tag) == (["local"], "local", "latest")
+    assert (run.tags, run.same_run_tag, run.parent_tag) == (
+        ["local"],
+        "local",
+        "latest",
+    )
     assert not run.push
