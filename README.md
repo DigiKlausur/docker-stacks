@@ -53,8 +53,16 @@ installed, named `<image>-<flavor>` (e.g. `ml-notebook-exam`):
 docker run -p 8888:8888 ghcr.io/digiklausur/docker-stacks/<image>:latest
 ```
 
-* Registries: `ghcr.io` and `quay.io`.
-* Tags: `latest` and `YYYY-MM-DD` are built from `master`, `dev` from the `dev` branch.
+* Registries: `ghcr.io` and `quay.io` hold the same images (same digests).
+* Tags (defined as tag sets in [`notebooks.toml`](notebooks.toml)):
+
+  | Branch   | Moving tag | Per day (UTC)    | Per commit          |
+  |----------|------------|------------------|---------------------|
+  | `master` | `latest`   | `YYYY-MM-DD`     | `sha-<commit>`      |
+  | `dev`    | `dev`      | `dev-YYYY-MM-DD` | `dev-sha-<commit>`  |
+
+  Per-commit tags never move, so they are the safest way to pin a course or an exam
+  to a fixed set of images. A per-day tag is only updated by later builds on the same day.
 
 ## Building Locally
 
