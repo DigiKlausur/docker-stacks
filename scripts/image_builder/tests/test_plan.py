@@ -24,17 +24,41 @@ def small_manifest():
 @pytest.mark.parametrize(
     ("changed", "expected"),
     [
-        pytest.param(["notebooks/images/b/Dockerfile"], ["b", "c"], id="image and its descendants"),
-        pytest.param(["notebooks/images/a/Dockerfile"], EVERYTHING, id="root rebuilds its subtree"),
-        pytest.param(["notebooks/e2xgrader/Dockerfile"], ["a-exam", "a-student"], id="e2xgrader change"),
+        pytest.param(
+            ["notebooks/images/b/Dockerfile"],
+            ["b", "c"],
+            id="image and its descendants",
+        ),
+        pytest.param(
+            ["notebooks/images/a/Dockerfile"],
+            EVERYTHING,
+            id="root rebuilds its subtree",
+        ),
+        pytest.param(
+            ["notebooks/e2xgrader/Dockerfile"],
+            ["a-exam", "a-student"],
+            id="e2xgrader change",
+        ),
         pytest.param(["notebooks/images/b/README.md"], [], id="README is ignored"),
         pytest.param(["notebooks.toml"], EVERYTHING, id="manifest change"),
-        pytest.param([".github/workflows/_build_image.yml"], EVERYTHING, id="build workflow change"),
+        pytest.param(
+            [".github/workflows/_build_image.yml"],
+            EVERYTHING,
+            id="build workflow change",
+        ),
         pytest.param(["scripts/image_builder/plan.py"], EVERYTHING, id="script change"),
-        pytest.param(["scripts/image_builder/tests/test_plan.py"], [], id="test change"),
-        pytest.param(["scripts/image_builder/.gitignore"], [], id="non-python file in script folder"),
+        pytest.param(
+            ["scripts/image_builder/tests/test_plan.py"], [], id="test change"
+        ),
+        pytest.param(
+            ["scripts/image_builder/.gitignore"],
+            [],
+            id="non-python file in script folder",
+        ),
         pytest.param(["README.md", "hub/Dockerfile"], [], id="unrelated files"),
-        pytest.param(["notebooks/images/bb/Dockerfile"], [], id="folder prefix is no match"),
+        pytest.param(
+            ["notebooks/images/bb/Dockerfile"], [], id="folder prefix is no match"
+        ),
     ],
 )
 def test_select(small_manifest, changed, expected):

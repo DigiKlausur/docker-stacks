@@ -14,14 +14,14 @@ import json
 import shlex
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import build
 import manifest
 import plan
-import tags
 import repo
+import tags
 import tree
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -55,7 +55,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command is None:
         parser.print_help(sys.stderr)
-        return 2  # usage error (argparse convention), so a CI step without a command fails
+        return (
+            2  # usage error (argparse convention), so a CI step without a command fails
+        )
 
     try:
         loaded = manifest.load(MANIFEST_PATH)
@@ -74,15 +76,19 @@ def main(argv: list[str] | None = None) -> int:
 def _plan(loaded: manifest.Manifest, args: argparse.Namespace) -> dict:
     if args.tag_set not in loaded.tag_sets:
         available = ", ".join(loaded.tag_sets)
-        raise manifest.ManifestError(f"unknown tag set '{args.tag_set}' (available: {available})")
+        raise manifest.ManifestError(
+            f"unknown tag set '{args.tag_set}' (available: {available})"
+        )
 
     if args.all:
         images = manifest.build_order(loaded.nodes)
     else:
         images = plan.select(loaded, repo.changed_files(REPO_ROOT, args.since))
 
-    now = datetime.now(timezone.utc)
-    return plan.summary(loaded.tag_sets[args.tag_set], images, repo.short_sha(REPO_ROOT), now)
+    now = datetime.now(UTC)
+    return plan.summary(
+        loaded.tag_sets[args.tag_set], images, repo.short_sha(REPO_ROOT), now
+    )
 
 
 def _build_selection(loaded: manifest.Manifest, args: argparse.Namespace) -> set[str]:
@@ -90,7 +96,9 @@ def _build_selection(loaded: manifest.Manifest, args: argparse.Namespace) -> set
     if args.all:
         return set(loaded.nodes)
     if args.image not in loaded.nodes:
-        raise build.BuildError(f"unknown image '{args.image}' (see `python scripts/image_builder tree`)")
+        raise build.BuildError(
+            f"unknown image '{args.image}' (see `python scripts/image_builder tree`)"
+        )
     selected = {args.image}
     if args.with_dependents:
         selected |= plan.descendants(loaded.nodes, selected)
@@ -102,10 +110,12 @@ def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
 
     tag_set = loaded.tag_sets.get(LOCAL_TAG_SET)
     if tag_set is None:
-        raise build.BuildError(f"notebooks.toml needs a [tag_sets.{LOCAL_TAG_SET}] for local builds")
+        raise build.BuildError(
+            f"notebooks.toml needs a [tag_sets.{LOCAL_TAG_SET}] for local builds"
+        )
     names = plan.in_build_order(loaded.nodes, selected)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     resolved_tags = tags.resolve(tag_set, repo.short_sha(REPO_ROOT), now)
     labels = build.oci_labels(repo.full_sha(REPO_ROOT), now)
     build_args = build.parse_build_args(args.build_arg)
@@ -115,7 +125,9 @@ def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
             loaded.nodes[name],
             tags=resolved_tags,
             # Children build on their parent's fresh :local image.
-            parent_tag=build.parent_tag(loaded.nodes[name], selected, resolved_tags[0], tag_set.parent_tag),
+            parent_tag=build.parent_tag(
+                loaded.nodes[name], selected, resolved_tags[0], tag_set.parent_tag
+            ),
             labels=labels,
             build_args=build_args,
         )
@@ -130,9 +142,12 @@ def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
     for index, (name, cmd) in enumerate(commands.items(), start=1):
         print(f"==> {index}/{len(commands)} {name}", file=sys.stderr)
         # Folders in notebooks.toml are relative to the repo root.
-        returncode = subprocess.run(cmd, cwd=REPO_ROOT).returncode
+        returncode = subprocess.run(cmd, check=False, cwd=REPO_ROOT).returncode
         if returncode != 0:
-            print(f"error: building {name} failed; its children were not built", file=sys.stderr)
+            print(
+                f"error: building {name} failed; its children were not built",
+                file=sys.stderr,
+            )
             return returncode
     return 0
 
@@ -144,7 +159,9 @@ def _make_parser() -> argparse.ArgumentParser:
         epilog=EXAMPLES,
         formatter_class=argparse.RawDescriptionHelpFormatter,  # keep the epilog's line breaks
     )
-    commands = parser.add_subparsers(dest="command", title="commands", metavar="<command>")
+    commands = parser.add_subparsers(
+        dest="command", title="commands", metavar="<command>"
+    )
 
     commands.add_parser(
         "tree",
@@ -159,7 +176,11 @@ def _make_parser() -> argparse.ArgumentParser:
         description="Decide which images need to be built and resolve the tags for this run. "
         "Prints JSON and builds nothing.",
     )
-    plan_parser.add_argument("--tag-set", required=True, help="tag set from notebooks.toml, e.g. dev or master")
+    plan_parser.add_argument(
+        "--tag-set",
+        required=True,
+        help="tag set from notebooks.toml, e.g. dev or master",
+    )
     scope = plan_parser.add_mutually_exclusive_group(required=True)
     scope.add_argument(
         "--since",
@@ -176,8 +197,14 @@ def _make_parser() -> argparse.ArgumentParser:
         "the registry (tag 'latest'). Results are tagged ':local' and never pushed.",
     )
     what = build_parser.add_mutually_exclusive_group(required=True)
-    what.add_argument("image", nargs="?", help="image name, e.g. ml-notebook or ml-notebook-student (see `tree`)")
-    what.add_argument("--all", action="store_true", help="build every image, in build order")
+    what.add_argument(
+        "image",
+        nargs="?",
+        help="image name, e.g. ml-notebook or ml-notebook-student (see `tree`)",
+    )
+    what.add_argument(
+        "--all", action="store_true", help="build every image, in build order"
+    )
     build_parser.add_argument(
         "--with-dependents",
         action="store_true",
@@ -190,7 +217,9 @@ def _make_parser() -> argparse.ArgumentParser:
         metavar="KEY=VALUE",
         help="extra Docker build arg, e.g. E2XGRADER_VERSION=0.4.0 (repeatable)",
     )
-    build_parser.add_argument("--dry-run", action="store_true", help="only print the docker command")
+    build_parser.add_argument(
+        "--dry-run", action="store_true", help="only print the docker command"
+    )
     return parser
 
 

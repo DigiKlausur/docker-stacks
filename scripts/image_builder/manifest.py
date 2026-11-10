@@ -10,9 +10,10 @@ no other module needs to know about e2x.
 """
 
 import string
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+
+import tomllib
 
 IMAGES_DIR = Path("notebooks/images")
 E2X_DIR = Path("notebooks/e2xgrader")
@@ -90,7 +91,9 @@ def parse(data: dict) -> Manifest:
     """Validate the raw TOML data and expand it into nodes."""
     _check_keys("top level", data, allowed=TOP_LEVEL_KEYS, required=TOP_LEVEL_KEYS)
     registry = _parse_registry(data["registry"])
-    tag_sets = {name: _parse_tag_set(name, raw) for name, raw in data["tag_sets"].items()}
+    tag_sets = {
+        name: _parse_tag_set(name, raw) for name, raw in data["tag_sets"].items()
+    }
     modes = _parse_e2x_modes(data["e2x"])
 
     images = data["images"]
@@ -143,17 +146,23 @@ def _expand(images: dict, modes: dict[str, str]) -> dict[str, Node]:
     for name, raw in images.items():
         if not raw.get("enabled", True):
             continue
-        image = Node(name, IMAGES_DIR / name, parent=raw.get("parent"), base=raw.get("base"))
+        image = Node(
+            name, IMAGES_DIR / name, parent=raw.get("parent"), base=raw.get("base")
+        )
         _add(nodes, image)
         if raw.get("e2x", False):
             for target, suffix in modes.items():
-                _add(nodes, Node(f"{name}-{suffix}", E2X_DIR, parent=name, target=target))
+                _add(
+                    nodes, Node(f"{name}-{suffix}", E2X_DIR, parent=name, target=target)
+                )
     return nodes
 
 
 def _add(nodes: dict[str, Node], node: Node) -> None:
     if node.name in nodes:
-        raise ManifestError(f"duplicate image name '{node.name}' (an image and an e2x variant share it)")
+        raise ManifestError(
+            f"duplicate image name '{node.name}' (an image and an e2x variant share it)"
+        )
     nodes[node.name] = node
 
 
@@ -197,12 +206,18 @@ def _parse_tag_set(name: str, raw: dict) -> TagSet:
 
 def _check_placeholders(where: str, tag: str) -> None:
     try:
-        fields = {field for _, field, _, _ in string.Formatter().parse(tag) if field is not None}
+        fields = {
+            field
+            for _, field, _, _ in string.Formatter().parse(tag)
+            if field is not None
+        }
     except ValueError as error:
         raise ManifestError(f"{where}: invalid tag '{tag}' ({error})") from error
     unknown = sorted(fields - PLACEHOLDERS)
     if unknown:
-        raise ManifestError(f"{where}: unknown placeholder(s) in '{tag}': {', '.join(unknown)}")
+        raise ManifestError(
+            f"{where}: unknown placeholder(s) in '{tag}': {', '.join(unknown)}"
+        )
 
 
 def _parse_e2x_modes(raw: dict) -> dict[str, str]:
@@ -210,7 +225,9 @@ def _parse_e2x_modes(raw: dict) -> dict[str, str]:
     return dict(raw["modes"])
 
 
-def _check_keys(where: str, raw: dict, allowed: set[str], required: set[str] = frozenset()) -> None:
+def _check_keys(
+    where: str, raw: dict, allowed: set[str], required: set[str] = frozenset()
+) -> None:
     unknown = sorted(raw.keys() - allowed)
     if unknown:
         raise ManifestError(f"{where}: unknown key(s) {', '.join(unknown)}")
@@ -233,4 +250,6 @@ def _check_folders(images: dict, root: Path) -> None:
         raise ManifestError(f"no folder in {IMAGES_DIR} for: {', '.join(missing)}")
     unlisted = sorted(on_disk - images.keys())
     if unlisted:
-        raise ManifestError(f"folders in {IMAGES_DIR} missing from notebooks.toml: {', '.join(unlisted)}")
+        raise ManifestError(
+            f"folders in {IMAGES_DIR} missing from notebooks.toml: {', '.join(unlisted)}"
+        )

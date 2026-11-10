@@ -15,7 +15,14 @@ def changed_files(root: Path, since: str) -> list[str]:
     commits made on `since` in the meantime don't count. Never guesses:
     an unknown ref is an error.
     """
-    _git(root, "rev-parse", "--verify", "--quiet", f"{since}^{{commit}}", error=f"unknown ref '{since}'")
+    _git(
+        root,
+        "rev-parse",
+        "--verify",
+        "--quiet",
+        f"{since}^{{commit}}",
+        error=f"unknown ref '{since}'",
+    )
     return _git(root, "diff", "--name-only", f"{since}...HEAD").splitlines()
 
 
@@ -28,7 +35,11 @@ def full_sha(root: Path) -> str:
 
 
 def _git(root: Path, *args: str, error: str | None = None) -> str:
-    result = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True)
+    result = subprocess.run(
+        ["git", *args], check=False, cwd=root, capture_output=True, text=True
+    )
     if result.returncode != 0:
-        raise RepoError(error or f"git {' '.join(args)} failed: {result.stderr.strip()}")
+        raise RepoError(
+            error or f"git {' '.join(args)} failed: {result.stderr.strip()}"
+        )
     return result.stdout.strip()

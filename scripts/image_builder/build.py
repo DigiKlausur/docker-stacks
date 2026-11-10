@@ -26,12 +26,17 @@ def command(
 ) -> list[str]:
     reserved = sorted(RESERVED_BUILD_ARGS & build_args.keys())
     if reserved:
-        raise BuildError(f"{', '.join(reserved)} is set from notebooks.toml and can't be overridden")
+        raise BuildError(
+            f"{', '.join(reserved)} is set from notebooks.toml and can't be overridden"
+        )
 
     cmd = ["docker", "buildx", "build", node.folder.as_posix()]
     if node.target is not None:
         cmd += ["--target", node.target]
-    for key, value in {"IMAGE_SOURCE": base_image(manifest, node, parent_tag), **build_args}.items():
+    for key, value in {
+        "IMAGE_SOURCE": base_image(manifest, node, parent_tag),
+        **build_args,
+    }.items():
         cmd += ["--build-arg", f"{key}={value}"]
     for tag in tags:
         cmd += ["--tag", image_ref(manifest, node.name, tag)]
@@ -48,7 +53,9 @@ def image_ref(manifest: Manifest, name: str, tag: str) -> str:
     return f"{manifest.registry.primary}/{manifest.registry.namespace}/{name}:{tag}"
 
 
-def parent_tag(node: Node, built_in_this_run: set[str], same_run_tag: str, fallback_tag: str) -> str:
+def parent_tag(
+    node: Node, built_in_this_run: set[str], same_run_tag: str, fallback_tag: str
+) -> str:
     """Which tag of the parent to build on.
 
     A parent built in the same run is used by that run's tag (local: `local`,

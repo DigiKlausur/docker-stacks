@@ -12,7 +12,11 @@ def test_e2x_variants_become_nodes():
 
     assert set(nodes) == {"base-nb", "base-nb-student", "base-nb-exam", "child-nb"}
     exam = nodes["base-nb-exam"]
-    assert (exam.parent, exam.target, exam.folder) == ("base-nb", "student_exam", E2X_DIR)
+    assert (exam.parent, exam.target, exam.folder) == (
+        "base-nb",
+        "student_exam",
+        E2X_DIR,
+    )
     assert nodes["child-nb"].folder == IMAGES_DIR / "child-nb"
     assert not nodes["child-nb"].is_e2x
 
@@ -41,22 +45,66 @@ def test_only_tag_sets_with_sha_can_push():
 @pytest.mark.parametrize(
     ("mutate", "message"),
     [
-        pytest.param(lambda d: d["images"]["child-nb"].update(parnet="x"), "unknown key", id="typo in key"),
-        pytest.param(lambda d: d["images"]["child-nb"].update(base="x:1"), "exactly one", id="base and parent"),
-        pytest.param(lambda d: d["images"]["child-nb"].pop("parent"), "exactly one", id="neither base nor parent"),
-        pytest.param(lambda d: d["images"]["child-nb"].update(parent="nope"), "unknown parent", id="unknown parent"),
-        pytest.param(lambda d: d["images"]["base-nb"].update(enabled=False), "disabled", id="disabled parent"),
-        pytest.param(lambda d: d["images"]["base-nb"].update(e2x="true"), "true or false", id="e2x not a bool"),
-        pytest.param(lambda d: d["tag_sets"]["master"]["tags"].append("x-{sha}"), "at most one", id="two sha tags"),
         pytest.param(
-            lambda d: d["tag_sets"]["master"]["tags"].append("v-{dat}"), "unknown placeholder", id="placeholder typo"
+            lambda d: d["images"]["child-nb"].update(parnet="x"),
+            "unknown key",
+            id="typo in key",
         ),
-        pytest.param(lambda d: d["tag_sets"]["master"]["tags"].append("v-{"), "invalid tag", id="broken braces"),
-        pytest.param(lambda d: d["registry"].update(primary="docker.io"), "primary", id="primary not in hosts"),
         pytest.param(
-            lambda d: d["images"].update({"base-nb-exam": {"parent": "base-nb"}}), "duplicate", id="name collision"
+            lambda d: d["images"]["child-nb"].update(base="x:1"),
+            "exactly one",
+            id="base and parent",
         ),
-        pytest.param(lambda d: d["images"].update({"a": {"parent": "b"}, "b": {"parent": "a"}}), "cycle", id="cycle"),
+        pytest.param(
+            lambda d: d["images"]["child-nb"].pop("parent"),
+            "exactly one",
+            id="neither base nor parent",
+        ),
+        pytest.param(
+            lambda d: d["images"]["child-nb"].update(parent="nope"),
+            "unknown parent",
+            id="unknown parent",
+        ),
+        pytest.param(
+            lambda d: d["images"]["base-nb"].update(enabled=False),
+            "disabled",
+            id="disabled parent",
+        ),
+        pytest.param(
+            lambda d: d["images"]["base-nb"].update(e2x="true"),
+            "true or false",
+            id="e2x not a bool",
+        ),
+        pytest.param(
+            lambda d: d["tag_sets"]["master"]["tags"].append("x-{sha}"),
+            "at most one",
+            id="two sha tags",
+        ),
+        pytest.param(
+            lambda d: d["tag_sets"]["master"]["tags"].append("v-{dat}"),
+            "unknown placeholder",
+            id="placeholder typo",
+        ),
+        pytest.param(
+            lambda d: d["tag_sets"]["master"]["tags"].append("v-{"),
+            "invalid tag",
+            id="broken braces",
+        ),
+        pytest.param(
+            lambda d: d["registry"].update(primary="docker.io"),
+            "primary",
+            id="primary not in hosts",
+        ),
+        pytest.param(
+            lambda d: d["images"].update({"base-nb-exam": {"parent": "base-nb"}}),
+            "duplicate",
+            id="name collision",
+        ),
+        pytest.param(
+            lambda d: d["images"].update({"a": {"parent": "b"}, "b": {"parent": "a"}}),
+            "cycle",
+            id="cycle",
+        ),
         pytest.param(lambda d: d.pop("tag_sets"), "missing key", id="missing section"),
     ],
 )

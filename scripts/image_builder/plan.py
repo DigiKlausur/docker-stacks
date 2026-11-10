@@ -25,8 +25,14 @@ def select(manifest: Manifest, changed_files: list[str]) -> list[str]:
     if any(_needs_full_rebuild(path) for path in relevant):
         return build_order(manifest.nodes)
 
-    changed = {name for name, node in manifest.nodes.items() if any(_is_in(path, node) for path in relevant)}
-    return in_build_order(manifest.nodes, changed | descendants(manifest.nodes, changed))
+    changed = {
+        name
+        for name, node in manifest.nodes.items()
+        if any(_is_in(path, node) for path in relevant)
+    }
+    return in_build_order(
+        manifest.nodes, changed | descendants(manifest.nodes, changed)
+    )
 
 
 def in_build_order(nodes: dict[str, Node], names: set[str]) -> list[str]:
@@ -63,7 +69,9 @@ def _is_ignored(path: str) -> bool:
 
 
 def _needs_full_rebuild(path: str) -> bool:
-    return path in FULL_REBUILD_FILES or (path.startswith(SCRIPT_DIR) and path.endswith(".py"))
+    return path in FULL_REBUILD_FILES or (
+        path.startswith(SCRIPT_DIR) and path.endswith(".py")
+    )
 
 
 def _is_in(path: str, node: Node) -> bool:
