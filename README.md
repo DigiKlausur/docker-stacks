@@ -53,6 +53,38 @@ The following diagram illustrates the dependencies between the different images:
 
 ![build tree](architecture.png)
 
+## Building Locally
+
+All images are defined in [`notebooks.toml`](notebooks.toml). The script in
+[`scripts/image_builder`](scripts/image_builder) reads it. It only needs Docker and Python ≥ 3.11,
+with no packages to install.
+
+```bash
+# Show which image builds on which
+python scripts/image_builder tree
+
+# Build one image → ghcr.io/digiklausur/docker-stacks/ml-notebook:local
+python scripts/image_builder build ml-notebook
+
+# e2xgrader variants are images of their own
+python scripts/image_builder build ml-notebook-student
+
+# Only print the docker command
+python scripts/image_builder build ml-notebook --dry-run
+
+# Try another e2xgrader version
+python scripts/image_builder build ml-notebook-student --build-arg E2XGRADER_VERSION=0.4.0
+
+# See what CI would build for the changes on your branch
+python scripts/image_builder plan --tag-set dev --since origin/dev
+```
+
+- A local build pulls the image's parent from the registry (tag `latest`) and tags the result `:local`.
+  Local builds are never pushed.
+- To add an image, create `notebooks/images/<name>/` and add an `[images.<name>]` entry to
+  `notebooks.toml`. Run `python scripts/image_builder tree` to check it.
+- Tests: `pip install pytest`, then `python -m pytest`.
+
 ## Branches
 
 The `dev` branch will always reflect `ghcr.io/digiklausur/docker-stacks/{image_name}:dev` on the GitHub container registry, and the `master` branch reflects `ghcr.io/digiklausur/docker-stacks/{image_name}:latest`. 
