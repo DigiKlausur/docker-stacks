@@ -7,7 +7,6 @@ More information on e2xgrader can be found [here](https://github.com/Digiklausur
 
 The following build args are available:
 
-* `IMAGE_SOURCE`: The base image to use for the build. Defaults to `ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest`.
 * `E2XGRADER_VERSION`: The specific e2xgrader version to install from PyPI. If not set defaults to the latest version. Does take no effect if `FROM_REPO` is `true`.
 * `FROM_REPO`: If e2xgrader should be installed from the [GitHub repository](https://github.com/Digiklausur/e2xgrader). Defaults to `false`.
 * `E2XGRADER_BRANCH`: Specifies the branch to install from if `FROM_REPO` is `true`. Defaults to `main`.
@@ -92,33 +91,11 @@ In student exam mode the following additional environment variables can be used 
 
 Instead of pulling and running this image directly, refer to the e2xgrader versions of the other images present in this repository.
 
-### Build and Run
+### Build
 
-To create a teacher version of a specific notebook run:
-
-```
-docker build -t your-notebook-teacher:dev \
-       --target teacher \
-       --build-arg="IMAGE_SOURCE=<your_base_image>:<your_tag>" .
-```
-
-To create a student version of a specific notebook and install `e2xgrader` from the `dev` branch run:
-
-```
-docker build -t your-notebook-student:dev \
-       --target student \
-       --build-arg="IMAGE_SOURCE=<your_base_image>:<your_tag>" \
-       --build-arg="FROM_REPO=true" \
-       --build-arg="E2XGRADER_BRANCH=dev" .
-```
-
-To create a student exam version run:
-
-```
-docker build -t your-notebook-student-exam:dev \
-       --target student_exam \
-       --build-arg="IMAGE_SOURCE=<your_base_image>:<your_tag>" .
-```
+Every image with `e2x = true` in `notebooks.toml` gets one variant per target,
+e.g. `ml-notebook-student`, `ml-notebook-exam` and `ml-notebook-teacher`.
+See [Building Locally](../../README.md#building-locally).
 
 ### Running the Images
 

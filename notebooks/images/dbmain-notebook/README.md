@@ -3,12 +3,6 @@
 This Docker image is a customized version of the [e2x Desktop Notebook](../desktop-notebook) image, with the DB Main application installed.
 It serves as an example on how to install applications on the desktop notebook.
 
-## Build Args
-
-The following build arg is available:
-
-* `IMAGE_SOURCE`: The base image to use for the build. Defaults to `ghcr.io/digiklausur/docker-stacks/desktop-notebook:latest`.
-
 ## Description
 
 This image is designed to serve as an example of a desktop notebook with an application installed.   
@@ -44,16 +38,6 @@ To pull and run the image use:
 
 Available tags are `latest` and `dev`. Available registries are `quay.io` and `ghcr.io`.
 
-### Build and Run
+### Build
 
-To build the image from the standard source, run:
-
-`docker build -t dbmain-notebook:dev .`
-
-To build the image from a custom source, run:
-
-`docker build -t dbmain-notebook:dev . --build-arg="IMAGE_SOURCE=<your_base_image>:<your_tag>"`
-
-To run the image, use:
-
-`docker run -p 8888:8888 dbmain-notebook:dev`
+See [Building Locally](../../../README.md#building-locally).

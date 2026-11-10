@@ -78,8 +78,13 @@ python scripts/image_builder build --all
 # Only print the docker command(s)
 python scripts/image_builder build ml-notebook --dry-run
 
-# Try another e2xgrader version
+# Try another e2xgrader version, or install it from a GitHub branch
 python scripts/image_builder build ml-notebook-student --build-arg E2XGRADER_VERSION=0.4.0
+python scripts/image_builder build ml-notebook-student \
+    --build-arg FROM_REPO=true --build-arg E2XGRADER_BRANCH=dev
+
+# Run a locally built image
+docker run -p 8888:8888 ghcr.io/digiklausur/docker-stacks/ml-notebook:local
 
 # See what CI would build for the changes on your branch
 python scripts/image_builder plan --tag-set dev --since origin/dev
