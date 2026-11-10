@@ -1,61 +1,42 @@
+# Manually build (and optionally push) the images, e.g. to repair a run that
+# failed after a force push, or to rebuild everything.
+#
+# There are no e2xgrader inputs (version/branch) for now: building with an
+# experimental e2xgrader needs its own tag set first, so it can't overwrite
+# `latest` or `dev`. Until then, try e2xgrader versions locally with
+# `python scripts/image_builder build ... --build-arg E2XGRADER_VERSION=...`.
 name: Manually build and push all images
 
 on:
   workflow_dispatch:
     inputs:
-      force_build:
-        description: If the build should be forced even if there are no changes
-        type: boolean
-        required: false
-        default: false
-      push:
-        description: Push the image to the registry
-        type: boolean
-        required: false
-        default: false
-      registry:
-        description: Container registry to use
+      tag_set:
+        description: Tag set from notebooks.toml
         type: choice
-        required: false
-        default: ghcr.io
         options:
-         - ghcr.io
-         - quay.io
-      tag:
-        description: Tag to use for the images (e.g. latest, dev)
+          - dev
+          - master
+        default: dev
+      since:
+        description: Only build what changed since this ref (empty = build everything)
         type: string
-        required: false
-        default: latest
-      e2xgrader_installation_source:
-        description: Where to install e2xgrader from
-        type: choice
-        required: false
-        default: pypi
-        options:
-         - pypi
-         - github
-      e2xgrader_version:
-        description: Use a specific e2xgrader version from PyPi
-        type: string
-        required: false
         default: ""
-      e2xgrader_branch:
-        description: Which e2xgrader branch or tag to install from. Only takes effect if e2xgrader_installation_source is "github"
-        type: string
-        required: false
-        default: "main"
+      push:
+        description: Push to every registry
+        type: boolean
+        default: false
+
+# Same group as the automatic runs of this tag set, so manual and automatic
+# runs never move the same tags at the same time.
+concurrency:
+  group: build-images-${{ inputs.tag_set }}
+  cancel-in-progress: false
 
 jobs:
-  
-  manually_build_all_images:
-    uses: ./.github/workflows/build_and_push_all_images.yml
+  build:
+    uses: ./.github/workflows/build_all_images.yml
     with:
-      force_build: ${{ inputs.force_build }}
+      tag_set: ${{ inputs.tag_set }}
+      since: ${{ inputs.since }}
       push: ${{ inputs.push }}
-      registry: ${{ inputs.registry }}
-      tag: ${{ inputs.tag }}
-      e2xgrader_installation_source: ${{ inputs.e2xgrader_installation_source }}
-      e2xgrader_version: ${{ inputs.e2xgrader_version }}
-      e2xgrader_branch: ${{ inputs.e2xgrader_branch }}
     secrets: inherit
-            
