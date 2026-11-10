@@ -9,30 +9,7 @@ This image is designed to provide a comprehensive Jupyter Notebook environment f
 * All features from the e2x Minimal Notebook image
 * A collection of popular Python data science libraries, including NumPy, Pandas, SciPy, Matplotlib, Scikit-learn, and more
 
-## Versions
-
-This images comes as a basic data science image or with `e2xgrader` installed and a specific mode activated.
-For more information look at the [E2xGrader Notebook](../../e2xgrader) image and the [e2xgrader](https://github.com/Digiklausur/e2xgrader) package.
-
-* `datascience-notebook`
-    + Base data science image
-* `datascience-notebook-teacher`
-    + Base data science image with `e2xgrader` teacher mode activated (includes grading tools)
-* `datascience-notebook-student`
-    + Base data science image with `e2xgrader` student mode activated (includes extensions for students)
-* `datascience-notebook-exam`
-    + Base data science image with `e2xgrader` student_exam mode activated (provides a restricted notebook for students in an exam)
-
 ## Usage
 
-### Pull and Run
-
-To pull and run the image use:
-
-`docker run -p 8888:8888 ghcr.io/digiklausur/docker-stacks/datascience-notebook:latest`
-
-Available tags are `latest` and `dev`. Available registries are `quay.io` and `ghcr.io`.
-
-### Build
-
-See [Building Locally](../../../README.md#building-locally).
+See [Images](../../../README.md#images), [Pull and Run](../../../README.md#pull-and-run)
+and [Building Locally](../../../README.md#building-locally) in the main README.

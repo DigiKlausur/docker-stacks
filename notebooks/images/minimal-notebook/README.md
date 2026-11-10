@@ -16,14 +16,5 @@ This image is designed to provide a minimal Jupyter Notebook environment with ad
 
 ## Usage
 
-### Pull and Run
-
-To pull and run the image use:
-
-`docker run -p 8888:8888 ghcr.io/digiklausur/docker-stacks/minimal-notebook:latest`
-
-Available tags are `latest` and `dev`. Available registries are `quay.io` and `ghcr.io`.
-
-### Build
-
-See [Building Locally](../../../README.md#building-locally).
+See [Images](../../../README.md#images), [Pull and Run](../../../README.md#pull-and-run)
+and [Building Locally](../../../README.md#building-locally) in the main README.

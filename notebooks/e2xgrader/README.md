@@ -87,15 +87,9 @@ In student exam mode the following additional environment variables can be used 
 
 ## Usage
 
-### Pull and Run
-
-Instead of pulling and running this image directly, refer to the e2xgrader versions of the other images present in this repository.
-
-### Build
-
-Every image with `e2x = true` in `notebooks.toml` gets one variant per target,
-e.g. `ml-notebook-student`, `ml-notebook-exam` and `ml-notebook-teacher`.
-See [Building Locally](../../README.md#building-locally).
+This image isn't used on its own: every image marked `[e2x]` gets one variant per target.
+See [E2xGrader Images](../../README.md#e2xgrader-images) and
+[Building Locally](../../README.md#building-locally) in the main README.
 
 ### Running the Images
 
