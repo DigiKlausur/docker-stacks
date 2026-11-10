@@ -1,0 +1,124 @@
+# ============================================================================ #
+#                                                                              #
+#   notebooks.toml: single source of truth for all notebook images             #
+#                                                                              #
+#   Read by scripts/ to build, retag and generate the CI workflow.             #
+#   Each image lives in notebooks/images/<key>.                                #
+#                                                                              #
+# ============================================================================ #
+
+
+# ============================================================================ #
+#   Registry                                                                   #
+#                                                                              #
+#   namespace: path below the registry host, e.g.                              #
+#              ghcr.io/digiklausur/docker-stacks/<image>                       #
+#   hosts:     every image is pushed to all of these (same digest)             #
+#   primary:   parents are pulled from here                                    #
+# ============================================================================ #
+
+[registry]
+namespace = "digiklausur/docker-stacks"
+hosts     = ["ghcr.io", "quay.io"]
+primary   = "ghcr.io"
+
+
+# ============================================================================ #
+#   e2xgrader overlay (notebooks/e2xgrader)                                    #
+#                                                                              #
+#   Applied on top of every image with `e2x = true`.                           #
+#   modes: Dockerfile target = suffix of the published image name,             #
+#          e.g. ml-notebook + student_exam -> ml-notebook-exam                 #
+# ============================================================================ #
+
+[e2x]
+modes = { student = "student", student_exam = "exam", teacher = "teacher" }
+
+
+# ============================================================================ #
+#   Tag sets                                                                   #
+#                                                                              #
+#   tags:       tags pushed for every built image.                             #
+#               Placeholders: {date} = UTC YYYY-MM-DD, {sha} = 7-char SHA      #
+#   parent_tag: tag used for a parent that was not rebuilt in this run         #
+#               (otherwise the parent's digest is used)                        #
+# ============================================================================ #
+
+[tag_sets.local]
+tags       = ["local"]          # never pushed
+parent_tag = "latest"
+
+[tag_sets.master]
+tags       = ["latest", "{date}", "sha-{sha}"]
+parent_tag = "latest"
+
+[tag_sets.dev]
+tags       = ["dev", "dev-{date}", "dev-sha-{sha}"]
+parent_tag = "dev"
+
+
+# ============================================================================ #
+#   Images                                                                     #
+#                                                                              #
+#   Key = image name = folder name in notebooks/images/.                       #
+#   base:    external base image (exactly one of base / parent)                #
+#   parent:  image from this file to build on                                  #
+#   e2x:     also build the e2xgrader variants (default: false)                #
+#   enabled: set to false to skip the image entirely (default: true)           #
+# ============================================================================ #
+
+[images.minimal-notebook]
+base = "jupyter/minimal-notebook:notebook-6.5.4"
+e2x  = true
+
+[images.bi-notebook]
+base = "jupyter/minimal-notebook:notebook-6.5.3"   # intentionally older (library constraints)
+e2x  = true
+
+[images.datascience-notebook]
+parent = "minimal-notebook"
+e2x    = true
+
+[images.java-notebook]
+parent = "minimal-notebook"
+e2x    = true
+
+[images.desktop-notebook]
+parent = "minimal-notebook"
+
+[images.bidata-notebook]
+parent = "minimal-notebook"
+e2x    = true
+
+[images.julia-notebook]
+parent  = "minimal-notebook"
+e2x     = true
+enabled = false                                    # broken, nobody uses it currently
+
+[images.dbmain-notebook]
+parent = "desktop-notebook"
+e2x    = true
+
+[images.sql-notebook]
+parent = "datascience-notebook"
+e2x    = true
+
+[images.datascience-notebook-code]
+parent = "datascience-notebook"
+e2x    = true
+
+[images.ml-notebook]
+parent = "datascience-notebook"
+e2x    = true
+
+[images.tf-notebook]
+parent = "datascience-notebook"
+e2x    = true
+
+[images.wus-notebook]
+parent = "datascience-notebook"
+e2x    = true
+
+[images.nlp-notebook]
+parent = "ml-notebook"
+e2x    = true
