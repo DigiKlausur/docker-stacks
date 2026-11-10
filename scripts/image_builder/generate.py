@@ -61,6 +61,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      # A stale copy of this file would silently skip images that were added
+      # to notebooks.toml (no job for them), so refuse to build at all.
+      - name: Generated files up to date
+        run: python3 scripts/image_builder generate --check
+
       - name: Plan
         id: plan
         env:
