@@ -195,10 +195,9 @@ def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
         # Folders in notebooks.toml are relative to the repo root.
         returncode = subprocess.run(cmd, check=False, cwd=REPO_ROOT).returncode
         if returncode != 0:
-            print(
-                f"error: building {name} failed; its children were not built",
-                file=sys.stderr,
-            )
+            remaining = len(commands) - index
+            skipped = f"; {remaining} remaining image(s) not built" if remaining else ""
+            print(f"error: building {name} failed{skipped}", file=sys.stderr)
             return returncode
     return 0
 
