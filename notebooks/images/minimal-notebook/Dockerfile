@@ -52,3 +52,11 @@ RUN mamba install -y gh --channel conda-forge \
     && pip uninstall "jupyter-server-terminals" -y \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
     && jupyter serverextension list
+
+# Remove backports.functools_lru_cache: it comes with the Jupyter base image and
+# nothing needs it on Python 3.11. Its regular backports/__init__.py hides
+# backports.tarfile, which newer setuptools (pulled in by e.g. torch) imports, so
+# `import setuptools` (and with it nbgrader/e2xgrader) failed in ml-notebook.
+# --force removes only this package, without touching its dependencies.
+RUN mamba remove --force -y backports.functools_lru_cache \
+    && mamba clean -afy
