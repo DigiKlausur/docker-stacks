@@ -18,7 +18,7 @@ This image is designed to provide a Jupyter Notebook environment for machine lea
 ## Versions
 
 This images comes as a basic machine learning image or with `e2xgrader` installed and a specific mode activated.
-For more information look at the [E2xGrader Notebook](../e2xgrader-notebook) image and the [e2xgrader](https://github.com/Digiklausur/e2xgrader) package.
+For more information look at the [E2xGrader Notebook](../../e2xgrader) image and the [e2xgrader](https://github.com/Digiklausur/e2xgrader) package.
 
 * `tf-notebook`
     + Base tensorflow image

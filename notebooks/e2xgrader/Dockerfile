@@ -14,7 +14,7 @@ LABEL org.opencontainers.image.title="e2xgrader-notebook"
 LABEL org.opencontainers.image.description="The base image for the e2xgrader notebook, with common configurations and e2xgrader installation, designed to be extended for different user modes including student, student_exam, and teacher."
 LABEL org.opencontainers.image.vendor="H-BRS"
 LABEL org.opencontainers.image.url="https://github.com/DigiKlausur/docker-stacks/"
-LABEL org.opencontainers.image.source="https://github.com/DigiKlausur/docker-stacks/images/e2xgrader-notebook"
+LABEL org.opencontainers.image.source="https://github.com/DigiKlausur/docker-stacks/notebooks/e2xgrader"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.base.image="$IMAGE_SOURCE"
 

@@ -51,7 +51,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: jupyter/minimal-notebook
       base_image_tag: notebook-6.5.4
-      image_path: images/minimal-notebook
+      image_path: notebooks/images/minimal-notebook
       image_name: minimal-notebook
       image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
@@ -81,7 +81,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
       base_image_tag: ${{ inputs.tag }}
-      image_path: images/java-notebook
+      image_path: notebooks/images/java-notebook
       image_name: java-notebook
       image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
@@ -111,7 +111,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
       base_image_tag: ${{ inputs.tag }}      
-      image_path: images/desktop-notebook
+      image_path: notebooks/images/desktop-notebook
       image_name: desktop-notebook
       image_tag: ${{ inputs.tag }}      
       push: ${{ inputs.push }}
@@ -125,7 +125,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/desktop-notebook
       base_image_tag: ${{ inputs.tag }}  
-      image_path: images/dbmain-notebook
+      image_path: notebooks/images/dbmain-notebook
       image_name: dbmain-notebook
       image_tag: ${{ inputs.tag }}          
       push: ${{ inputs.push }}
@@ -155,7 +155,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
       base_image_tag: ${{ inputs.tag }}      
-      image_path: images/datascience-notebook
+      image_path: notebooks/images/datascience-notebook
       image_name: datascience-notebook
       image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
@@ -185,7 +185,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
       base_image_tag: ${{ inputs.tag }}     
-      image_path: images/sql-notebook
+      image_path: notebooks/images/sql-notebook
       image_name: sql-notebook
       image_tag: ${{ inputs.tag }} 
       push: ${{ inputs.push }}
@@ -215,7 +215,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
       base_image_tag: ${{ inputs.tag }}     
-      image_path: images/code-notebook
+      image_path: notebooks/images/datascience-notebook-code
       image_name: datascience-notebook-code
       image_tag: ${{ inputs.tag }} 
       push: ${{ inputs.push }}
@@ -245,7 +245,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
       base_image_tag: ${{ inputs.tag }}    
-      image_path: images/ml-notebook
+      image_path: notebooks/images/ml-notebook
       image_name: ml-notebook
       image_tag: ${{ inputs.tag }}  
       push: ${{ inputs.push }}
@@ -275,7 +275,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
       base_image_tag: ${{ inputs.tag }}    
-      image_path: images/wus-notebook
+      image_path: notebooks/images/wus-notebook
       image_name: wus-notebook
       image_tag: ${{ inputs.tag }}  
       push: ${{ inputs.push }}
@@ -305,7 +305,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/ml-notebook
       base_image_tag: ${{ inputs.tag }}    
-      image_path: images/nlp-notebook
+      image_path: notebooks/images/nlp-notebook
       image_name: nlp-notebook
       image_tag: ${{ inputs.tag }}  
       push: ${{ inputs.push }}
@@ -335,7 +335,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/datascience-notebook
       base_image_tag: ${{ inputs.tag }}    
-      image_path: images/tf-notebook
+      image_path: notebooks/images/tf-notebook
       image_name: tf-notebook
       image_tag: ${{ inputs.tag }}  
       push: ${{ inputs.push }}
@@ -364,7 +364,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: jupyter/minimal-notebook
       base_image_tag: notebook-6.5.3
-      image_path: images/bi-notebook
+      image_path: notebooks/images/bi-notebook
       image_name: bi-notebook
       image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}
@@ -394,7 +394,7 @@ jobs:
       registry: ${{ inputs.registry }}
       base_image_name: ${{ inputs.registry }}/digiklausur/docker-stacks/minimal-notebook
       base_image_tag: ${{ inputs.tag }}    
-      image_path: images/bidata-notebook
+      image_path: notebooks/images/bidata-notebook
       image_name: bidata-notebook
       image_tag: ${{ inputs.tag }}
       push: ${{ inputs.push }}

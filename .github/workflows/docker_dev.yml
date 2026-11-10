@@ -9,7 +9,7 @@ on:
       - .github/workflows/build_and_push_all_images.yml
       - .github/workflows/build_e2xgrader_images.yml
       - .github/workflows/build_image.yml
-      - images/**
+      - notebooks/**
 
 jobs:
   

@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.title="tf-notebook"
 LABEL org.opencontainers.image.description="A Docker image for the for Jupyter notebook based on datascience notebook with tensorflow installed."
 LABEL org.opencontainers.image.vendor="H-BRS"
 LABEL org.opencontainers.image.url="https://github.com/DigiKlausur/docker-stacks/"
-LABEL org.opencontainers.image.source="https://github.com/DigiKlausur/docker-stacks/images/tf-notebook"
+LABEL org.opencontainers.image.source="https://github.com/DigiKlausur/docker-stacks/notebooks/images/tf-notebook"
 LABEL org.opencontainers.image.licenses="MIT"
 
 USER root

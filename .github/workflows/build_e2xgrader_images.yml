@@ -107,7 +107,7 @@ jobs:
         with:
           filters: |
             image_changed:
-              images/e2xgrader-notebook/**/!(README.md)
+              notebooks/e2xgrader/**/!(README.md)
             workflow_changed:
               .github/workflows/build_e2xgrader_images.yml
           base: ${{ github.ref }}
@@ -135,7 +135,7 @@ jobs:
         id: build_image
         uses: docker/build-push-action@v7.2.0
         with:
-          context: images/e2xgrader-notebook
+          context: notebooks/e2xgrader
           push: ${{ inputs.push }}
           tags: ${{ steps.set_tags.outputs.tags }}
           target: ${{ matrix.e2xgrader_mode }}
