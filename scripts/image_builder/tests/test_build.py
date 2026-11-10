@@ -117,6 +117,13 @@ def test_push_goes_to_every_registry_and_uses_the_run_tag(small_manifest):
     ]  # fmt: skip
 
 
+def test_without_push_planned_parents_also_come_by_parent_tag(small_manifest):
+    # base-nb is in the plan, but a run without --push never puts it in the registry.
+    run = ci_run(small_manifest, "base-nb-exam", make_plan(), push=False)
+    cmd = build_command(small_manifest, "base-nb-exam", run=run)
+    assert "IMAGE_SOURCE=ghcr.io/org/stack/base-nb:dev" in cmd
+
+
 def test_parent_outside_the_plan_comes_by_parent_tag(small_manifest):
     plan_json = make_plan(images=["child-nb"])
     run = ci_run(small_manifest, "child-nb", plan_json, push=False)

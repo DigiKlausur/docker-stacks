@@ -59,7 +59,9 @@ def ci_run(manifest: Manifest, image: str, plan_json: str, push: bool) -> Run:
     return Run(
         names=[image],
         tags=summary["tags"],
-        in_run=set(summary["images"]),
+        # Each node is built on its own runner. Without --push nothing of this
+        # run reaches the registry, so every parent must come by parent_tag.
+        in_run=set(summary["images"]) if push else set(),
         same_run_tag=summary["run_tag"],
         parent_tag=summary["parent_tag"],
         push=push,
