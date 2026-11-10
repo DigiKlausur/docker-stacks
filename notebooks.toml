@@ -48,7 +48,7 @@ modes = { student = "student", student_exam = "exam", teacher = "teacher" }
 tags       = ["local"]          # never pushed
 parent_tag = "latest"
 
-[tag_sets.master]
+[tag_sets.main]
 tags       = ["latest", "{date}", "sha-{sha}"]
 parent_tag = "latest"
 

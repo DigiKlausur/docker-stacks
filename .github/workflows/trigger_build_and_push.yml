@@ -15,7 +15,7 @@ on:
         type: choice
         options:
           - dev
-          - master
+          - main
         default: dev
       since:
         description: Only build what changed since this ref (empty = build everything)

@@ -6,7 +6,7 @@ from retag import RetagError, check_tags, completion_pairs, create_command, pair
 
 @pytest.fixture
 def small_manifest():
-    # base-nb (e2x: student, exam) ── child-nb; tag sets: local, master (latest, sha-{sha})
+    # base-nb (e2x: student, exam) ── child-nb; tag sets: local, main (latest, sha-{sha})
     return parse(make_data())
 
 
@@ -61,7 +61,7 @@ def test_pairs_can_be_limited_to_some_nodes(small_manifest):
 
 
 def summary(images: list[str]) -> dict:
-    """A master run's plan (as parsed JSON) that rebuilt `images`."""
+    """A main run's plan (as parsed JSON) that rebuilt `images`."""
     return {
         "tags": ["latest", "sha-abc1234"],
         "parent_tag": "latest",

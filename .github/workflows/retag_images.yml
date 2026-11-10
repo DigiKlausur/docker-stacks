@@ -12,7 +12,7 @@ on:
       from_tag:
         description: >-
           Existing tag. A per-commit tag (sha-abc1234) gives a guaranteed
-          consistent set; `latest` can be mixed if a master build is running.
+          consistent set; `latest` can be mixed if a main build is running.
         type: string
         default: latest
       to_tag:

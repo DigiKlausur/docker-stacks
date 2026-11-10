@@ -12,7 +12,7 @@ def make_data(images: dict | None = None) -> dict:
         "e2x": {"modes": {"student": "student", "student_exam": "exam"}},
         "tag_sets": {
             "local": {"tags": ["local"], "parent_tag": "latest"},
-            "master": {"tags": ["latest", "sha-{sha}"], "parent_tag": "latest"},
+            "main": {"tags": ["latest", "sha-{sha}"], "parent_tag": "latest"},
         },
         "images": images
         or {

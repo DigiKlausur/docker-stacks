@@ -50,7 +50,7 @@ examples:
       only print the docker command
   python scripts/image_builder plan --tag-set dev --since origin/dev
       what CI would build for the changes on your branch
-  python scripts/image_builder plan --tag-set master --all
+  python scripts/image_builder plan --tag-set main --all
       plan a full rebuild
   python scripts/image_builder build ml-notebook --dry-run \\
       --plan "$(python scripts/image_builder plan --tag-set dev --all)"
@@ -321,7 +321,7 @@ def _make_parser() -> argparse.ArgumentParser:
     plan_parser.add_argument(
         "--tag-set",
         required=True,
-        help="tag set from notebooks.toml, e.g. dev or master",
+        help="tag set from notebooks.toml, e.g. dev or main",
     )
     scope = plan_parser.add_mutually_exclusive_group(required=True)
     scope.add_argument(

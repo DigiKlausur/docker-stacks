@@ -75,11 +75,11 @@ def test_in_build_order(small_manifest):
 
 
 def test_summary_resolves_tags():
-    tag_set = parse(make_data()).tag_sets["master"]
+    tag_set = parse(make_data()).tag_sets["main"]
     now = datetime(2026, 11, 10, tzinfo=timezone.utc)
 
     assert summary(tag_set, ["base-nb"], "abc1234", now) == {
-        "tag_set": "master",
+        "tag_set": "main",
         "tags": ["latest", "sha-abc1234"],
         "run_tag": "sha-abc1234",
         "parent_tag": "latest",

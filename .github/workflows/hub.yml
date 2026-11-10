@@ -3,7 +3,7 @@ name: Hub
 on:
   push:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/hub.yml
@@ -49,7 +49,7 @@ jobs:
   build-and-publish-prod:
     name: Deploy Prod
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

@@ -1,24 +1,24 @@
-# Builds what changed on master and pushes it to every registry with the
-# master tags (latest, date, sha). No `paths:` filter on purpose:
+# Builds what changed on main and pushes it to every registry with the
+# main tags (latest, date, sha). No `paths:` filter on purpose:
 # `image_builder plan` decides what to build.
 name: Build and push latest images
 
 on:
   push:
     branches:
-      - master
+      - main
 
 # One run per tag set at a time, so an older run can't finish last and move
 # `latest` back to its images. A newer queued run replaces an older queued one.
 concurrency:
-  group: build-images-master
+  group: build-images-main
   cancel-in-progress: false
 
 jobs:
   build:
     uses: ./.github/workflows/build_all_images.yml
     with:
-      tag_set: master
+      tag_set: main
       # No fallback: if this ref is unknown (e.g. after a force push), the plan
       # fails visibly. Fix it with a manual run without `since`.
       since: ${{ github.event.before }}
