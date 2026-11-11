@@ -17,7 +17,7 @@ RUN apt-get update -y \
     && apt-get install --yes \
         build-essential \
         libgomp1 \
-    && su $NB_USER -c ". /opt/conda/bin/activate && uv pip install -r /tmp/requirements.txt" \
+    && su $NB_USER -c ". /opt/conda/bin/activate && pip install --no-cache-dir -r /tmp/requirements.txt" \
     && rm /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
     && apt-get purge -y --auto-remove build-essential \
@@ -28,13 +28,3 @@ USER $NB_USER
 
 # Jupyter extension list
 RUN jupyter nbextension list
-
-# Record this build in /etc/image-info.json (see notebooks/image_info).
-# Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and
-# every RUN after their ARG line is rebuilt each time.
-ARG IMAGE_SOURCE IMAGE_NAME GIT_COMMIT BUILD_DATE
-USER root
-COPY --from=image_info --chmod=755 image_info.py /usr/local/bin/image_info
-RUN image_info record --name "$IMAGE_NAME" --parent "$IMAGE_SOURCE" \
-        --git-commit "$GIT_COMMIT" --build-date "$BUILD_DATE"
-USER $NB_USER
