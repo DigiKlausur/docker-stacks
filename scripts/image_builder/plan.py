@@ -2,8 +2,9 @@
 
 Rules:
 - README.md files and the script's tests never trigger a build.
-- notebooks.toml, the reusable build workflow and the script's .py files can
-  affect every image, so changing them rebuilds everything.
+- notebooks.toml, the reusable build workflow, the script's .py files and
+  image_info.py (copied into every image) can affect every image, so changing
+  them rebuilds everything.
 - Otherwise a node is rebuilt if a file in its folder changed, and so is
   everything below it in the tree.
 """
@@ -12,9 +13,13 @@ from datetime import datetime
 from pathlib import PurePosixPath
 
 import tags
-from manifest import Manifest, Node, TagSet, build_order, children
+from manifest import IMAGE_INFO_DIR, Manifest, Node, TagSet, build_order, children
 
-FULL_REBUILD_FILES = {"notebooks.toml", ".github/workflows/_build_image.yml"}
+FULL_REBUILD_FILES = {
+    "notebooks.toml",
+    ".github/workflows/_build_image.yml",
+    f"{IMAGE_INFO_DIR.as_posix()}/image_info.py",
+}
 SCRIPT_DIR = "scripts/image_builder/"
 TESTS_DIR = "scripts/image_builder/tests/"
 

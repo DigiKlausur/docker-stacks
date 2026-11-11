@@ -48,6 +48,14 @@ def small_manifest():
         ),
         pytest.param(["scripts/image_builder/plan.py"], EVERYTHING, id="script change"),
         pytest.param(
+            ["notebooks/image_info/image_info.py"], EVERYTHING, id="image_info change"
+        ),
+        pytest.param(
+            ["notebooks/image_info/tests/test_image_info.py"],
+            [],
+            id="image_info test change",
+        ),
+        pytest.param(
             ["scripts/image_builder/tests/test_plan.py"], [], id="test change"
         ),
         pytest.param(
