@@ -12,11 +12,12 @@ from dataclasses import dataclass
 from datetime import datetime
 
 import tags
-from manifest import Manifest, Node, TagSet
+from manifest import IMAGE_INFO_DIR, Manifest, Node, TagSet
 from plan import in_build_order
 
-# Set by this script from notebooks.toml; overriding it would silently change the tree.
-RESERVED_BUILD_ARGS = {"IMAGE_SOURCE"}
+# Set by this script; overriding them would silently change the tree
+# (IMAGE_SOURCE) or what `image_info` records inside the image.
+RESERVED_BUILD_ARGS = {"IMAGE_SOURCE", "IMAGE_NAME", "GIT_COMMIT", "BUILD_DATE"}
 PLAN_KEYS = {"tags", "run_tag", "parent_tag", "images"}
 
 
@@ -82,22 +83,27 @@ def command(
     manifest: Manifest,
     node: Node,
     run: Run,
-    labels: dict[str, str],
+    revision: str,
+    now: datetime,
     build_args: dict[str, str],
 ) -> list[str]:
     reserved = sorted(RESERVED_BUILD_ARGS & build_args.keys())
     if reserved:
         raise BuildError(
-            f"{', '.join(reserved)} is set from notebooks.toml and can't be overridden"
+            f"{', '.join(reserved)} is set by image_builder and can't be overridden"
         )
 
     cmd = ["docker", "buildx", "build", node.folder.as_posix()]
     if node.target is not None:
         cmd += ["--target", node.target]
+    # image_info lives outside the build context (the image's folder). A named
+    # context makes it available in the Dockerfile as `COPY --from=image_info`.
+    cmd += ["--build-context", f"image_info={IMAGE_INFO_DIR.as_posix()}"]
 
     tag = parent_tag(node, run.in_run, run.same_run_tag, run.parent_tag)
     for key, value in {
         "IMAGE_SOURCE": base_image(manifest, node, tag),
+        **image_info_args(node, revision, now),
         **build_args,
     }.items():
         cmd += ["--build-arg", f"{key}={value}"]
@@ -109,7 +115,7 @@ def command(
         for run_tag in run.tags:
             cmd += ["--tag", image_ref(manifest, node.name, run_tag, host)]
 
-    for key, value in labels.items():
+    for key, value in oci_labels(revision, now).items():
         cmd += ["--label", f"{key}={value}"]
 
     # --load puts the result into `docker images` with every buildx driver
@@ -146,8 +152,22 @@ def base_image(manifest: Manifest, node: Node, parent_tag: str) -> str:
 def oci_labels(revision: str, now: datetime) -> dict[str, str]:
     return {
         "org.opencontainers.image.revision": revision,
-        "org.opencontainers.image.created": now.isoformat(timespec="seconds"),
+        "org.opencontainers.image.created": timestamp(now),
     }
+
+
+def image_info_args(node: Node, revision: str, now: datetime) -> dict[str, str]:
+    """Build args for the `image_info record` step at the end of every Dockerfile.
+    Same commit and time as the OCI labels."""
+    return {
+        "IMAGE_NAME": node.name,
+        "GIT_COMMIT": revision,
+        "BUILD_DATE": timestamp(now),
+    }
+
+
+def timestamp(now: datetime) -> str:
+    return now.isoformat(timespec="seconds")
 
 
 def parse_build_args(pairs: list[str]) -> dict[str, str]:

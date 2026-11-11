@@ -9,18 +9,17 @@ LABEL description="e2x machine learning notebook"
 
 USER $NB_USER
 
-# Install conda related pkgs
-RUN mamba install -y xeus-sql --channel conda-forge && \
-    mamba install -y soci-mysql --channel conda-forge && \
-    mamba install -y soci-postgresql --channel conda-forge && \
-    mamba install -y soci-sqlite --channel conda-forge && \
+# SQL kernel (xeus-sql) and its database drivers: conda-forge only, so these stay
+# on mamba, in one call (one solve instead of four)
+RUN mamba install -y --channel conda-forge \
+        xeus-sql soci-mysql soci-postgresql soci-sqlite && \
     mamba clean -afy && \
     npm cache clean --force && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN uv pip install -r /tmp/requirements.txt
 
 # Jupyter extension list
 RUN jupyter nbextension list
@@ -28,4 +27,14 @@ RUN jupyter nbextension list
 USER root
 RUN rm /tmp/requirements.txt
 
+USER $NB_USER
+
+# Record this build in /etc/image-info.json (see notebooks/image_info).
+# Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and
+# every RUN after their ARG line is rebuilt each time.
+ARG IMAGE_SOURCE IMAGE_NAME GIT_COMMIT BUILD_DATE
+USER root
+COPY --from=image_info --chmod=755 image_info.py /usr/local/bin/image_info
+RUN image_info record --name "$IMAGE_NAME" --parent "$IMAGE_SOURCE" \
+        --git-commit "$GIT_COMMIT" --build-date "$BUILD_DATE"
 USER $NB_USER

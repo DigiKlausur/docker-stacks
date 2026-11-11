@@ -72,7 +72,7 @@ base = "jupyter/minimal-notebook:notebook-6.5.4"
 e2x  = true
 
 [images.bi-notebook]
-base = "jupyter/minimal-notebook:notebook-6.5.3"   # intentionally older (library constraints)
+parent = "minimal-notebook"
 e2x  = true
 
 [images.datascience-notebook]
@@ -84,7 +84,8 @@ parent = "minimal-notebook"
 e2x    = true
 
 [images.desktop-notebook]
-parent = "minimal-notebook"
+parent  = "minimal-notebook"
+enabled = false                                    # proof of concept, not used anywhere
 
 [images.bidata-notebook]
 parent = "minimal-notebook"
@@ -96,12 +97,14 @@ e2x     = true
 enabled = false                                    # broken, nobody uses it currently
 
 [images.dbmain-notebook]
-parent = "desktop-notebook"
-e2x    = true
+parent  = "desktop-notebook"
+e2x     = true
+enabled = false                                    # proof of concept, not used anywhere
 
 [images.sql-notebook]
-parent = "datascience-notebook"
-e2x    = true
+parent  = "datascience-notebook"
+e2x     = true
+enabled = false                                    # proof of concept, not used anywhere
 
 [images.datascience-notebook-code]
 parent = "datascience-notebook"

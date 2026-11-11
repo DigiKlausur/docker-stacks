@@ -270,10 +270,10 @@ def _build(loaded: manifest.Manifest, args: argparse.Namespace) -> int:
             parent_tag=args.parent_tag,
         )
 
-    labels = build.oci_labels(repo.full_sha(REPO_ROOT), now)
+    revision = repo.full_sha(REPO_ROOT)
     build_args = build.parse_build_args(args.build_arg)
     commands = {
-        name: build.command(loaded, loaded.nodes[name], run, labels, build_args)
+        name: build.command(loaded, loaded.nodes[name], run, revision, now, build_args)
         for name in run.names
     }
 
