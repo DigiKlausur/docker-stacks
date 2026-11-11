@@ -53,9 +53,9 @@ ENV UV_PYTHON=/opt/conda/bin/python \
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
 
-# Install git and graphviz, upgrade pip (still used interactively) and install requirements
-RUN mamba install -y gh --channel conda-forge \
-    && mamba install -y graphviz --no-update-deps \
+# Install gh (GitHub CLI) and graphviz in one conda solve, upgrade pip (still used
+# interactively) and install requirements
+RUN mamba install -y --channel conda-forge --no-update-deps gh graphviz \
     && mamba clean -afy \
     && npm cache clean --force \
     && uv pip install --upgrade pip \
