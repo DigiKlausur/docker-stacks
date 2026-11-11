@@ -1,0 +1,33 @@
+# TEMPORARY: diagnose DNS inside Docker builds on GitHub runners. Never merge; delete the branch after use.
+name: Debug DNS
+
+on:
+  push:
+    branches: [ci/debug-dns]
+
+permissions:
+  contents: read
+
+jobs:
+  dns:
+    runs-on: ubuntu-26.04          # same runner image as the image builds
+    steps:
+      - name: Host resolver
+        run: |
+          cat /etc/resolv.conf
+          getent hosts archive.ubuntu.com || echo ">>> HOST: DNS broken"
+
+      - name: Container resolver (docker run)
+        run: |
+          docker run --rm ubuntu:22.04 cat /etc/resolv.conf
+          docker run --rm ubuntu:22.04 getent hosts archive.ubuntu.com || echo ">>> CONTAINER: DNS broken"
+
+      - name: Build step, like minimal-notebook
+        run: |
+          printf 'FROM jupyter/minimal-notebook:notebook-6.5.4\nUSER root\nRUN apt-get update\n' \
+            | docker build --no-cache --progress=plain - || echo ">>> BUILD: failed"
+
+      - name: Same build step with host network
+        run: |
+          printf 'FROM jupyter/minimal-notebook:notebook-6.5.4\nUSER root\nRUN apt-get update\n' \
+            | docker build --no-cache --progress=plain --network host - || echo ">>> BUILD (host network): failed"
