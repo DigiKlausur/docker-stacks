@@ -9,11 +9,10 @@ LABEL description="e2x machine learning notebook"
 
 USER $NB_USER
 
-# Install conda related pkgs
-RUN mamba install -y xeus-sql --channel conda-forge && \
-    mamba install -y soci-mysql --channel conda-forge && \
-    mamba install -y soci-postgresql --channel conda-forge && \
-    mamba install -y soci-sqlite --channel conda-forge && \
+# SQL kernel (xeus-sql) and its database drivers: conda-forge only, so these stay
+# on mamba, in one call (one solve instead of four)
+RUN mamba install -y --channel conda-forge \
+        xeus-sql soci-mysql soci-postgresql soci-sqlite && \
     mamba clean -afy && \
     npm cache clean --force && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
