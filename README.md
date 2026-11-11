@@ -28,11 +28,8 @@ jupyter/minimal-notebook:notebook-6.5.4
     │   ├── datascience-notebook-code [e2x]
     │   ├── ml-notebook [e2x]
     │   │   └── nlp-notebook [e2x]
-    │   ├── sql-notebook [e2x]
     │   ├── tf-notebook [e2x]
     │   └── wus-notebook [e2x]
-    ├── desktop-notebook
-    │   └── dbmain-notebook [e2x]
     └── java-notebook [e2x]
 ```
 <!-- tree:end -->

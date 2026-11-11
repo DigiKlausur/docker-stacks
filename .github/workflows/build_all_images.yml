@@ -311,46 +311,6 @@ jobs:
       push: ${{ inputs.push }}
     secrets: inherit
 
-  sql-notebook:
-    needs: [plan, datascience-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'sql-notebook') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: sql-notebook
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
-  sql-notebook-exam:
-    needs: [plan, sql-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'sql-notebook-exam') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: sql-notebook-exam
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
-  sql-notebook-student:
-    needs: [plan, sql-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'sql-notebook-student') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: sql-notebook-student
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
-  sql-notebook-teacher:
-    needs: [plan, sql-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'sql-notebook-teacher') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: sql-notebook-teacher
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
   tf-notebook:
     needs: [plan, datascience-notebook]
     if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'tf-notebook') }}
@@ -427,56 +387,6 @@ jobs:
     uses: ./.github/workflows/_build_image.yml
     with:
       image: wus-notebook-teacher
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
-  desktop-notebook:
-    needs: [plan, minimal-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'desktop-notebook') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: desktop-notebook
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
-  dbmain-notebook:
-    needs: [plan, desktop-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'dbmain-notebook') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: dbmain-notebook
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
-  dbmain-notebook-exam:
-    needs: [plan, dbmain-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'dbmain-notebook-exam') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: dbmain-notebook-exam
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
-  dbmain-notebook-student:
-    needs: [plan, dbmain-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'dbmain-notebook-student') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: dbmain-notebook-student
-      plan: ${{ needs.plan.outputs.plan }}
-      push: ${{ inputs.push }}
-    secrets: inherit
-
-  dbmain-notebook-teacher:
-    needs: [plan, dbmain-notebook]
-    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'dbmain-notebook-teacher') }}
-    uses: ./.github/workflows/_build_image.yml
-    with:
-      image: dbmain-notebook-teacher
       plan: ${{ needs.plan.outputs.plan }}
       push: ${{ inputs.push }}
     secrets: inherit
@@ -579,10 +489,6 @@ jobs:
       - nlp-notebook-exam
       - nlp-notebook-student
       - nlp-notebook-teacher
-      - sql-notebook
-      - sql-notebook-exam
-      - sql-notebook-student
-      - sql-notebook-teacher
       - tf-notebook
       - tf-notebook-exam
       - tf-notebook-student
@@ -591,11 +497,6 @@ jobs:
       - wus-notebook-exam
       - wus-notebook-student
       - wus-notebook-teacher
-      - desktop-notebook
-      - dbmain-notebook
-      - dbmain-notebook-exam
-      - dbmain-notebook-student
-      - dbmain-notebook-teacher
       - java-notebook
       - java-notebook-exam
       - java-notebook-student
