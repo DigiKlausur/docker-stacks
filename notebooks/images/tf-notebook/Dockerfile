@@ -18,7 +18,7 @@ USER root
 
 # Install requirements and list extensions
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt \
+RUN uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
     && jupyter nbextension list
 
