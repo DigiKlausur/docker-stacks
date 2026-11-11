@@ -72,7 +72,7 @@ base = "jupyter/minimal-notebook:notebook-6.5.4"
 e2x  = true
 
 [images.bi-notebook]
-base = "jupyter/minimal-notebook:notebook-6.5.3"   # intentionally older (library constraints)
+parent = "minimal-notebook"
 e2x  = true
 
 [images.datascience-notebook]
