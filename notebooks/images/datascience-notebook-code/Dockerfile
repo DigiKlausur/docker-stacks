@@ -28,18 +28,10 @@ RUN curl -fOL https://github.com/coder/code-server/releases/download/v$CODE_VERS
     && find /usr/lib/code-server -type f -name '*.js.map' -delete \
     && npm cache clean --force
 
-USER $NB_USER
-
-# As $NB_USER (not root), so later installs (e.g. the e2x layer) can still change these packages
-RUN uv pip install jupyter-server-proxy jupyter-vscode-proxy && \
+RUN mamba install -y jupyter-server-proxy -c conda-forge && \
+    mamba install -y jupyter-vscode-proxy -c conda-forge && \
+    mamba clean -afy && \
+    npm cache clean --force && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
-# Record this build in /etc/image-info.json (see notebooks/image_info).
-# Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and
-# every RUN after their ARG line is rebuilt each time.
-ARG IMAGE_SOURCE IMAGE_NAME GIT_COMMIT BUILD_DATE
-USER root
-COPY --from=image_info --chmod=755 image_info.py /usr/local/bin/image_info
-RUN image_info record --name "$IMAGE_NAME" --parent "$IMAGE_SOURCE" \
-        --git-commit "$GIT_COMMIT" --build-date "$BUILD_DATE"
 USER $NB_USER
