@@ -19,12 +19,12 @@ RUN apt-get update -y \
 USER $NB_USER
 
 # Install pytorch cpu 
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
+RUN uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt \
+RUN uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Jupyter extension list

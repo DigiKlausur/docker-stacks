@@ -9,12 +9,18 @@ LABEL description="e2x business intelligence notebook"
 LABEL org.opencontainers.image.description="e2x business intelligence notebook"
 LABEL org.opencontainers.image.authors="e2x project H-BRS <e2x@inf.h-brs.de>"
 
+# Java for pyspark: the JRE from the official Temurin image (no conda solve).
+# 21 = LTS, officially supported by Spark 4.x. A JRE is enough, pyspark only runs Java.
+# The 21-jre tag follows patch releases (security fixes).
+ENV JAVA_HOME=/opt/java/openjdk
+COPY --from=eclipse-temurin:21-jre $JAVA_HOME $JAVA_HOME
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
 USER $NB_USER
 
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
-RUN mamba install -y openjdk datashader --channel conda-forge \
-    && pip install --no-cache-dir -r /tmp/requirements.txt \
+RUN uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).

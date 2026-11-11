@@ -39,17 +39,27 @@ RUN ln -snf /usr/share/zoneinfo/"$TZ" /etc/localtime && echo "$TZ" > /etc/timezo
 
 USER $NB_USER
 
-# Install requirements and enable extenstions and Jupyter contrib extensions
+# uv installs Python packages for this image and all its children. Pinned on
+# purpose; bump by hand. UV_PYTHON points uv at the conda env (uv refuses
+# non-virtual environments otherwise), UV_NO_CACHE keeps the layers small.
+# UV_CONSTRAINT protects pins (e.g. jupyter-server<2) from later installs in
+# child images; see uv-constraints.txt.
+COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /usr/local/bin/uv
+COPY uv-constraints.txt /etc/uv/constraints.txt
+ENV UV_PYTHON=/opt/conda/bin/python \
+    UV_NO_CACHE=1 \
+    UV_CONSTRAINT=/etc/uv/constraints.txt
+
+# Install requirements
 COPY requirements.txt /tmp/requirements.txt
 
-# Install git and graphviz and upgrade pip
-RUN mamba install -y gh --channel conda-forge \
-    && mamba install -y graphviz --no-update-deps \
+# Install gh (GitHub CLI) and graphviz in one conda solve, upgrade pip (still used
+# interactively) and install requirements
+RUN mamba install -y --channel conda-forge --no-update-deps gh graphviz \
     && mamba clean -afy \
     && npm cache clean --force \
-    && pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r /tmp/requirements.txt \
-    && pip uninstall "jupyter-server-terminals" -y \
+    && uv pip install --upgrade pip \
+    && uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
     && jupyter serverextension list
 

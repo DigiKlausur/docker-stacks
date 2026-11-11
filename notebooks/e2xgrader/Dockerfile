@@ -42,19 +42,19 @@ USER $NB_USER
 # Install requirements shared between all modes
 RUN echo "Installing base requirements"
 COPY requirements/base.txt /tmp/base_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/base_requirements.txt && \
+RUN uv pip install -r /tmp/base_requirements.txt && \
     python -m java_syntax_kernel.install --sys-prefix
 
 # Install e2xgrader
 RUN if [ "$FROM_REPO" = "false" ] && [ -z "$E2XGRADER_VERSION" ]; then \
         echo "Installing e2xgrader from default source..."; \
-        pip install --no-cache-dir e2xgrader; \
+        uv pip install e2xgrader; \
     elif [ "$FROM_REPO" = "false" ] && [ -n "$E2XGRADER_VERSION" ]; then \
         echo "Installing e2xgrader version: $E2XGRADER_VERSION from PyPI..."; \
-        pip install --no-cache-dir e2xgrader=="$E2XGRADER_VERSION"; \
+        uv pip install e2xgrader=="$E2XGRADER_VERSION"; \
     elif [ "$FROM_REPO" = "true" ]; then \
         echo "Installing e2xgrader from GitHub repository: https://github.com/DigiKlausur/e2xgrader.git@$E2XGRADER_BRANCH"; \
-        pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@"${E2XGRADER_BRANCH}"; \
+        uv pip install git+https://github.com/DigiKlausur/e2xgrader.git@"${E2XGRADER_BRANCH}"; \
     fi
 
 USER root
@@ -75,7 +75,7 @@ ENV E2XGRADER_MODE=student
 # Install requirements specific to student mode
 RUN echo "Installing requirements for student mode"
 COPY requirements/student.txt /tmp/student_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/student_requirements.txt
+RUN uv pip install -r /tmp/student_requirements.txt
 
 RUN e2xgrader activate student --sys-prefix
 
@@ -107,7 +107,7 @@ ENV E2XGRADER_MODE=student_exam
 # Install requirements specific to student_exam mode
 RUN echo "Installing requirements for student_exam mode"
 COPY requirements/student_exam.txt /tmp/student_exam_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/student_exam_requirements.txt
+RUN uv pip install -r /tmp/student_exam_requirements.txt
 
 
 # Copy jupyter_backup_config.py to configure automatic backup of notebooks for student_exam mode
@@ -153,6 +153,15 @@ USER $NB_USER
 # ------------------------------------ #
 #        Teacher configuration         #
 # ------------------------------------ #
+# wkhtmltopdf for the teacher stage: upstream's .deb with patched Qt built in (8 packages
+# instead of 229 for Ubuntu's wkhtmltopdf). 0.12.6.1-3 is the final release (project
+# archived), so the pin is permanent. Upstream publishes no checksums; this one was
+# computed from the download. Own stage, so the .deb never ends up in an image layer.
+FROM scratch AS wkhtmltox
+ADD --checksum=sha256:4f723b2691ad8638a9df960e0421d346d7315083e3583a334f33362280ddba15 \
+    https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb \
+    /wkhtmltox.deb
+
 FROM base AS teacher
 
 LABEL org.opencontainers.image.title="e2xgrader-notebook:teacher"
@@ -163,19 +172,20 @@ ENV E2XGRADER_MODE=teacher
 
 USER root
 
-# Install wkhtmltopdf, needed for feedback PDFs
-RUN echo "Installing wkhtmltopdf for teacher mode" && \
-    apt-get update && \ 
-    apt-get install -y wkhtmltopdf && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*    
+# Install wkhtmltopdf, needed for feedback PDFs (pdf_feedback_exporter via pdfkit)
+RUN --mount=type=bind,from=wkhtmltox,source=/wkhtmltox.deb,target=/tmp/wkhtmltox.deb \
+    apt-get update \
+    && apt-get install -y --no-install-recommends /tmp/wkhtmltox.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && wkhtmltopdf --version
 
 USER $NB_USER
 
 # Install requirements specific to teacher mode and enable nbdime git extension
 RUN echo "Installing requirements for teacher mode"
 COPY requirements/teacher.txt /tmp/teacher_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/teacher_requirements.txt && \
+RUN uv pip install -r /tmp/teacher_requirements.txt && \
     nbdime config-git --enable --global
 
 RUN e2xgrader activate teacher --sys-prefix

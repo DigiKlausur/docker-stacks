@@ -17,7 +17,7 @@ RUN apt-get update -y \
     && apt-get install --yes \
         build-essential \
         libgomp1 \
-    && su $NB_USER -c ". /opt/conda/bin/activate && pip install --no-cache-dir -r /tmp/requirements.txt" \
+    && su $NB_USER -c ". /opt/conda/bin/activate && uv pip install -r /tmp/requirements.txt" \
     && rm /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
     && apt-get purge -y --auto-remove build-essential \
