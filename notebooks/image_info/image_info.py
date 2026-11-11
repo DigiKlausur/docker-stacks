@@ -5,6 +5,7 @@
   image_info --json           raw JSON
   image_info --field NAME     one field of the current image (for scripts)
   image_info packages         installed packages: source, name, version (tab-separated)
+  image_info why PACKAGE      where in the chain a package was added / changed / removed
   image_info baseline ...     build time: snapshot the external base image
   image_info record ...       build time: append this image to the chain
 
@@ -142,6 +143,56 @@ def drop_empty(entry):
     return {key: value for key, value in entry.items() if value}
 
 
+def load_chain():
+    chain = load()["chain"]
+    if not chain:
+        sys.exit(f"No image info found ({INFO_FILE}).")
+    return chain
+
+
+def print_table(rows, indent=""):
+    """Print rows as left-aligned columns; rows may have different lengths."""
+    columns = max(len(row) for row in rows)
+    rows = [row + [""] * (columns - len(row)) for row in rows]
+    widths = [max(len(row[i]) for row in rows) for i in range(columns)]
+    for row in rows:
+        line = "  ".join(cell.ljust(width) for cell, width in zip(row, widths))
+        print((indent + line).rstrip())
+
+
+# --------------------------------------------------------------------------- #
+#   Package history                                                            #
+# --------------------------------------------------------------------------- #
+
+
+def package_versions(entry):
+    """{(source, name): version} for one chain entry; {} for None."""
+    packages = (entry or {}).get("packages", {})
+    return {
+        (source, name): version
+        for source, versions in packages.items()
+        for name, version in versions.items()
+    }
+
+
+def changes(before, after):
+    """{(source, name): (old, new)} for every package that differs between two
+    chain entries. None means "not installed"."""
+    old, new = package_versions(before), package_versions(after)
+    return {
+        key: (old.get(key), new.get(key))
+        for key in old.keys() | new.keys()
+        if old.get(key) != new.get(key)
+    }
+
+
+def change_counts(before, after):
+    diff = changes(before, after).values()
+    added = sum(old is None for old, _ in diff)
+    removed = sum(new is None for _, new in diff)
+    return f"+{added} ~{len(diff) - added - removed} -{removed}"
+
+
 # --------------------------------------------------------------------------- #
 #   Commands                                                                   #
 # --------------------------------------------------------------------------- #
@@ -180,15 +231,37 @@ def list_packages(args):
             print(f"{source}\t{name}\t{version}")
 
 
+def why(args):
+    query = normalize(args.package)
+    rows = []
+    previous = None
+    for entry in load_chain():
+        for (source, name), (old, new) in sorted(changes(previous, entry).items()):
+            if normalize(name) != query:
+                continue
+            if old is None:
+                # Without a baseline, the first own layer also "adds" everything
+                # that came from the external base.
+                action = "present in" if entry.get("external") else "added in"
+            elif new is None:
+                action = "removed in"
+            else:
+                action = "changed in"
+            note = f"(was {old})" if old and new else ""
+            rows.append(
+                [source, name, new or "-", action, entry.get("name", "?"), note]
+            )
+        previous = entry
+    if not rows:
+        sys.exit(f"image_info: '{args.package}' is not in any layer of this image")
+    print_table(rows)
+
+
 def show(args):
-    data = load()
-    chain = data["chain"]
     if args.json:
-        print(json.dumps(data, indent=2))
+        print(json.dumps(load(), indent=2))
         return
-    if not chain:
-        print(f"No image info found ({INFO_FILE}).")
-        sys.exit(1)
+    chain = load_chain()
 
     current = chain[-1]
     if args.field:
@@ -196,39 +269,43 @@ def show(args):
         return
 
     rows = [
-        ("Image", current.get("name", "?")),
-        ("Built", current.get("built_at", "?")),
+        ["Image:", current.get("name", "?")],
+        ["Built:", current.get("built_at", "?")],
     ]
-    for label, key in [("Commit", "git_commit"), ("OS", "os"), ("Python", "python")]:
+    for label, key in [("Commit:", "git_commit"), ("OS:", "os"), ("Python:", "python")]:
         if current.get(key):
-            rows.append((label, current[key]))
+            rows.append([label, current[key]])
     packages = current.get("packages", {})
     if packages:
-        rows.append(
-            (
-                "Packages",
-                ", ".join(
-                    f"{len(pkgs)} {source}" for source, pkgs in sorted(packages.items())
-                ),
-            )
-        )
-
-    width = max(len(label) for label, _ in rows) + 2
-    for label, value in rows:
-        print(f"{label + ':':<{width}}{value}")
+        counts = (f"{len(pkgs)} {source}" for source, pkgs in sorted(packages.items()))
+        rows.append(["Packages:", ", ".join(counts)])
+    print_table(rows)
 
     print("\nBuild chain (base -> current):")
-    first = chain[0]
-    base = first["name"] if first.get("external") else first.get("parent", "?")
-    print(f"  ·  {base}  [external base]")
-    own = [entry for entry in chain if not entry.get("external")]
-    width = max((len(entry.get("name", "?")) for entry in own), default=0)
-    for i, entry in enumerate(own, 1):
-        commit = f"  git {entry['git_commit']}" if entry.get("git_commit") else ""
-        print(
-            f"  {i}  {entry.get('name', '?'):<{width}}  "
-            f"built {entry.get('built_at', '?')}{commit}"
-        )
+    rows = []
+    if not chain[0].get("external"):  # built without `baseline`: only its name is known
+        rows.append(["·", chain[0].get("parent", "?"), "[external base]"])
+    number = 0
+    previous = None
+    for entry in chain:
+        if entry.get("external"):
+            rows.append(["·", entry.get("name", "?"), "[external base]"])
+        else:
+            number += 1
+            rows.append(
+                [
+                    str(number),
+                    entry.get("name", "?"),
+                    f"built {entry.get('built_at', '?')}",
+                    f"git {entry['git_commit']}" if entry.get("git_commit") else "",
+                    change_counts(previous, entry) if previous else "",
+                ]
+            )
+        previous = entry
+    print_table(rows, indent="  ")
+    print(
+        "\nPackages: + added, ~ changed, - removed. Details: image_info why <package>"
+    )
 
 
 def main():
@@ -238,6 +315,9 @@ def main():
     sub = p.add_subparsers(dest="cmd")
 
     sub.add_parser("packages", help="list installed packages (diff-friendly)")
+
+    w = sub.add_parser("why", help="show where in the chain a package came from")
+    w.add_argument("package")
 
     b = sub.add_parser("baseline", help="snapshot the external base (build time)")
     b.add_argument("--name", required=True, help="the external base image")
@@ -249,7 +329,12 @@ def main():
     r.add_argument("--build-date")
 
     args = p.parse_args()
-    commands = {"packages": list_packages, "baseline": baseline, "record": record}
+    commands = {
+        "packages": list_packages,
+        "why": why,
+        "baseline": baseline,
+        "record": record,
+    }
     commands.get(args.cmd, show)(args)
 
 

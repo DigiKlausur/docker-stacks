@@ -173,13 +173,102 @@ def test_show_summary_and_chain(info_file, fake_packages, monkeypatch, capsys):
     capsys.readouterr()
 
     run(monkeypatch)
-    out = capsys.readouterr().out
+    lines = tokens(capsys.readouterr().out)
 
-    assert "Image:    ml-notebook" in out
-    assert "Packages: 1 conda, 1 pip" in out
-    assert "·  jupyter/base  [external base]" in out
-    assert "1  minimal-notebook  built 2026-11-11T10:00:00+00:00  git abc1234" in out
-    assert "2  ml-notebook       built 2026-11-11T11:00:00+00:00  git def5678" in out
+    assert ["Image:", "ml-notebook"] in lines
+    assert ["Packages:", "1", "conda,", "1", "pip"] in lines
+    assert ["·", "jupyter/base", "[external", "base]"] in lines
+    assert [
+        "1", "minimal-notebook", "built", "2026-11-11T10:00:00+00:00",
+        "git", "abc1234", "+0", "~0", "-0",
+    ] in lines  # fmt: skip
+    assert [
+        "2", "ml-notebook", "built", "2026-11-11T11:00:00+00:00",
+        "git", "def5678", "+0", "~0", "-0",
+    ] in lines  # fmt: skip
+
+
+# --------------------------------------------------------------------------- #
+#   Package history                                                            #
+# --------------------------------------------------------------------------- #
+
+
+def tokens(out):
+    """Output lines split into words, so tests don't depend on column widths."""
+    return [line.split() for line in out.splitlines()]
+
+
+def write_chain(info_file, *entries):
+    info_file.write_text(json.dumps({"chain": list(entries)}))
+
+
+BASE = {
+    "name": "jupyter/base",
+    "external": True,
+    "packages": {"conda": {"numpy": "1.26.4"}, "pip": {"requests": "2.31.0"}},
+}
+MINIMAL = {
+    "name": "minimal-notebook",
+    "packages": {
+        "conda": {"numpy": "1.26.4"},
+        "pip": {"requests": "2.31.0", "foo-bar": "1.0"},
+    },
+}
+ML = {
+    "name": "ml-notebook",
+    "packages": {
+        "conda": {"numpy": "2.0.1"},
+        "pip": {"numpy": "2.0.1", "foo-bar": "1.0"},
+    },
+}
+
+
+def test_why_reports_each_layer_and_source(info_file, monkeypatch, capsys):
+    write_chain(info_file, BASE, MINIMAL, ML)
+    run(monkeypatch, "why", "numpy")
+
+    assert tokens(capsys.readouterr().out) == [
+        ["conda", "numpy", "1.26.4", "present", "in", "jupyter/base"],
+        ["conda", "numpy", "2.0.1", "changed", "in", "ml-notebook", "(was", "1.26.4)"],
+        ["pip", "numpy", "2.0.1", "added", "in", "ml-notebook"],
+    ]
+
+
+def test_why_reports_removal(info_file, monkeypatch, capsys):
+    write_chain(info_file, BASE, MINIMAL, ML)
+    run(monkeypatch, "why", "requests")
+
+    assert tokens(capsys.readouterr().out) == [
+        ["pip", "requests", "2.31.0", "present", "in", "jupyter/base"],
+        ["pip", "requests", "-", "removed", "in", "ml-notebook"],
+    ]
+
+
+def test_why_matches_normalized_name(info_file, monkeypatch, capsys):
+    write_chain(info_file, BASE, MINIMAL, ML)
+    run(monkeypatch, "why", "Foo_Bar")
+
+    assert tokens(capsys.readouterr().out) == [
+        ["pip", "foo-bar", "1.0", "added", "in", "minimal-notebook"],
+    ]
+
+
+def test_why_unknown_package_fails(info_file, monkeypatch):
+    write_chain(info_file, BASE, MINIMAL)
+    with pytest.raises(SystemExit) as error:
+        run(monkeypatch, "why", "pandas")
+    assert "not in any layer" in str(error.value)
+
+
+def test_chain_shows_package_changes_per_layer(info_file, monkeypatch, capsys):
+    write_chain(info_file, BASE, MINIMAL, ML)
+    run(monkeypatch)
+    lines = tokens(capsys.readouterr().out)
+
+    # minimal: foo-bar added; ml: numpy (pip) added, numpy (conda) changed,
+    # requests removed
+    assert ["1", "minimal-notebook", "built", "?", "+1", "~0", "-0"] in lines
+    assert ["2", "ml-notebook", "built", "?", "+1", "~1", "-1"] in lines
 
 
 def test_show_without_info_file_fails(info_file, monkeypatch):
