@@ -6,3 +6,5 @@ httptools>=0.9.0
 websockets>=17.4
 vaex>=4.20.0
 numpy>=2.0.0
+datashader
+dask[dataframe]
