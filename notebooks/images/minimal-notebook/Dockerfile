@@ -60,7 +60,6 @@ RUN mamba install -y gh --channel conda-forge \
     && npm cache clean --force \
     && uv pip install --upgrade pip \
     && uv pip install -r /tmp/requirements.txt \
-    && uv pip uninstall jupyter-server-terminals \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
     && jupyter serverextension list
 
