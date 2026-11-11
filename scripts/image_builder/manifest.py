@@ -17,6 +17,7 @@ import tomllib
 
 IMAGES_DIR = Path("notebooks/images")
 E2X_DIR = Path("notebooks/e2xgrader")
+IMAGE_INFO_DIR = Path("notebooks/image_info")  # copied into every image
 SHA_PLACEHOLDER = "{sha}"
 PLACEHOLDERS = {"date", "sha"}  # allowed in tags, filled in by tags.py
 

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 from build import (
+    RESERVED_BUILD_ARGS,
     BuildError,
     Run,
     ci_run,
@@ -26,17 +27,25 @@ def small_manifest():
     return parse(make_data())  # base-nb (base jupyter/minimal:1, e2x) ── child-nb
 
 
+NOW = datetime(2026, 11, 10, 12, 0, tzinfo=timezone.utc)
+
+
 def build_command(small_manifest, name, build_args=None, run=LOCAL_RUN):
     node = small_manifest.nodes[name]
-    return command(small_manifest, node, run, {"revision": "abc"}, build_args or {})
+    return command(small_manifest, node, run, "abc", NOW, build_args or {})
 
 
 def test_root_image_builds_on_its_base(small_manifest):
     assert build_command(small_manifest, "base-nb") == [
         "docker", "buildx", "build", "notebooks/images/base-nb",
+        "--build-context", "image_info=notebooks/image_info",
         "--build-arg", "IMAGE_SOURCE=jupyter/minimal:1",
+        "--build-arg", "IMAGE_NAME=base-nb",
+        "--build-arg", "GIT_COMMIT=abc",
+        "--build-arg", "BUILD_DATE=2026-11-10T12:00:00+00:00",
         "--tag", "ghcr.io/org/stack/base-nb:local",
-        "--label", "revision=abc",
+        "--label", "org.opencontainers.image.revision=abc",
+        "--label", "org.opencontainers.image.created=2026-11-10T12:00:00+00:00",
         "--load",
     ]  # fmt: skip
 
@@ -45,9 +54,14 @@ def test_e2x_variant_builds_on_its_parent_from_the_registry(small_manifest):
     assert build_command(small_manifest, "base-nb-exam") == [
         "docker", "buildx", "build", "notebooks/e2xgrader",
         "--target", "student_exam",
+        "--build-context", "image_info=notebooks/image_info",
         "--build-arg", "IMAGE_SOURCE=ghcr.io/org/stack/base-nb:latest",
+        "--build-arg", "IMAGE_NAME=base-nb-exam",
+        "--build-arg", "GIT_COMMIT=abc",
+        "--build-arg", "BUILD_DATE=2026-11-10T12:00:00+00:00",
         "--tag", "ghcr.io/org/stack/base-nb-exam:local",
-        "--label", "revision=abc",
+        "--label", "org.opencontainers.image.revision=abc",
+        "--label", "org.opencontainers.image.created=2026-11-10T12:00:00+00:00",
         "--load",
     ]  # fmt: skip
 
@@ -57,9 +71,10 @@ def test_extra_build_args_are_passed_through(small_manifest):
     assert "E2XGRADER_VERSION=0.4.0" in cmd
 
 
-def test_image_source_cannot_be_overridden(small_manifest):
-    with pytest.raises(BuildError, match="IMAGE_SOURCE"):
-        build_command(small_manifest, "child-nb", {"IMAGE_SOURCE": "evil:1"})
+@pytest.mark.parametrize("name", sorted(RESERVED_BUILD_ARGS))
+def test_reserved_build_args_cannot_be_overridden(small_manifest, name):
+    with pytest.raises(BuildError, match=name):
+        build_command(small_manifest, "child-nb", {name: "evil"})
 
 
 def test_parent_built_in_same_run_is_used_by_run_tag(small_manifest):
@@ -83,8 +98,7 @@ def test_parse_build_args_rejects_malformed(pair):
 
 
 def test_oci_labels():
-    now = datetime(2026, 11, 10, 12, 0, tzinfo=timezone.utc)
-    assert oci_labels("abc", now) == {
+    assert oci_labels("abc", NOW) == {
         "org.opencontainers.image.revision": "abc",
         "org.opencontainers.image.created": "2026-11-10T12:00:00+00:00",
     }
@@ -107,12 +121,17 @@ def test_push_goes_to_every_registry_and_uses_the_run_tag(small_manifest):
     assert build_command(small_manifest, "base-nb-exam", run=run) == [
         "docker", "buildx", "build", "notebooks/e2xgrader",
         "--target", "student_exam",
+        "--build-context", "image_info=notebooks/image_info",
         "--build-arg", "IMAGE_SOURCE=ghcr.io/org/stack/base-nb:dev-sha-abc1234",
+        "--build-arg", "IMAGE_NAME=base-nb-exam",
+        "--build-arg", "GIT_COMMIT=abc",
+        "--build-arg", "BUILD_DATE=2026-11-10T12:00:00+00:00",
         "--tag", "ghcr.io/org/stack/base-nb-exam:dev",
         "--tag", "ghcr.io/org/stack/base-nb-exam:dev-sha-abc1234",
         "--tag", "quay.io/org/stack/base-nb-exam:dev",
         "--tag", "quay.io/org/stack/base-nb-exam:dev-sha-abc1234",
-        "--label", "revision=abc",
+        "--label", "org.opencontainers.image.revision=abc",
+        "--label", "org.opencontainers.image.created=2026-11-10T12:00:00+00:00",
         "--push",
     ]  # fmt: skip
 
