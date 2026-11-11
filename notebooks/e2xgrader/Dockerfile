@@ -42,19 +42,19 @@ USER $NB_USER
 # Install requirements shared between all modes
 RUN echo "Installing base requirements"
 COPY requirements/base.txt /tmp/base_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/base_requirements.txt && \
+RUN uv pip install -r /tmp/base_requirements.txt && \
     python -m java_syntax_kernel.install --sys-prefix
 
 # Install e2xgrader
 RUN if [ "$FROM_REPO" = "false" ] && [ -z "$E2XGRADER_VERSION" ]; then \
         echo "Installing e2xgrader from default source..."; \
-        pip install --no-cache-dir e2xgrader; \
+        uv pip install e2xgrader; \
     elif [ "$FROM_REPO" = "false" ] && [ -n "$E2XGRADER_VERSION" ]; then \
         echo "Installing e2xgrader version: $E2XGRADER_VERSION from PyPI..."; \
-        pip install --no-cache-dir e2xgrader=="$E2XGRADER_VERSION"; \
+        uv pip install e2xgrader=="$E2XGRADER_VERSION"; \
     elif [ "$FROM_REPO" = "true" ]; then \
         echo "Installing e2xgrader from GitHub repository: https://github.com/DigiKlausur/e2xgrader.git@$E2XGRADER_BRANCH"; \
-        pip install --no-cache-dir git+https://github.com/DigiKlausur/e2xgrader.git@"${E2XGRADER_BRANCH}"; \
+        uv pip install git+https://github.com/DigiKlausur/e2xgrader.git@"${E2XGRADER_BRANCH}"; \
     fi
 
 USER root
@@ -75,7 +75,7 @@ ENV E2XGRADER_MODE=student
 # Install requirements specific to student mode
 RUN echo "Installing requirements for student mode"
 COPY requirements/student.txt /tmp/student_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/student_requirements.txt
+RUN uv pip install -r /tmp/student_requirements.txt
 
 RUN e2xgrader activate student --sys-prefix
 
@@ -107,7 +107,7 @@ ENV E2XGRADER_MODE=student_exam
 # Install requirements specific to student_exam mode
 RUN echo "Installing requirements for student_exam mode"
 COPY requirements/student_exam.txt /tmp/student_exam_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/student_exam_requirements.txt
+RUN uv pip install -r /tmp/student_exam_requirements.txt
 
 
 # Copy jupyter_backup_config.py to configure automatic backup of notebooks for student_exam mode
@@ -175,7 +175,7 @@ USER $NB_USER
 # Install requirements specific to teacher mode and enable nbdime git extension
 RUN echo "Installing requirements for teacher mode"
 COPY requirements/teacher.txt /tmp/teacher_requirements.txt
-RUN pip install --no-cache-dir -r /tmp/teacher_requirements.txt && \
+RUN uv pip install -r /tmp/teacher_requirements.txt && \
     nbdime config-git --enable --global
 
 RUN e2xgrader activate teacher --sys-prefix
