@@ -64,6 +64,44 @@ docker run -p 8888:8888 ghcr.io/digiklausur/docker-stacks/<image>:latest
   Per-commit tags never move, so they are the safest way to pin a course or an exam
   to a fixed set of images. A per-day tag is only updated by later builds on the same day.
 
+## Inspecting an Image
+
+Every image records how it was built in `/etc/image-info.json`: one entry per layer
+of the build chain, with its parent, git commit and build time. `image_info` shows it:
+
+```console
+$ docker run --rm ghcr.io/digiklausur/docker-stacks/ml-notebook-student:latest image_info
+Image:   ml-notebook-student
+Built:   2026-11-11T10:40:00+00:00
+Commit:  9d8cbe2051c94133673701e988b187d80d887842
+...
+
+Build chain (base -> current):
+  ·  jupyter/minimal-notebook:notebook-6.5.4  [external base]
+  1  minimal-notebook                         built 2026-11-11T10:00:00+00:00  git 9d8cbe2
+  2  datascience-notebook                     built 2026-11-11T10:15:00+00:00  git 9d8cbe2
+  3  ml-notebook                              built 2026-11-11T10:25:00+00:00  git 9d8cbe2
+  4  ml-notebook-student                      built 2026-11-11T10:40:00+00:00  git 9d8cbe2
+```
+
+`image_info --json` prints the raw data, `image_info --field git_commit` a single value.
+Tags are not recorded, since they are assigned (and moved) after the build.
+
+Installed packages are not recorded; the package managers answer that directly:
+
+```bash
+# What is installed
+docker run --rm <image> mamba list
+docker run --rm <image> pip list
+
+# What changed between two images
+diff <(docker run --rm <image>:sha-aaaaaaa pip list --format=freeze) \
+     <(docker run --rm <image>:sha-bbbbbbb pip list --format=freeze)
+
+# Which image installs a package: search the repo at a layer's commit
+git grep -i numpy 9d8cbe2 -- notebooks/
+```
+
 ## Building Locally
 
 All images are defined in [`notebooks.toml`](notebooks.toml). The script in
@@ -109,7 +147,8 @@ python scripts/image_builder plan --tag-set dev --since origin/dev
 - Results are tagged `:local` and never pushed. A parent built in the same call is used as `:local`;
   any other parent is pulled from the registry (tag `latest`).
 - To add an image, create `notebooks/images/<name>/` and add an `[images.<name>]` entry to
-  `notebooks.toml`. Run `python scripts/image_builder tree` to check it.
+  `notebooks.toml`. Run `python scripts/image_builder tree` to check it. End its Dockerfile
+  with the `image_info record` block (copy it from any other image).
 - Tests: `pip install -r scripts/image_builder/requirements-dev.txt`, then `python -m pytest`.
 
 ## Contributing
