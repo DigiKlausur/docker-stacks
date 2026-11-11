@@ -16,7 +16,7 @@ COPY requirements.txt /tmp/requirements.txt
 
 # Create a new conda environment for bi and install the requirements there
 RUN mamba create -n bi "python=3.12" pip -y \
-    && /opt/conda/envs/bi/bin/python -m pip install --no-cache-dir -r /tmp/requirements.txt \
+    && uv pip install --python /opt/conda/envs/bi/bin/python -r /tmp/requirements.txt \
     && mamba clean -afy \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 

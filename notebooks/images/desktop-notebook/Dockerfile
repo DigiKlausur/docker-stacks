@@ -63,7 +63,7 @@ RUN mamba install -y "jupyter-server-proxy>=1.4" websockify -c conda-forge && \
     npm cache clean --force && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
-RUN pip install --no-cache-dir jupyter_remote_desktop_proxy && \
+RUN uv pip install jupyter_remote_desktop_proxy && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 USER root
