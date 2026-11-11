@@ -42,9 +42,13 @@ USER $NB_USER
 # uv installs Python packages for this image and all its children. Pinned on
 # purpose; bump by hand. UV_PYTHON points uv at the conda env (uv refuses
 # non-virtual environments otherwise), UV_NO_CACHE keeps the layers small.
+# UV_CONSTRAINT protects pins (e.g. jupyter-server<2) from later installs in
+# child images; see uv-constraints.txt.
 COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /usr/local/bin/uv
+COPY uv-constraints.txt /etc/uv/constraints.txt
 ENV UV_PYTHON=/opt/conda/bin/python \
-    UV_NO_CACHE=1
+    UV_NO_CACHE=1 \
+    UV_CONSTRAINT=/etc/uv/constraints.txt
 
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
