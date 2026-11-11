@@ -153,6 +153,15 @@ USER $NB_USER
 # ------------------------------------ #
 #        Teacher configuration         #
 # ------------------------------------ #
+# wkhtmltopdf for the teacher stage: upstream's .deb with patched Qt built in (8 packages
+# instead of 229 for Ubuntu's wkhtmltopdf). 0.12.6.1-3 is the final release (project
+# archived), so the pin is permanent. Upstream publishes no checksums; this one was
+# computed from the download. Own stage, so the .deb never ends up in an image layer.
+FROM scratch AS wkhtmltox
+ADD --checksum=sha256:4f723b2691ad8638a9df960e0421d346d7315083e3583a334f33362280ddba15 \
+    https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb \
+    /wkhtmltox.deb
+
 FROM base AS teacher
 
 LABEL org.opencontainers.image.title="e2xgrader-notebook:teacher"
@@ -163,12 +172,13 @@ ENV E2XGRADER_MODE=teacher
 
 USER root
 
-# Install wkhtmltopdf, needed for feedback PDFs
-RUN echo "Installing wkhtmltopdf for teacher mode" && \
-    apt-get update && \ 
-    apt-get install -y wkhtmltopdf && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*    
+# Install wkhtmltopdf, needed for feedback PDFs (pdf_feedback_exporter via pdfkit)
+RUN --mount=type=bind,from=wkhtmltox,source=/wkhtmltox.deb,target=/tmp/wkhtmltox.deb \
+    apt-get update \
+    && apt-get install -y --no-install-recommends /tmp/wkhtmltox.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && wkhtmltopdf --version
 
 USER $NB_USER
 
