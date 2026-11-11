@@ -20,10 +20,9 @@ What an image adds is described in its folder under [`notebooks/images`](noteboo
 
 <!-- tree:start (output of `python scripts/image_builder tree`) -->
 ```
-jupyter/minimal-notebook:notebook-6.5.3
-└── bi-notebook [e2x]
 jupyter/minimal-notebook:notebook-6.5.4
 └── minimal-notebook [e2x]
+    ├── bi-notebook [e2x]
     ├── bidata-notebook [e2x]
     ├── datascience-notebook [e2x]
     │   ├── datascience-notebook-code [e2x]
