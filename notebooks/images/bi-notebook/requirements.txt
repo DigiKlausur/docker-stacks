@@ -1,4 +1,3 @@
-nbresuse
 pyspark>=4.3.0
 python-dotenv>=1.2.4
 watchfiles>=1.3.0
