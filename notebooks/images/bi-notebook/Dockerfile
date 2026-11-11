@@ -14,7 +14,7 @@ USER $NB_USER
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
 RUN mamba install -y openjdk datashader --channel conda-forge \
-    && pip install --no-cache-dir -r /tmp/requirements.txt \
+    && uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).

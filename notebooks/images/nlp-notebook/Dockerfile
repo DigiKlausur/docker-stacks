@@ -11,7 +11,7 @@ USER $NB_USER
 
 # Install requirements
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt \
+RUN uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Jupyter extension list
