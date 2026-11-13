@@ -56,6 +56,9 @@ parent_tag = "latest"
 tags       = ["dev", "dev-{date}", "dev-sha-{sha}"]
 parent_tag = "dev"
 
+[tag_sets.test]
+tags       = ["test", "test-{date}", "test-sha-{sha}"]
+parent_tag = "test"
 
 # ============================================================================ #
 #   Images                                                                     #
