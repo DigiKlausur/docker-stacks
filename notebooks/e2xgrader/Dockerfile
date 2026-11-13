@@ -9,7 +9,7 @@ ARG IMAGE_SOURCE
 FROM $IMAGE_SOURCE AS base
 ARG IMAGE_SOURCE
 ARG FROM_REPO=false
-ARG E2XGRADER_VERSION="0.3.6"
+ARG E2XGRADER_VERSION="0.4.0rc0"
 ARG E2XGRADER_BRANCH="main"
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
@@ -37,6 +37,11 @@ RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_noteboo
     chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
     chmod g+rwX /etc/jupyter/jupyter_notebook_config.py
     
+# Open nbclassic by default. Set in the server config so it also works when
+# JupyterHub runs jupyterhub-singleuser directly (that ignores
+# DOCKER_STACKS_JUPYTER_CMD). Notebook 7 owns /tree, nbclassic lives under /nbclassic.
+RUN echo 'c.ServerApp.default_url = "/nbclassic/tree"' >> /etc/jupyter/jupyter_server_config.py
+
 USER $NB_USER
 
 # Install requirements shared between all modes
