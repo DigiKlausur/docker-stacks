@@ -96,7 +96,7 @@ if draw_origin:
 # ------------------------ #
 shared_paths = os.getenv("E2X_SHARED_PATHS")
 if shared_paths:
-    c.SharedMaterialsApp.shared_paths = [
+    c.Help.shared_paths = [
         os.path.expanduser(path) for path in shared_paths.split(os.pathsep) if path
     ]
 
