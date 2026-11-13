@@ -1,3 +1,1 @@
 nbresuse
-jupyter-server<2.0.0
-backports.tarfile

@@ -68,7 +68,7 @@ parent_tag = "dev"
 # ============================================================================ #
 
 [images.minimal-notebook]
-base = "jupyter/minimal-notebook:notebook-6.5.4"
+base = "quay.io/jupyter/minimal-notebook:notebook-7.6.5"
 e2x  = true
 
 [images.bi-notebook]
