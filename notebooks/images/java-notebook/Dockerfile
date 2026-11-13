@@ -15,7 +15,7 @@ RUN uv pip install git+https://github.com/digiklausur/java_syntax_kernel.git@mai
     jupyter kernelspec remove python3 -f && \
     echo c.KernelSpecManager.ensure_native_kernel = False >> /etc/jupyter/jupyter_notebook_config.py && \
     echo c.NotebookApp.terminals_enabled = False >> /etc/jupyter/jupyter_notebook_config.py && \    
-    jupyter nbextension list && \
+    jupyter nbclassic-extension list && \
     jupyter kernelspec list
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).
