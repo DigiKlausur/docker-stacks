@@ -37,10 +37,10 @@ RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_noteboo
     chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
     chmod g+rwX /etc/jupyter/jupyter_notebook_config.py
     
-# Open nbclassic by default. Set in the server config so it also works when
-# JupyterHub runs jupyterhub-singleuser directly (that ignores
-# DOCKER_STACKS_JUPYTER_CMD). Notebook 7 owns /tree, nbclassic lives under /nbclassic.
-RUN echo 'c.ServerApp.default_url = "/nbclassic/tree"' >> /etc/jupyter/jupyter_server_config.py
+# Copy and append jupyter server config override (nbclassic default, CSP header)
+COPY base/jupyter_server_config_override.py /tmp/jupyter_server_config_override.py
+RUN cat /tmp/jupyter_server_config_override.py >> /etc/jupyter/jupyter_server_config.py && \
+    rm /tmp/jupyter_server_config_override.py
 
 USER $NB_USER
 
