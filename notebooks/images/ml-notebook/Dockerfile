@@ -28,7 +28,7 @@ RUN uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Jupyter extension list
-RUN jupyter nbextension list
+RUN jupyter nbclassic-extension list
 
 USER root
 RUN rm /tmp/requirements.txt
