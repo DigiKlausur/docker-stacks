@@ -18,8 +18,12 @@ RUN apt-get update -y \
 
 USER $NB_USER
 
-# Install pytorch cpu 
-RUN uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
+# Install PyTorch CPU
+RUN uv pip install \
+    torch==2.15.0 \
+    torchvision==0.29.2 \
+    torchaudio==2.11.1 \
+    --index-url https://download.pytorch.org/whl/cpu \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Install requirements
@@ -28,7 +32,7 @@ RUN uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 # Jupyter extension list
-RUN jupyter nbextension list
+RUN jupyter nbclassic-extension list
 
 USER root
 RUN rm /tmp/requirements.txt

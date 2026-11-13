@@ -12,16 +12,10 @@ LABEL org.opencontainers.image.authors="e2x project H-BRS <e2x@inf.h-brs.de>"
 
 USER $NB_USER
 
+# Install requirements
 COPY requirements.txt /tmp/requirements.txt
-
-# Create a new conda environment for bi and install the requirements there
-RUN mamba create -n bi "python=3.12" pip -y \
-    && uv pip install --python /opt/conda/envs/bi/bin/python -r /tmp/requirements.txt \
-    && mamba clean -afy \
+RUN uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
-
-# Go to /opt/conda/share/kernels/python3 and replace the path to the python executable with the one from the bi environment in kernel.json
-RUN sed -i 's|/opt/conda/bin/python|/opt/conda/envs/bi/bin/python|g' /opt/conda/share/jupyter/kernels/python3/kernel.json
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).
 # Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and

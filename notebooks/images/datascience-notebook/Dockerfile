@@ -27,7 +27,7 @@ RUN apt-get update -y \
 USER $NB_USER
 
 # Jupyter extension list
-RUN jupyter nbextension list
+RUN jupyter nbclassic-extension list
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).
 # Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and

@@ -14,9 +14,10 @@ on:
         description: Tag set from notebooks.toml
         type: choice
         options:
+          - test
           - dev
           - main
-        default: dev
+        default: test
       since:
         description: Only build what changed since this ref (empty = build everything)
         type: string

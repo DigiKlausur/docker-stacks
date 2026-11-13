@@ -19,6 +19,9 @@ This uses the environment variables:
 
 - E2X_DRAWIO_DOMAIN: The domain to use for the diagram editor (default: None)
 - E2X_DRAWIO_ORIGIN: The origin to use for the diagram editor (default: None)
+
+- E2X_SHARED_PATHS: Colon-separated directories with shared materials,
+  like PATH (default: None)
 """
 import os
 
@@ -87,6 +90,15 @@ if draw_domain:
 draw_origin = os.getenv("E2X_DRAWIO_ORIGIN")
 if draw_origin:
     c.DiagramEditor.drawOrigin = draw_origin
+
+# ------------------------ #
+# Shared Materials         #
+# ------------------------ #
+shared_paths = os.getenv("E2X_SHARED_PATHS")
+if shared_paths:
+    c.Help.shared_paths = [
+        os.path.expanduser(path) for path in shared_paths.split(os.pathsep) if path
+    ]
 
 # ------------------------ #
 # Additional Configuration #
