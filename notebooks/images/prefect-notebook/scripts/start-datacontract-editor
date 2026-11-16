@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+"""Run `datacontract edit` behind jupyter-server-proxy.
+
+Usage: start-datacontract-editor <contract.yaml> [datacontract edit options]
+
+The editor page loads its assets and API from root paths (/editor/..., /api/files/...,
+<origin>/test), which miss the proxy prefix (/user/<name>/proxy/4243/). This script
+patches the page to use relative paths and then runs the normal `datacontract edit`.
+Written against datacontract-cli 1.2.10; it fails loudly if the page changes.
+"""
+import os
+import sys
+
+from datacontract import cli, command_edit
+
+PORT = 4243  # the default port of `datacontract edit`
+
+# (root path on the editor page, replacement relative to the page URL)
+# "./" is required: an ES module import of "editor/..." would be a bare package name.
+REPLACEMENTS = [
+    ('"/editor/', '"./editor/'),  # favicon and stylesheet
+    ("'/editor/", "'./editor/"),  # editor JS module
+    ("'/api/files/", "'./api/files/"),  # load and save the contract
+    # the editor posts tests to <this URL>/test
+    ("window.location.origin", "new URL('.', window.location.href).href.slice(0, -1)"),
+]
+
+_generate_index_html = command_edit._generate_index_html
+
+
+def proxied_index_html(*args, **kwargs):
+    html = _generate_index_html(*args, **kwargs)
+    for old, new in REPLACEMENTS:
+        if old not in html:
+            raise RuntimeError(
+                f"Editor page has no {old!r}; datacontract-cli changed, "
+                "update start-datacontract-editor."
+            )
+        html = html.replace(old, new)
+    return html
+
+
+command_edit._generate_index_html = proxied_index_html
+
+prefix = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/")
+public_url = os.environ.get("DATACONTRACT_PUBLIC_URL", "http://localhost:8888")
+print()
+print("  Open the Data Contract Editor here:")
+print(f"  {public_url}{prefix}proxy/{PORT}/")
+print()
+print(f"  (Ignore the localhost:{PORT} link below; it only works inside the container.)")
+print()
+
+sys.argv = ["datacontract", "edit", "--no-open", "--port", str(PORT), *sys.argv[1:]]
+cli.main()

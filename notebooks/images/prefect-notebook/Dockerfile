@@ -13,8 +13,9 @@ LABEL org.opencontainers.image.authors="e2x project H-BRS <e2x@inf.h-brs.de>"
 ENV PREFECT_SERVER_ANALYTICS_ENABLED=false \
     DO_NOT_TRACK=1
 
-# start-prefect: runs the Prefect server behind jupyter-server-proxy (from the parent image)
-COPY --chmod=755 scripts/start-prefect /usr/local/bin/start-prefect
+# start-prefect and start-datacontract-editor: run the Prefect server and the
+# Data Contract Editor behind jupyter-server-proxy (from the parent image)
+COPY --chmod=755 scripts/start-prefect scripts/start-datacontract-editor /usr/local/bin/
 
 USER $NB_USER
 
