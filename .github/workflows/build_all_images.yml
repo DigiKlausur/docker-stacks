@@ -201,6 +201,46 @@ jobs:
       push: ${{ inputs.push }}
     secrets: inherit
 
+  prefect-notebook:
+    needs: [plan, datascience-notebook-code]
+    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'prefect-notebook') }}
+    uses: ./.github/workflows/_build_image.yml
+    with:
+      image: prefect-notebook
+      plan: ${{ needs.plan.outputs.plan }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  prefect-notebook-exam:
+    needs: [plan, prefect-notebook]
+    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'prefect-notebook-exam') }}
+    uses: ./.github/workflows/_build_image.yml
+    with:
+      image: prefect-notebook-exam
+      plan: ${{ needs.plan.outputs.plan }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  prefect-notebook-student:
+    needs: [plan, prefect-notebook]
+    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'prefect-notebook-student') }}
+    uses: ./.github/workflows/_build_image.yml
+    with:
+      image: prefect-notebook-student
+      plan: ${{ needs.plan.outputs.plan }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  prefect-notebook-teacher:
+    needs: [plan, prefect-notebook]
+    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'prefect-notebook-teacher') }}
+    uses: ./.github/workflows/_build_image.yml
+    with:
+      image: prefect-notebook-teacher
+      plan: ${{ needs.plan.outputs.plan }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
   datascience-notebook-exam:
     needs: [plan, datascience-notebook]
     if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'datascience-notebook-exam') }}
@@ -478,6 +518,10 @@ jobs:
       - datascience-notebook-code-exam
       - datascience-notebook-code-student
       - datascience-notebook-code-teacher
+      - prefect-notebook
+      - prefect-notebook-exam
+      - prefect-notebook-student
+      - prefect-notebook-teacher
       - datascience-notebook-exam
       - datascience-notebook-student
       - datascience-notebook-teacher

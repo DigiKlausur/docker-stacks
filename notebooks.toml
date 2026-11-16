@@ -128,3 +128,7 @@ e2x    = true
 [images.nlp-notebook]
 parent = "ml-notebook"
 e2x    = true
+
+[images.prefect-notebook]
+parent = "datascience-notebook-code"
+e2x    = true

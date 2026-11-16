@@ -1,0 +1,11 @@
+prefect==3.9.3
+datacontract-cli==1.2.10
+duckdb==2.0.0
+evidently==0.7.23
+ibis-framework==12.0.0
+missingno==0.5.2
+openpyxl==3.1.5
+pandera==0.36.0
+psycopg[binary]==3.3.9
+python-pptx==1.0.2
+ydata-profiling==4.18.4
