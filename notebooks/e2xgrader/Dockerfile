@@ -9,7 +9,7 @@ ARG IMAGE_SOURCE
 FROM $IMAGE_SOURCE AS base
 ARG IMAGE_SOURCE
 ARG FROM_REPO=false
-ARG E2XGRADER_VERSION="0.3.6"
+ARG E2XGRADER_VERSION="0.4.0rc0"
 ARG E2XGRADER_BRANCH="main"
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
@@ -37,6 +37,11 @@ RUN cat /tmp/jupyter_notebook_config_override.py >> /etc/jupyter/jupyter_noteboo
     chown root:"$NB_GID" /etc/jupyter/jupyter_notebook_config.py && \
     chmod g+rwX /etc/jupyter/jupyter_notebook_config.py
     
+# Copy and append jupyter server config override (nbclassic default, CSP header)
+COPY base/jupyter_server_config_override.py /tmp/jupyter_server_config_override.py
+RUN cat /tmp/jupyter_server_config_override.py >> /etc/jupyter/jupyter_server_config.py && \
+    rm /tmp/jupyter_server_config_override.py
+
 USER $NB_USER
 
 # Install requirements shared between all modes

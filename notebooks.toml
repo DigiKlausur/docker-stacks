@@ -56,6 +56,9 @@ parent_tag = "latest"
 tags       = ["dev", "dev-{date}", "dev-sha-{sha}"]
 parent_tag = "dev"
 
+[tag_sets.test]
+tags       = ["test", "test-{date}", "test-sha-{sha}"]
+parent_tag = "test"
 
 # ============================================================================ #
 #   Images                                                                     #
@@ -68,7 +71,7 @@ parent_tag = "dev"
 # ============================================================================ #
 
 [images.minimal-notebook]
-base = "jupyter/minimal-notebook:notebook-6.5.4"
+base = "quay.io/jupyter/minimal-notebook:notebook-7.6.5"
 e2x  = true
 
 [images.bi-notebook]

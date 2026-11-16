@@ -1,9 +1,8 @@
-spacy==3.7.4
-gensim==4.3.2
-scipy==1.10.0 # Newer versions break gensim
-wikipedia
-nltk==3.9.4
-transformers==4.53.0
-tokenizers
-huggingface_hub
-wordcloud
+spacy==3.8.18
+gensim==4.4.0
+wikipedia==1.4.0
+nltk==3.10.4
+transformers==5.22.2
+tokenizers==0.23.3
+huggingface_hub==2.4.0
+wordcloud==1.9.6

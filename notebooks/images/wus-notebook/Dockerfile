@@ -19,9 +19,9 @@ USER $NB_USER
 
 # Enable highlight word
 RUN uv pip install jupyter_highlight_selected_word \
-    && jupyter nbextension install --py --sys-prefix jupyter_highlight_selected_word \
-    && jupyter nbextension enable --sys-prefix highlight_selected_word/main \
-    && jupyter nbextension list
+    && jupyter nbclassic-extension install --py --sys-prefix jupyter_highlight_selected_word \
+    && jupyter nbclassic-extension enable --sys-prefix highlight_selected_word/main \
+    && jupyter nbclassic-extension list
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).
 # Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and
