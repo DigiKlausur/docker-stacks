@@ -1,0 +1,11 @@
+prefect
+datacontract-cli
+duckdb
+evidently
+ibis-framework
+missingno
+openpyxl
+pandera
+psycopg[binary]
+python-pptx
+ydata-profiling

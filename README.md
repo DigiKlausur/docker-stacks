@@ -26,6 +26,7 @@ quay.io/jupyter/minimal-notebook:notebook-7.6.5
     ├── bidata-notebook [e2x]
     ├── datascience-notebook [e2x]
     │   ├── datascience-notebook-code [e2x]
+    │   │   └── prefect-notebook [e2x]
     │   ├── ml-notebook [e2x]
     │   │   └── nlp-notebook [e2x]
     │   ├── tf-notebook [e2x]
