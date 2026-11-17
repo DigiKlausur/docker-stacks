@@ -40,6 +40,18 @@ RUN apt-get update -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Intel syntax by default (assembler chapter): `objdump -M intel` alias and the
+# `cintel` helper for interactive shells. profile.d covers login shells,
+# bash.bashrc the terminals of Jupyter and VS Code.
+COPY scripts/intel-syntax.sh /etc/profile.d/99-intel-syntax.sh
+RUN echo '. /etc/profile.d/99-intel-syntax.sh' >> /etc/bash.bashrc
+
+# gdb: Intel syntax as well, and keep ASLR on. gdb turns ASLR off by default, which
+# containers forbid, so every run would print "Error disabling address space
+# randomization".
+RUN printf 'set disassembly-flavor intel\nset disable-randomization off\n' \
+        > /etc/gdb/gdbinit.d/e2x.gdb
+
 USER $NB_USER
 
 # jupyter-c-kernel ("C"): real C, but each cell is compiled and run as its own
