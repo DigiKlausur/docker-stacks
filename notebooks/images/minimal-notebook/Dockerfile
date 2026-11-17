@@ -5,7 +5,7 @@ ARG IMAGE_SOURCE
 FROM $IMAGE_SOURCE
 # Built from... https://hub.docker.com/r/jupyter/minimal-notebook/
 #               https://github.com/jupyter/docker-stacks/blob/main/images/minimal-notebook/Dockerfile
-# Built from... Ubuntu 22.04
+# Built from... Ubuntu 26.04
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 LABEL description="e2x minimal notebook"
@@ -57,6 +57,16 @@ RUN mamba install -y --channel conda-forge --freeze-installed gh graphviz \
     && uv pip install -r /tmp/requirements.txt \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
     && jupyter server extension list
+
+# jupyter-server-proxy (in requirements.txt) runs web apps such as VS Code behind the
+# notebook's proxy, in this image and all its children. Its nbclassic extension loads
+# the "New" menu entries with a plain $.get, which sends no XSRF header. JupyterHub 4+
+# rejects such cookie-authenticated XHRs, so nbclassic shows no entries on the hub.
+# nbclassic's utils.ajax adds the header. The grep fails the build if the line
+# changes upstream.
+RUN f=/opt/conda/share/jupyter/nbextensions/jupyter_server_proxy/tree.js && \
+    grep -q '\$\.get(servers_info_url, ' "$f" && \
+    sed -i 's/\$\.get(servers_info_url, /utils.ajax(servers_info_url).then(/' "$f"
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).
 # Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and
