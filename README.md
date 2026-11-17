@@ -146,6 +146,22 @@ python scripts/image_builder plan --tag-set dev --since origin/dev
 - To add an image, create `notebooks/images/<name>/` and add an `[images.<name>]` entry to
   `notebooks.toml`. Run `python scripts/image_builder tree` to check it. End its Dockerfile
   with the `image_info record` block (copy it from any other image).
+- To add VS Code to an image, copy code-server from the official image and add its
+  launcher (`jupyter-server-proxy` itself is in `minimal-notebook`). See
+  [`datascience-notebook-code`](notebooks/images/datascience-notebook-code/Dockerfile):
+
+  ```dockerfile
+  # A stage before `FROM $IMAGE_SOURCE` (the image's own stage must stay last)
+  FROM codercom/code-server:<version>@sha256:<digest> AS code-server
+  # In the image's stage
+  COPY --from=code-server /usr/lib/code-server /usr/lib/code-server
+  COPY --from=code-server /usr/bin/code-server /usr/bin/code-server
+  RUN uv pip install jupyter-vscode-proxy
+  ```
+
+  Each image pins its own code-server version. To bump it, update the tag and digest
+  (`docker buildx imagetools inspect codercom/code-server:<version>`) in every image:
+  `grep -rn codercom/code-server notebooks/images`.
 - Tests: `pip install -r scripts/image_builder/requirements-dev.txt`, then `python -m pytest`.
 
 ## Contributing
