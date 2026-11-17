@@ -19,8 +19,8 @@ Open a terminal (in VS Code or Jupyter) and run:
 start-prefect
 ```
 
-The script prints the dashboard URL (`…/proxy/absolute/4200/`). The `127.0.0.1` links Prefect prints itself only work inside the container.
-The dashboard's base path comes from `JUPYTERHUB_SERVICE_PREFIX`, and the host from `PREFECT_PUBLIC_URL` (default `http://localhost:8888`).
+The script prints the dashboard path (`/user/<name>/proxy/absolute/4200/`); open it on your hub's address. The `127.0.0.1` links Prefect prints itself only work inside the container.
+The path comes from `JUPYTERHUB_SERVICE_PREFIX`. Prefect writes its UI files to `PREFECT_UI_STATIC_DIRECTORY` (default `/tmp/prefect-ui`), because the notebook user may not be allowed to write to `site-packages`.
 
 ## Starting the Data Contract Editor
 
@@ -30,9 +30,8 @@ Open a terminal and run, with any `datacontract edit` options:
 start-datacontract-editor my-contract.odcs.yaml --language de
 ```
 
-The script prints the editor URL (`…/proxy/4243/`). The `localhost:4243` link the editor prints itself only works inside the container.
+The script prints the editor path (`/user/<name>/proxy/4243/`); open it on your hub's address. The `localhost:4243` link the editor prints itself only works inside the container.
 Plain `datacontract edit` does not work here: its page loads files from root paths, which miss the proxy prefix. The script rewrites them to relative paths.
-The host in the printed URL comes from `DATACONTRACT_PUBLIC_URL` (default `http://localhost:8888`).
 
 ## Usage
 

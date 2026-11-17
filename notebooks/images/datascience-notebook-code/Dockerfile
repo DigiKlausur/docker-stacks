@@ -38,6 +38,14 @@ USER $NB_USER
 RUN uv pip install jupyter-server-proxy jupyter-vscode-proxy && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
+# jupyter-server-proxy's nbclassic extension loads the New menu entries with a plain
+# $.get, which sends no XSRF header. JupyterHub 4+ rejects such cookie-authenticated
+# XHRs, so nbclassic misses "New -> VS Code" on the hub. nbclassic's utils.ajax adds
+# the header. The grep fails the build if the line changes upstream.
+RUN f=/opt/conda/share/jupyter/nbextensions/jupyter_server_proxy/tree.js && \
+    grep -q '\$\.get(servers_info_url, ' "$f" && \
+    sed -i 's/\$\.get(servers_info_url, /utils.ajax(servers_info_url).then(/' "$f"
+
 # Record this build in /etc/image-info.json (see notebooks/image_info).
 # Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and
 # every RUN after their ARG line is rebuilt each time.
