@@ -77,15 +77,23 @@ class Manifest:
 
 def load(path: Path) -> Manifest:
     """Read notebooks.toml, validate it and check that the image folders match."""
-    try:
-        with path.open("rb") as file:
-            data = tomllib.load(file)
-    except tomllib.TOMLDecodeError as error:
-        raise ManifestError(f"{path}: {error}") from error
-
+    data = _decode(path.read_text(encoding="utf-8"), source=str(path))
     manifest = parse(data)
     _check_folders(data["images"], root=path.parent)
     return manifest
+
+
+def loads(text: str, source: str = "notebooks.toml") -> Manifest:
+    """Like `load`, but from TOML text and without the folder check, e.g. for an
+    older version of notebooks.toml whose folders may be gone."""
+    return parse(_decode(text, source))
+
+
+def _decode(text: str, source: str) -> dict:
+    try:
+        return tomllib.loads(text)
+    except tomllib.TOMLDecodeError as error:
+        raise ManifestError(f"{source}: {error}") from error
 
 
 def parse(data: dict) -> Manifest:

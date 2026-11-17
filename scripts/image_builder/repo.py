@@ -26,6 +26,16 @@ def changed_files(root: Path, since: str) -> list[str]:
     return _git(root, "diff", "--name-only", f"{since}...HEAD").splitlines()
 
 
+def file_at_merge_base(root: Path, since: str, path: str) -> str | None:
+    """Content of `path` where this branch split off from `since` (the commit
+    `changed_files` compares against), or None if it can't be read there."""
+    try:
+        base = _git(root, "merge-base", since, "HEAD")
+        return _git(root, "show", f"{base}:{path}")
+    except RepoError:
+        return None
+
+
 def short_sha(root: Path) -> str:
     return _git(root, "rev-parse", "--short=7", "HEAD")
 
