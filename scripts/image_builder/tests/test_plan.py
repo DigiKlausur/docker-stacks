@@ -40,7 +40,9 @@ def small_manifest():
             id="e2xgrader change",
         ),
         pytest.param(["notebooks/images/b/README.md"], [], id="README is ignored"),
-        pytest.param(["notebooks.toml"], EVERYTHING, id="manifest change"),
+        pytest.param(
+            ["notebooks.toml"], EVERYTHING, id="manifest change, old version unknown"
+        ),
         pytest.param(
             [".github/workflows/_build_image.yml"],
             EVERYTHING,
@@ -71,6 +73,92 @@ def small_manifest():
 )
 def test_select(small_manifest, changed, expected):
     assert select(small_manifest, changed) == expected
+
+
+def manifest_data(images: dict | None = None, **sections) -> dict:
+    """make_data(IMAGES), with entries of top-level sections added or replaced."""
+    data = make_data(images or IMAGES)
+    for key, entries in sections.items():
+        data[key] = {**data[key], **entries}
+    return data
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "expected"),
+    [
+        pytest.param(manifest_data(), manifest_data(), [], id="no change"),
+        pytest.param(
+            manifest_data(),
+            manifest_data({**IMAGES, "e": {"parent": "b"}}),
+            ["e"],
+            id="new image",
+        ),
+        pytest.param(
+            manifest_data(),
+            manifest_data({**IMAGES, "e": {"parent": "a", "e2x": True}}),
+            ["e", "e-exam", "e-student"],
+            id="new image with e2x variants",
+        ),
+        pytest.param(
+            manifest_data({**IMAGES, "d": {"parent": "a", "enabled": False}}),
+            manifest_data(),
+            ["d"],
+            id="image enabled",
+        ),
+        pytest.param(
+            manifest_data(),
+            manifest_data({**IMAGES, "c": {"parent": "d"}}),
+            ["c"],
+            id="parent changed",
+        ),
+        pytest.param(
+            manifest_data(),
+            manifest_data({**IMAGES, "a": {"base": "x:2", "e2x": True}}),
+            EVERYTHING,
+            id="base changed rebuilds the subtree",
+        ),
+        pytest.param(
+            manifest_data(),
+            manifest_data({**IMAGES, "b": {"parent": "a", "e2x": True}}),
+            ["b-exam", "b-student"],
+            id="e2x turned on builds only the variants",
+        ),
+        pytest.param(
+            manifest_data(),
+            manifest_data({k: v for k, v in IMAGES.items() if k != "d"}),
+            [],
+            id="image removed",
+        ),
+        pytest.param(
+            manifest_data(),
+            manifest_data(e2x={"modes": {"student": "student", "student_exam": "x"}}),
+            ["a-x"],
+            id="e2x mode renamed",
+        ),
+        pytest.param(
+            manifest_data(),
+            manifest_data(registry={"namespace": "org/other"}),
+            EVERYTHING,
+            id="registry changed",
+        ),
+        pytest.param(
+            manifest_data(),
+            manifest_data(tag_sets={"dev": {"tags": ["dev"], "parent_tag": "dev"}}),
+            EVERYTHING,
+            id="tag sets changed",
+        ),
+    ],
+)
+def test_select_manifest_change(old, new, expected):
+    assert select(parse(new), ["notebooks.toml"], parse(old)) == expected
+
+
+def test_select_manifest_and_folder_change():
+    old = parse(manifest_data())
+    new = parse(manifest_data({**IMAGES, "e": {"parent": "d"}}))
+    changed = ["notebooks.toml", "notebooks/images/b/Dockerfile"]
+
+    assert select(new, changed, old) == ["b", "c", "e"]
 
 
 def test_descendants(small_manifest):

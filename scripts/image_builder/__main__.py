@@ -111,12 +111,26 @@ def _plan(loaded: manifest.Manifest, args: argparse.Namespace) -> dict:
     if args.all:
         images = manifest.build_order(loaded.nodes)
     else:
-        images = plan.select(loaded, repo.changed_files(REPO_ROOT, args.since))
+        changed = repo.changed_files(REPO_ROOT, args.since)
+        images = plan.select(loaded, changed, _manifest_at_merge_base(args.since))
 
     now = datetime.now(UTC)
     return plan.summary(
         loaded.tag_sets[args.tag_set], images, repo.short_sha(REPO_ROOT), now
     )
+
+
+def _manifest_at_merge_base(since: str) -> manifest.Manifest | None:
+    """notebooks.toml where this branch split off from `since`; None if it is
+    missing or invalid there (plan then rebuilds everything)."""
+    path = MANIFEST_PATH.relative_to(REPO_ROOT).as_posix()
+    text = repo.file_at_merge_base(REPO_ROOT, since, path)
+    if text is None:
+        return None
+    try:
+        return manifest.loads(text, source=f"{path} at merge base")
+    except manifest.ManifestError:
+        return None
 
 
 def _generate(loaded: manifest.Manifest, check: bool) -> int:

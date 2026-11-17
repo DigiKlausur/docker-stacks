@@ -2,7 +2,15 @@ from pathlib import Path
 
 import pytest
 from helpers import make_data
-from manifest import E2X_DIR, IMAGES_DIR, ManifestError, build_order, load, parse
+from manifest import (
+    E2X_DIR,
+    IMAGES_DIR,
+    ManifestError,
+    build_order,
+    load,
+    loads,
+    parse,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -163,3 +171,13 @@ def test_load_rejects_folder_without_entry(tmp_path):
 def test_load_rejects_entry_without_folder(tmp_path):
     with pytest.raises(ManifestError, match="no folder"):
         load(make_repo(tmp_path, []))
+
+
+def test_loads_matches_load_on_the_real_manifest():
+    path = REPO_ROOT / "notebooks.toml"
+    assert loads(path.read_text(encoding="utf-8")) == load(path)
+
+
+def test_loads_names_the_source_of_invalid_toml():
+    with pytest.raises(ManifestError, match="^old notebooks.toml: "):
+        loads("not = [valid", source="old notebooks.toml")
