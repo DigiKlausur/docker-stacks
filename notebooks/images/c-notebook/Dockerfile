@@ -52,6 +52,13 @@ RUN echo '. /etc/profile.d/99-intel-syntax.sh' >> /etc/bash.bashrc
 RUN printf 'set disassembly-flavor intel\nset disable-randomization off\n' \
         > /etc/gdb/gdbinit.d/e2x.gdb
 
+# Java 25 JDK (Eclipse Temurin) for mixing languages: Java calls C/assembler via the
+# Foreign Function & Memory API (java.lang.foreign, final since JDK 22). 25 = LTS.
+# The 25-jdk tag follows patch releases (security fixes), like the JRE in bi-notebook.
+ENV JAVA_HOME=/opt/java/openjdk
+COPY --from=eclipse-temurin:25-jdk $JAVA_HOME $JAVA_HOME
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
 USER $NB_USER
 
 # jupyter-c-kernel ("C"): real C, but each cell is compiled and run as its own
