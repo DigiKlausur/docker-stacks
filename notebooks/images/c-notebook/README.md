@@ -1,6 +1,6 @@
 # e2x C Notebook
 
-This Docker image is a customized version of the [e2x Minimal Notebook](../minimal-notebook) image, with kernels for C and C++.
+This Docker image is a customized version of the [e2x Minimal Notebook](../minimal-notebook) image for systems programming: kernels for C and C++, the usual C toolchain and debugging tools, and VS Code.
 
 ## Description
 
@@ -11,8 +11,22 @@ The image offers two kinds of kernels, so a course can pick the one that fits:
 
 In the kernel menu, "C" is the gcc kernel and "C11", "C17", "C23" are the interpreted ones.
 
-`build-essential` (gcc, make) is installed, so C programs can also be compiled in the terminal.
-VS Code (code-server) opens from the launcher or "New → VS Code", for working on `.c` files directly.
+## Tools
+
+* **Build:** gcc, clang, make, cmake, meson, ninja, autotools, pkg-config, bear
+* **Debug and analyze:** gdb, lldb, valgrind, strace, ltrace, elfutils, libtree,
+  sanitizers (`-fsanitize=address,undefined,thread`), cppcheck, clang-tidy, clang-format
+* **Misc:** xxd, hexdump, netcat, GNU parallel, btop
+* **Man pages** for the C library and system calls (`man 3 printf`, `man 2 write`).
+  The base image is minimized and drops man pages; this image restores them for
+  everything it installs.
+* **Intel assembly syntax by default:** `objdump` is an alias for `objdump -M intel`,
+  `cintel file.c` writes `file.s` in Intel syntax, and gdb disassembles in Intel syntax
+  ([scripts/intel-syntax.sh](scripts/intel-syntax.sh), `/etc/gdb/gdbinit.d/e2x.gdb`).
+  gdb keeps ASLR on, because containers do not allow turning it off.
+* **Java 25 JDK** (Eclipse Temurin), e.g. for calling C from Java via the Foreign
+  Function & Memory API (`java --enable-native-access=ALL-UNNAMED ...`).
+* **VS Code** (code-server) opens from the launcher or "New → VS Code".
 
 ## Usage
 
