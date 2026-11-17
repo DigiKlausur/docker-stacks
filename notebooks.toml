@@ -86,6 +86,10 @@ e2x    = true
 parent = "minimal-notebook"
 e2x    = true
 
+[images.c-notebook]
+parent = "minimal-notebook"
+e2x    = true
+
 [images.desktop-notebook]
 parent  = "minimal-notebook"
 enabled = false                                    # proof of concept, not used anywhere
