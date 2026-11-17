@@ -151,6 +151,46 @@ jobs:
       push: ${{ inputs.push }}
     secrets: inherit
 
+  c-notebook:
+    needs: [plan, minimal-notebook]
+    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'c-notebook') }}
+    uses: ./.github/workflows/_build_image.yml
+    with:
+      image: c-notebook
+      plan: ${{ needs.plan.outputs.plan }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  c-notebook-exam:
+    needs: [plan, c-notebook]
+    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'c-notebook-exam') }}
+    uses: ./.github/workflows/_build_image.yml
+    with:
+      image: c-notebook-exam
+      plan: ${{ needs.plan.outputs.plan }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  c-notebook-student:
+    needs: [plan, c-notebook]
+    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'c-notebook-student') }}
+    uses: ./.github/workflows/_build_image.yml
+    with:
+      image: c-notebook-student
+      plan: ${{ needs.plan.outputs.plan }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
+  c-notebook-teacher:
+    needs: [plan, c-notebook]
+    if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'c-notebook-teacher') }}
+    uses: ./.github/workflows/_build_image.yml
+    with:
+      image: c-notebook-teacher
+      plan: ${{ needs.plan.outputs.plan }}
+      push: ${{ inputs.push }}
+    secrets: inherit
+
   datascience-notebook:
     needs: [plan, minimal-notebook]
     if: ${{ !cancelled() && !failure() && contains(fromJSON(needs.plan.outputs.plan).images, 'datascience-notebook') }}
@@ -513,6 +553,10 @@ jobs:
       - bidata-notebook-exam
       - bidata-notebook-student
       - bidata-notebook-teacher
+      - c-notebook
+      - c-notebook-exam
+      - c-notebook-student
+      - c-notebook-teacher
       - datascience-notebook
       - datascience-notebook-code
       - datascience-notebook-code-exam
