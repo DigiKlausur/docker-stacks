@@ -3,48 +3,27 @@
 # notebooks.toml. Build with: python scripts/image_builder build <image>
 ARG IMAGE_SOURCE
 
-# code-server: bump both together. The digest is shown next to the .deb on the
-# GitHub release page (or: gh release view v<version> --repo coder/code-server --json assets).
-ARG CODE_VERSION=4.145.2
-ARG CODE_SHA256=7eddbdeaab34380bde3ac3bbadce58fe2f5722c4877f331ea593ae797c2517e1
-
-# Download the code-server .deb in its own stage, so it never ends up in an image
-# layer (240 MB) and the image needs no curl. BuildKit caches the download.
-FROM scratch AS code-server
-ARG CODE_VERSION
-ADD https://github.com/coder/code-server/releases/download/v${CODE_VERSION}/code-server_${CODE_VERSION}_amd64.deb \
-    /code-server.deb
+# code-server (VS Code in the browser), copied from the official image: it is
+# self-contained in /usr/lib/code-server. Bump: new tag and its digest, e.g. from
+# docker buildx imagetools inspect codercom/code-server:<version>
+FROM codercom/code-server:4.145.2@sha256:09565f9e07f5624554e295e8bab0e2fec4a7c533eb3cff459ed6596a4d3d7c1c AS code-server
 
 # The image itself (keep this stage last: non-e2x images build without --target)
 FROM $IMAGE_SOURCE
-ARG CODE_VERSION CODE_SHA256
 
 LABEL maintainer="e2x project H-BRS <e2x@inf.h-brs.de>"
 LABEL description="e2x code notebook"
 LABEL org.opencontainers.image.description="e2x code notebook"
 LABEL org.opencontainers.image.authors="e2x project H-BRS <e2x@inf.h-brs.de>"
 
-USER root
-ENV CODE_VERSION=$CODE_VERSION
+COPY --from=code-server /usr/lib/code-server /usr/lib/code-server
+COPY --from=code-server /usr/bin/code-server /usr/bin/code-server
 
-RUN --mount=type=bind,from=code-server,source=/code-server.deb,target=/tmp/code-server.deb \
-    echo "${CODE_SHA256}  /tmp/code-server.deb" | sha256sum -c - \
-    && dpkg -i /tmp/code-server.deb \
-    && find /usr/lib/code-server -type f -name '*.js.map' -delete
 
-USER $NB_USER
-
-# As $NB_USER (not root), so later installs (e.g. the e2x layer) can still change these packages
-RUN uv pip install jupyter-server-proxy jupyter-vscode-proxy && \
+# The VS Code launcher for jupyter-server-proxy (installed in minimal-notebook).
+# As $NB_USER (not root), so later installs (e.g. the e2x layer) can still change it.
+RUN uv pip install jupyter-vscode-proxy && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete
-
-# jupyter-server-proxy's nbclassic extension loads the New menu entries with a plain
-# $.get, which sends no XSRF header. JupyterHub 4+ rejects such cookie-authenticated
-# XHRs, so nbclassic misses "New -> VS Code" on the hub. nbclassic's utils.ajax adds
-# the header. The grep fails the build if the line changes upstream.
-RUN f=/opt/conda/share/jupyter/nbextensions/jupyter_server_proxy/tree.js && \
-    grep -q '\$\.get(servers_info_url, ' "$f" && \
-    sed -i 's/\$\.get(servers_info_url, /utils.ajax(servers_info_url).then(/' "$f"
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).
 # Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and
