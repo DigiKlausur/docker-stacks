@@ -17,11 +17,26 @@ LABEL description="e2x c notebook"
 COPY --from=code-server /usr/lib/code-server /usr/lib/code-server
 COPY --from=code-server /usr/bin/code-server /usr/bin/code-server
 
-# gcc, make etc. The C kernel compiles every cell with gcc, so unlike in other
-# images build-essential stays in the image.
 USER root
+
+# Man pages (e.g. `man 3 printf`): the base image is a minimized Ubuntu that drops
+# them and replaces `man` with a stub. Undo both, so packages installed from here
+# on bring their man pages (packages installed before keep none).
+RUN sed -i '\|^path-exclude=/usr/share/man/|d' /etc/dpkg/dpkg.cfg.d/excludes \
+    && rm /usr/bin/man \
+    && dpkg-divert --quiet --remove --rename /usr/bin/man
+
+# Tools for the systems programming course. build-essential (gcc, make and the
+# sanitizer runtimes) stays in the image: the C kernel compiles every cell with gcc.
 RUN apt-get update -y \
-    && apt-get install --yes --no-install-recommends build-essential \
+    && apt-get install --yes --no-install-recommends \
+        build-essential gdb cmake clang lldb cppcheck \
+        clang-format clang-tidy \
+        strace ltrace elfutils valgrind \
+        man-db manpages-dev glibc-doc \
+        bsdmainutils bear libtree xxd netcat-openbsd parallel btop \
+        meson ninja-build \
+        pkg-config autoconf automake libtool \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
