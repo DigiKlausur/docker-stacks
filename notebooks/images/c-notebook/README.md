@@ -12,6 +12,7 @@ The image offers two kinds of kernels, so a course can pick the one that fits:
 In the kernel menu, "C" is the gcc kernel and "C11", "C17", "C23" are the interpreted ones.
 
 `build-essential` (gcc, make) is installed, so C programs can also be compiled in the terminal.
+VS Code (code-server) opens from the launcher or "New → VS Code", for working on `.c` files directly.
 
 ## Usage
 
