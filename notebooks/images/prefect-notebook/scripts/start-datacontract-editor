@@ -43,10 +43,10 @@ def proxied_index_html(*args, **kwargs):
 command_edit._generate_index_html = proxied_index_html
 
 prefix = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/")
-public_url = os.environ.get("DATACONTRACT_PUBLIC_URL", "http://localhost:8888")
+# The container does not know the hub's public host, so print only the path.
 print()
-print("  Open the Data Contract Editor here:")
-print(f"  {public_url}{prefix}proxy/{PORT}/")
+print("  Open the Data Contract Editor here (put your hub's address in front):")
+print(f"  {prefix}proxy/{PORT}/")
 print()
 print(f"  (Ignore the localhost:{PORT} link below; it only works inside the container.)")
 print()
