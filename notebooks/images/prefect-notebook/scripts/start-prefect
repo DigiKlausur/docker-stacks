@@ -1,14 +1,17 @@
 #!/bin/bash
 # /usr/local/bin/start-prefect
 PREFIX="${JUPYTERHUB_SERVICE_PREFIX:-/}"
-PUBLIC_URL="${PREFECT_PUBLIC_URL:-http://localhost:8888}"
 
 export PREFECT_SERVER_UI_SERVE_BASE="${PREFIX}proxy/absolute/4200"
-export PREFECT_SERVER_UI_API_URL="${PREFIX}proxy/4200/api"   # or with ${PUBLIC_URL} if relative fails
+export PREFECT_SERVER_UI_API_URL="${PREFIX}proxy/4200/api"
+# At startup Prefect copies the UI here and rewrites its base path. The default
+# lies in site-packages, which the notebook user may not be allowed to write to.
+export PREFECT_UI_STATIC_DIRECTORY="${PREFECT_UI_STATIC_DIRECTORY:-/tmp/prefect-ui}"
 
+# The container does not know the hub's public host, so print only the path.
 echo ""
-echo "  Open the Prefect dashboard here:"
-echo "  ${PUBLIC_URL}${PREFIX}proxy/absolute/4200/"
+echo "  Open the Prefect dashboard here (put your hub's address in front):"
+echo "  ${PREFIX}proxy/absolute/4200/"
 echo ""
 echo "  (Ignore the 127.0.0.1 links below; they only work inside the container.)"
 echo ""
