@@ -1,0 +1,33 @@
+# Path-based PR labels, applied by .github/workflows/labeler.yml.
+# Type labels (bug, enhancement, dependencies) and judgment labels (new-image,
+# notebook7-migration, workaround) stay manual.
+
+area/images:
+  - changed-files:
+      - any-glob-to-any-file:
+          - notebooks/images/**
+          - notebooks.toml
+
+area/e2xgrader:
+  - changed-files:
+      - any-glob-to-any-file: notebooks/e2xgrader/**
+
+area/hub:
+  - changed-files:
+      - any-glob-to-any-file: hub/**
+
+area/ci:
+  - changed-files:
+      - any-glob-to-any-file: .github/workflows/**
+
+area/build-tooling:
+  - changed-files:
+      - any-glob-to-any-file:
+          - scripts/image_builder/**
+          - notebooks/image_info/**
+          - pytest.ini
+
+# Only docs-only PRs: most PRs touch a README along the way.
+documentation:
+  - changed-files:
+      - all-globs-to-all-files: '**/*.md'
