@@ -68,6 +68,27 @@ RUN f=/opt/conda/share/jupyter/nbextensions/jupyter_server_proxy/tree.js && \
     grep -q '\$\.get(servers_info_url, ' "$f" && \
     sed -i 's/\$\.get(servers_info_url, /utils.ajax(servers_info_url).then(/' "$f"
 
+# nbclassic links its terminals to /terminals/<name>, which Notebook 7 serves, so the
+# Jupyter logo there leads to Notebook 7's /tree. The nbclassic_terminal server
+# extension serves nbclassic's own terminal page at /nbclassic/terminals/<name>, and
+# custom-preload.js (replacing nbclassic's empty placeholder) points nbclassic's
+# terminal links there. The greps fail the build if nbclassic changes how it builds
+# terminal URLs or ships a real custom-preload.js. Remove once e2xgrader runs on
+# Notebook 7.
+COPY --chown=${NB_UID}:${NB_GID} nbclassic_terminal /tmp/nbclassic_terminal
+RUN nbc=$(python -c 'import nbclassic, os; print(os.path.dirname(nbclassic.__file__))') && \
+    tree_js="$nbc/static/tree/js/main.min.js" && \
+    grep -q "w.location = utils.url_path_join(base_url, 'terminals'," "$tree_js" && \
+    grep -q ".attr('href', utils.url_path_join(this.base_url, \"terminals\"," "$tree_js" && \
+    grep -q 'Same goal as custom.js' "$nbc/static/custom/custom-preload.js" && \
+    cp /tmp/nbclassic_terminal/custom-preload.js "$nbc/static/custom/custom-preload.js" && \
+    cp /tmp/nbclassic_terminal/nbclassic_terminal.py \
+       "$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/" && \
+    mkdir -p /opt/conda/etc/jupyter/jupyter_server_config.d && \
+    cp /tmp/nbclassic_terminal/nbclassic_terminal.json \
+       /opt/conda/etc/jupyter/jupyter_server_config.d/ && \
+    rm -rf /tmp/nbclassic_terminal
+
 # Record this build in /etc/image-info.json (see notebooks/image_info).
 # Keep this at the end: GIT_COMMIT and BUILD_DATE change on every build, and
 # every RUN after their ARG line is rebuilt each time.
