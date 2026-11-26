@@ -198,6 +198,15 @@ RUN e2xgrader activate teacher --sys-prefix
 USER root
 RUN rm -rf /tmp/teacher_requirements.txt
 
+# Landlock sandbox for autograding (see teacher/autograde_sandbox.py). Root-owned in
+# the conda env's site-packages, so the grader imports it as autograde_sandbox. The
+# import check fails the build if nbgrader's Execute preprocessor moves.
+COPY teacher/autograde_sandbox.py /tmp/autograde_sandbox.py
+RUN install -o root -g root -m 644 /tmp/autograde_sandbox.py \
+        "$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/" && \
+    rm /tmp/autograde_sandbox.py && \
+    python -I -c 'from autograde_sandbox import SandboxedExecute, SandboxedKernelManager'
+
 USER $NB_USER
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).
