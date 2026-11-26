@@ -207,6 +207,17 @@ RUN install -o root -g root -m 644 /tmp/autograde_sandbox.py \
     rm /tmp/autograde_sandbox.py && \
     python -I -c 'from autograde_sandbox import SandboxedExecute, SandboxedKernelManager'
 
+# Teacher-only nbgrader config: autograde with SandboxedExecute. nbgrader only logs
+# errors in config files and skips them, which would leave autograding unsandboxed,
+# so the build loads the config and fails unless the swap is in place.
+COPY teacher/nbgrader_config.py /tmp/nbgrader_config.py
+RUN test ! -e /opt/conda/etc/jupyter/nbgrader_config.py && \
+    install -o root -g root -m 644 /tmp/nbgrader_config.py /opt/conda/etc/jupyter/ && \
+    rm /tmp/nbgrader_config.py && \
+    python -I -c 'from traitlets.config.loader import PyFileConfigLoader; \
+c = PyFileConfigLoader("nbgrader_config.py", "/opt/conda/etc/jupyter").load_config(); \
+assert "autograde_sandbox.SandboxedExecute" in c.Autograde.autograde_preprocessors, c.Autograde'
+
 USER $NB_USER
 
 # Record this build in /etc/image-info.json (see notebooks/image_info).
