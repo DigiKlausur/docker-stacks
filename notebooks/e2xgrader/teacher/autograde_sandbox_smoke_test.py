@@ -8,12 +8,13 @@ in a fake course and checks that it cannot escape.
 Usage (inside a teacher image):  autograde-sandbox-smoke-test
 
 Per kernel, a probe tries to read its own data.csv (must work), append to the
-gradebook and to another student's folder (must fail) and read
+gradebook and to another student's folder (must fail), chmod its own file (must
+work) and make the gradebook world-writable (must fail), and read
 JUPYTERHUB_API_TOKEN (must be unset); the Python probe also tries to read its
 parent's /proc/<pid>/environ (must fail). Kernels without a probe (e.g.
 java_syntax_kernel, which does not run code) only have to start in the sandbox.
 Julia kernels are skipped. Afterwards, every file outside the student's own
-folder must be unchanged, and a kernel must be refused when started outside
+folder must be unchanged (content and permissions), and a kernel must be refused when started outside
 /autograded/ or when a shared path would make the course directory readable.
 
 Exit codes: 0 all passed, or Landlock unavailable (reported, nothing tested);
@@ -47,6 +48,16 @@ for name, path in [("GRADEBOOK", "../../../gradebook.db"), ("BOB", "../../bob/pw
         print(name, "WRITABLE")
     except OSError:
         print(name, "BLOCKED")
+try:
+    os.chmod("data.csv", 0o755)
+    print("OWN_CHMOD OK")
+except OSError:
+    print("OWN_CHMOD FAILED")
+try:
+    os.chmod("../../../gradebook.db", 0o666)
+    print("CHMOD ALLOWED")
+except OSError:
+    print("CHMOD BLOCKED")
 print("TOKEN", os.environ.get("JUPYTERHUB_API_TOKEN", "UNSET"))
 try:
     with open(f"/proc/{os.getppid()}/environ", "rb") as f:
@@ -60,6 +71,7 @@ except OSError:
 C_PROBE = r"""
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 static int probe(void) {
     char line[64] = "";
@@ -73,6 +85,8 @@ static int probe(void) {
         printf("%s %s\n", names[i], out ? "WRITABLE" : "BLOCKED");
         if (out) fclose(out);
     }
+    printf("OWN_CHMOD %s\n", chmod("data.csv", 0755) == 0 ? "OK" : "FAILED");
+    printf("CHMOD %s\n", chmod("../../../gradebook.db", 0666) == 0 ? "ALLOWED" : "BLOCKED");
     const char *token = getenv("JUPYTERHUB_API_TOKEN");
     printf("TOKEN %s\n", token ? token : "UNSET");
     fflush(stdout);
@@ -80,7 +94,8 @@ static int probe(void) {
 }
 """
 
-EXPECTED = [f"READ {DATA}", "GRADEBOOK BLOCKED", "BOB BLOCKED", "TOKEN UNSET"]
+EXPECTED = [f"READ {DATA}", "GRADEBOOK BLOCKED", "BOB BLOCKED", "OWN_CHMOD OK",
+            "CHMOD BLOCKED", "TOKEN UNSET"]
 
 
 def probe_cells(spec):
@@ -111,7 +126,7 @@ def make_course(root):
 
 
 def snapshot(root, writable):
-    """Hashes of all files under root, except in the writable folder."""
+    """Hash and permission bits of all files under root, except in the writable folder."""
     files = {}
     for dirpath, _, filenames in os.walk(root):
         if dirpath.startswith(writable):
@@ -119,7 +134,8 @@ def snapshot(root, writable):
         for name in filenames:
             path = os.path.join(dirpath, name)
             with open(path, "rb") as f:
-                files[os.path.relpath(path, root)] = hashlib.sha256(f.read()).hexdigest()
+                files[os.path.relpath(path, root)] = (hashlib.sha256(f.read()).hexdigest(),
+                                                      os.stat(path).st_mode & 0o7777)
     return files
 
 
@@ -151,7 +167,7 @@ def check_kernel(config, name, spec, course, alice, before):
     problems = []
     if cells is not None:
         problems += [f"missing {line!r} in output" for line in EXPECTED if line not in output]
-        if "WRITABLE" in output or "READABLE" in output or SECRET in output:
+        if any(marker in output for marker in ("WRITABLE", "READABLE", "ALLOWED", SECRET)):
             problems.append("sandbox escape reported in output")
     if snapshot(course, alice) != before:
         problems.append("files outside the student's folder changed")

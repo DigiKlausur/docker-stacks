@@ -99,12 +99,13 @@ What autograded code can do:
 | | Allowed | Blocked |
 |---|---|---|
 | Files | Read system paths (`/usr`, `/opt`, `/etc`, …) and `E2X_SHARED_PATHS`. Write its own `autograded/<student>/<assignment>` folder, a private temp directory and `/dev/shm`. | Everything under `/home` (course directory, gradebook, other submissions), `/tmp`, `/srv` (exchange), `/root`, `/run`, `/mnt`, `/media`. Other processes' `/proc` entries. |
+| Permissions | `chmod` its own files, without group/other write or setuid/setgid/sticky bits. New files get `umask 022`. | Making any file group- or world-writable or setuid, `chown`, setting or removing xattrs (ACLs). Landlock cannot restrict these, so a seccomp filter blocks them. |
 | Network | Its kernel's own ports | All other TCP, binding and connecting |
 | Processes | Its own child processes | Signals to processes outside the sandbox. Gaining privileges (`sudo`, setuid binaries). |
 | Environment | | Hub tokens and other secrets (`JUPYTERHUB_*`, names containing `TOKEN`, `SECRET`, `PASSWORD`, …) are removed. |
 
 The sandbox fails closed: the kernel does not start and autograding reports "Kernel died" if
-* Landlock is unavailable or older than ABI 6 (Linux 6.12),
+* Landlock is unavailable or older than ABI 6 (Linux 6.12), or the seccomp filter cannot be installed (it exists for x86_64 only),
 * a notebook does not run inside an `/autograded/` folder, or
 * the course directory would be readable, because a shared path or a system directory contains it or lies inside it. The course directory is the part of the notebook's folder before `/autograded/`, so this also catches a course outside the hidden top-level directories.
 
@@ -122,7 +123,7 @@ It never falls back to running unsandboxed.
   ```
 * During autograding, every kernel start logs a line like this to the output of `nbgrader autograde` or the grader's server log. If it is missing, autograding is not sandboxed.
   ```
-  [autograde-sandbox] Landlock ABI 6 active (fs=True, net=True, signals=True); writable: …/autograded/<student>/<assignment>; kernel: /opt/conda/bin/python3
+  [autograde-sandbox] Landlock ABI 6 active (fs=True, net=True, signals=True, perms=True); writable: …/autograded/<student>/<assignment>; kernel: /opt/conda/bin/python3
   ```
 
 ### Configuration
@@ -146,6 +147,7 @@ Never add the course directory, `$HOME` or the exchange to `extra_read_paths`.
 
 * A course's own `nbgrader_config.py` loads last. If it sets `c.Autograde.autograde_preprocessors`, it replaces the sandboxed pipeline.
 * Kernels must be installed system-wide. Kernelspecs or environments under `/home` cannot start in the sandbox, including kernelspecs in `~/.local/share/jupyter/kernels` of a persistent home, which take precedence over the image's.
+* Permissions can still be *removed* from files the grader owns: `chmod 0` or `chmod 444` on the gradebook stops grading until the permissions are fixed. The seccomp filter only blocks making files more accessible, because blocking removal would break normal code: nbgrader makes autograded files `0444`, and copies keep that mode. Timestamps (`touch`, `utime`) are not restricted either.
 * Not covered: UDP, CPU and memory use (only `NBGRADER_EXECUTE_TIMEOUT` limits a run), students faking their own test results, and student HTML/JavaScript output rendered in the formgrader.
 * Validating (`nbgrader validate`, the Validate button) is not sandboxed: it runs outside `/autograded/`.
 * ipykernel cannot bind its IOPub pipe, so output of forked child processes is not captured. It also logs a harmless traceback at shutdown, because it cannot list processes in `/proc`.

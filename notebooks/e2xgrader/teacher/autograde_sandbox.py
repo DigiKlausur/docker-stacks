@@ -18,6 +18,9 @@ the kernel and every process it spawns:
   * cannot ptrace / signal processes outside the sandbox
                                        (signals: Landlock ABI >= 6, Linux >= 6.12)
   * cannot gain privileges (no_new_privs: sudo / setuid binaries are inert)
+  * cannot loosen permissions of files it can name but not open: chmod to
+    group/other-writable or setuid/setgid/sticky modes, chown and setting or
+    removing xattrs (ACLs) are blocked by a seccomp filter (x86_64 only)
   * gets an environment without hub tokens / credentials
 
 Fail closed: if Landlock is unavailable, the working directory looks wrong, the
@@ -195,6 +198,110 @@ def restrict(abi, read_paths, write_dirs, write_files, tcp_bind_ports, restrict_
     return {"fs": True, "net": bool(net), "signals": bool(scoped)}
 
 
+# ---- seccomp: permission changes Landlock does not see -----------------------
+# Landlock does not mediate chmod, chown or xattrs. Sandboxed code runs as the
+# grader, so without this filter it could make any file the grader owns group- or
+# world-writable (or grant that with an ACL xattr) wherever it can name a path,
+# e.g. in the shared exchange. It can still remove permissions (chmod 0 on the
+# gradebook stops grading until fixed); blocking that would also block normal
+# code, as nbgrader makes autograded files 0444 and copies inherit that mode.
+PR_SET_SECCOMP = 22
+SECCOMP_MODE_FILTER = 2
+SECCOMP_RET_ALLOW = 0x7FFF0000
+SECCOMP_RET_ERRNO = 0x00050000
+SECCOMP_RET_KILL_PROCESS = 0x80000000
+AUDIT_ARCH_X86_64 = 0xC000003E
+AUDIT_ARCH_I386 = 0x40000003  # 32-bit syscalls, also via int 0x80 from 64-bit code
+X32_SYSCALL_BIT = 0x40000000
+MODE_LOOSENING = 0o7022  # group/other write, setuid, setgid, sticky
+# Syscall numbers per ABI, from arch/x86/entry/syscalls/syscall_{64,32}.tbl.
+SECCOMP_TABLES = {
+    AUDIT_ARCH_X86_64: {
+        "mode_arg1": (90, 91),  # chmod, fchmod
+        "mode_arg2": (268, 452),  # fchmodat, fchmodat2
+        "chown": (92, 93, 94, 260),  # chown, fchown, lchown, fchownat
+        # setxattr, lsetxattr, fsetxattr, removexattr, lremovexattr, fremovexattr,
+        # setxattrat, removexattrat
+        "xattr": (188, 189, 190, 197, 198, 199, 463, 466),
+    },
+    AUDIT_ARCH_I386: {
+        "mode_arg1": (15, 94),  # chmod, fchmod
+        "mode_arg2": (306, 452),  # fchmodat, fchmodat2
+        # lchown, fchown, chown (16-bit ids), lchown32, fchown32, chown32, fchownat
+        "chown": (16, 95, 182, 198, 207, 212, 298),
+        "xattr": (226, 227, 228, 235, 236, 237, 463, 466),
+    },
+}
+BPF_LD_W_ABS = 0x20
+BPF_JEQ_K = 0x15
+BPF_JGE_K = 0x35
+BPF_JSET_K = 0x45
+BPF_RET_K = 0x06
+
+
+class SockFilter(ctypes.Structure):
+    _fields_ = [("code", ctypes.c_uint16), ("jt", ctypes.c_uint8),
+                ("jf", ctypes.c_uint8), ("k", ctypes.c_uint32)]
+
+
+class SockFprog(ctypes.Structure):
+    _fields_ = [("len", ctypes.c_uint16), ("filter", ctypes.POINTER(SockFilter))]
+
+
+def _seccomp_program():
+    """The filter as (code, jt, jf, k) tuples. Jumps name a label; None falls through."""
+    prog, labels = [], {}
+
+    def ins(code, k=0, jt=None):
+        prog.append((code, jt, k))
+
+    def label(name):
+        labels[name] = len(prog)
+
+    ins(BPF_LD_W_ABS, 4)  # seccomp_data.arch
+    for arch in SECCOMP_TABLES:
+        ins(BPF_JEQ_K, arch, jt=f"arch-{arch}")
+    ins(BPF_RET_K, SECCOMP_RET_KILL_PROCESS)  # unknown ABI
+    for arch, table in SECCOMP_TABLES.items():
+        label(f"arch-{arch}")
+        ins(BPF_LD_W_ABS, 0)  # seccomp_data.nr
+        if arch == AUDIT_ARCH_X86_64:
+            ins(BPF_JGE_K, X32_SYSCALL_BIT, jt="enosys")  # x32 ABI
+        for group, target in (("mode_arg1", "mode-arg1"), ("mode_arg2", "mode-arg2"),
+                              ("chown", "eperm"), ("xattr", "eopnotsupp")):
+            for nr in table[group]:
+                ins(BPF_JEQ_K, nr, jt=target)
+        ins(BPF_RET_K, SECCOMP_RET_ALLOW)
+    for arg in (1, 2):
+        label(f"mode-arg{arg}")
+        ins(BPF_LD_W_ABS, 16 + 8 * arg)  # low 32 bits of seccomp_data.args[arg]
+        ins(BPF_JSET_K, MODE_LOOSENING, jt="eperm")
+        ins(BPF_RET_K, SECCOMP_RET_ALLOW)
+    for name, err in (("eperm", errno.EPERM), ("eopnotsupp", errno.EOPNOTSUPP),
+                      ("enosys", errno.ENOSYS)):
+        label(name)
+        ins(BPF_RET_K, SECCOMP_RET_ERRNO | err)
+
+    resolved = []
+    for i, (code, jt, k) in enumerate(prog):
+        offset = labels[jt] - i - 1 if jt else 0
+        assert 0 <= offset <= 255, (i, jt)
+        resolved.append((code, offset, 0, k))
+    return resolved
+
+
+def restrict_permission_changes():
+    """Install the seccomp filter; no_new_privs must already be set."""
+    if os.uname().machine != "x86_64":
+        raise OSError(errno.ENOSYS, f"no syscall table for {os.uname().machine}")
+    insns = _seccomp_program()
+    filters = (SockFilter * len(insns))(*(SockFilter(*i) for i in insns))
+    prog = SockFprog(len(insns), filters)
+    if _libc.prctl(ctypes.c_int(PR_SET_SECCOMP), ctypes.c_ulong(SECCOMP_MODE_FILTER),
+                   ctypes.byref(prog), ctypes.c_ulong(0), ctypes.c_ulong(0)) != 0:
+        raise OSError(ctypes.get_errno(), "prctl(PR_SET_SECCOMP) failed")
+
+
 def check():
     abi, err = landlock_abi()
     print(f"kernel release : {os.uname().release}")
@@ -209,6 +316,9 @@ def check():
     print("  filesystem confinement : yes")
     print(f"  TCP bind/connect block : {'yes' if abi >= 4 else 'no (needs ABI 4 / Linux 6.7)'}")
     print(f"  signal scoping         : {'yes' if abi >= 6 else 'no (needs ABI 6 / Linux 6.12)'}")
+    machine = os.uname().machine
+    print("  permission changes     : "
+          + ("blocked (seccomp)" if machine == "x86_64" else f"no filter for {machine}"))
     return 0
 
 
@@ -340,9 +450,17 @@ def wrapper_main(argv):
                           restrict_net=not a.allow_network)
     except OSError as e:
         _die(f"applying Landlock failed: {e}")
+    try:
+        restrict_permission_changes()
+    except OSError as e:
+        _die(f"applying the seccomp filter failed: {e}")
+    # New files without group/other write: with e.g. umask 002, the linker's own
+    # chmod of its output (to 0775) would hit the seccomp filter.
+    os.umask(0o022)
 
     _log(f"Landlock ABI {abi} active (fs={active['fs']}, net={active['net']}, "
-         f"signals={active['signals']}); writable: {cwd}; kernel: {kernel_cmd[0]}")
+         f"signals={active['signals']}, perms=True); writable: {cwd}; "
+         f"kernel: {kernel_cmd[0]}")
     try:
         os.execvpe(kernel_cmd[0], kernel_cmd, env)
     except OSError as e:
