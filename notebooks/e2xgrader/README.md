@@ -145,7 +145,7 @@ Autograded code still runs as the grader's Unix user, so the sandbox is a set of
 
 ### Configuration
 
-The teacher image installs [teacher/nbgrader_config.py](teacher/nbgrader_config.py) to `/opt/conda/etc/jupyter/`. It replaces nbgrader's `Execute` preprocessor with `autograde_sandbox.SandboxedExecute` in the autograde pipeline only. (`c.Execute.kernel_manager_class` does not work: nbgrader's `Execute` overrides it.) The build fails if nbgrader's merged config does not contain the sandboxed pipeline.
+The teacher image installs [teacher/nbgrader_config.py](teacher/nbgrader_config.py) to `/usr/local/etc/jupyter/`. It replaces nbgrader's `Execute` preprocessor with `autograde_sandbox.SandboxedExecute` in the autograde pipeline only. (`c.Execute.kernel_manager_class` does not work: nbgrader's `Execute` overrides it.) An image's own config in `/opt/conda/etc/jupyter/` (e.g. wus-notebook's) loads after it. The build fails if nbgrader's merged config, including such an image config, does not contain the sandboxed pipeline.
 
 Settings of `SandboxedKernelManager`:
 
