@@ -202,7 +202,10 @@ def restrict(abi, read_paths, write_dirs, write_files, tcp_bind_ports, restrict_
 # Landlock does not mediate chmod, chown or xattrs. Sandboxed code runs as the
 # grader, so without this filter it could make any file the grader owns group- or
 # world-writable (or grant that with an ACL xattr) wherever it can name a path,
-# e.g. in the shared exchange. It can still remove permissions (chmod 0 on the
+# e.g. in the shared exchange. Such a chmod reports success but changes nothing:
+# copies of files from /opt/conda (664, directories 2775) set exactly these bits
+# (shutil.copy, copytree; IPython does it at kernel start), and failing them would
+# break that code. It can still remove permissions (chmod 0 on the
 # gradebook stops grading until fixed); blocking that would also block normal
 # code, as nbgrader makes autograded files 0444 and copies inherit that mode.
 # io_uring is unavailable (ENOSYS, so programs fall back to plain syscalls): its
@@ -280,10 +283,11 @@ def _seccomp_program():
     for arg in (1, 2):
         label(f"mode-arg{arg}")
         ins(BPF_LD_W_ABS, 16 + 8 * arg)  # low 32 bits of seccomp_data.args[arg]
-        ins(BPF_JSET_K, MODE_LOOSENING, jt="eperm")
+        ins(BPF_JSET_K, MODE_LOOSENING, jt="ignore")
         ins(BPF_RET_K, SECCOMP_RET_ALLOW)
-    for name, err in (("eperm", errno.EPERM), ("eopnotsupp", errno.EOPNOTSUPP),
-                      ("enosys", errno.ENOSYS)):
+    # errno 0: the syscall is skipped and reports success.
+    for name, err in (("ignore", 0), ("eperm", errno.EPERM),
+                      ("eopnotsupp", errno.EOPNOTSUPP), ("enosys", errno.ENOSYS)):
         label(name)
         ins(BPF_RET_K, SECCOMP_RET_ERRNO | err)
 

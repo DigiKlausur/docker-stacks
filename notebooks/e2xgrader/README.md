@@ -99,7 +99,7 @@ What autograded code can do:
 | | Allowed | Blocked |
 |---|---|---|
 | Files | Read system paths (`/usr`, `/opt`, `/etc`, …) and `E2X_SHARED_PATHS`. Write its own `autograded/<student>/<assignment>` folder, a private temp directory and `/dev/shm`. | Everything under `/home` (course directory, gradebook, other submissions), `/tmp`, `/srv` (exchange), `/root`, `/run`, `/mnt`, `/media`. Other processes' `/proc` entries. |
-| Permissions | `chmod` its own files, without group/other write or setuid/setgid/sticky bits. New files get `umask 022`. | Making any file group- or world-writable or setuid, `chown`, setting or removing xattrs (ACLs). Landlock cannot restrict these, so a seccomp filter blocks them. io_uring is unavailable, as its operations would bypass that filter. |
+| Permissions | `chmod` its own files, without group/other write or setuid/setgid/sticky bits. New files get `umask 022`. | Making any file group- or world-writable or setuid (such a `chmod` succeeds but changes nothing), `chown`, setting or removing xattrs (ACLs). Landlock cannot restrict these, so a seccomp filter blocks them. io_uring is unavailable, as its operations would bypass that filter. |
 | Network | Its kernel's own ports | All other TCP, binding and connecting |
 | Processes | Its own child processes | Signals to processes outside the sandbox. Gaining privileges (`sudo`, setuid binaries). |
 | Environment | | Hub tokens and other secrets (`JUPYTERHUB_*`, names containing `TOKEN`, `SECRET`, `PASSWORD`, …) are removed. |
@@ -145,7 +145,7 @@ Autograded code still runs as the grader's Unix user, so the sandbox is a set of
 
 ### Configuration
 
-The teacher image installs [teacher/nbgrader_config.py](teacher/nbgrader_config.py) to `/opt/conda/etc/jupyter/`. It replaces nbgrader's `Execute` preprocessor with `autograde_sandbox.SandboxedExecute` in the autograde pipeline only. (`c.Execute.kernel_manager_class` does not work: nbgrader's `Execute` overrides it.) The build fails if nbgrader's merged config does not contain the sandboxed pipeline.
+The teacher image installs [teacher/nbgrader_config.py](teacher/nbgrader_config.py) to `/usr/local/etc/jupyter/`. It replaces nbgrader's `Execute` preprocessor with `autograde_sandbox.SandboxedExecute` in the autograde pipeline only. (`c.Execute.kernel_manager_class` does not work: nbgrader's `Execute` overrides it.) An image's own config in `/opt/conda/etc/jupyter/` (e.g. wus-notebook's) loads after it. The build fails if nbgrader's merged config, including such an image config, does not contain the sandboxed pipeline.
 
 Settings of `SandboxedKernelManager`:
 
@@ -165,6 +165,7 @@ Never add the course directory, `$HOME` or the exchange to `extra_read_paths`.
 * A course's own `nbgrader_config.py` loads last. If it sets `c.Autograde.autograde_preprocessors`, it replaces the sandboxed pipeline.
 * Kernels must be installed system-wide. Kernelspecs or environments under `/home` cannot start in the sandbox, including kernelspecs in `~/.local/share/jupyter/kernels` of a persistent home, which take precedence over the image's.
 * Permissions can still be *removed* from files the grader owns: `chmod 0` or `chmod 444` on the gradebook stops grading until the permissions are fixed. The seccomp filter only blocks making files more accessible, because blocking removal would break normal code: nbgrader makes autograded files `0444`, and copies keep that mode. Timestamps (`touch`, `utime`) are not restricted either.
+* A `chmod` that would add group/other write or setuid/setgid/sticky bits reports success but leaves the mode unchanged, also on the kernel's own files: `chmod 775 run.sh` does not make it executable, `chmod 755 run.sh` does. Failing such calls would break copies of files from `/opt/conda` (`664`, directories `2775`), e.g. `shutil.copy` and IPython's own startup.
 * Autograded code can open the grader's other terminals in `/dev/pts`, e.g. a Jupyter terminal that is open while autograding runs, and read keystrokes from it or write to it. Preventing this would mean replacing the readable `/dev` with an explicit list of devices, which risks breaking kernels and tools that use terminals.
 * Not covered: UDP, CPU and memory use (only `NBGRADER_EXECUTE_TIMEOUT` limits a run), students faking their own test results, and student HTML/JavaScript output rendered in the formgrader.
 * Validating (`nbgrader validate`, the Validate button) is not sandboxed: it runs outside `/autograded/`.

@@ -232,9 +232,12 @@ assert os.readlink(f"/proc/self/fd/{fd}").startswith(os.environ["TMPDIR"] + "/")
 # Teacher-only nbgrader config: autograde with SandboxedExecute. nbgrader only logs
 # errors in config files and skips them, which would leave autograding unsandboxed,
 # so the build loads nbgrader's merged config and fails unless the swap is in place.
+# Installed to /usr/local/etc/jupyter: after /etc/jupyter (shared by all modes),
+# before /opt/conda/etc/jupyter, which stays free for an image's own config (e.g.
+# wus-notebook). The check below also covers such configs.
 COPY teacher/nbgrader_config.py /tmp/nbgrader_config.py
-RUN test ! -e /opt/conda/etc/jupyter/nbgrader_config.py && \
-    install -o root -g root -m 644 /tmp/nbgrader_config.py /opt/conda/etc/jupyter/ && \
+RUN test ! -e /usr/local/etc/jupyter/nbgrader_config.py && \
+    install -D -o root -g root -m 644 /tmp/nbgrader_config.py /usr/local/etc/jupyter/nbgrader_config.py && \
     rm /tmp/nbgrader_config.py && \
     python -I -c 'from e2xcore.utils.utils import get_nbgrader_config; \
 c = get_nbgrader_config(); \

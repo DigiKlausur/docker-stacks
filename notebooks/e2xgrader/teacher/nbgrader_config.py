@@ -1,8 +1,9 @@
 """
 nbgrader configuration for the teacher image: autograding runs in the Landlock
-sandbox (autograde_sandbox.py). Installed to /opt/conda/etc/jupyter, so it loads
+sandbox (autograde_sandbox.py). Installed to /usr/local/etc/jupyter, so it loads
 after /etc/jupyter/nbgrader_config.py (shared by all modes) and takes precedence.
-A course's own nbgrader_config.py still loads last and could undo this.
+An image's own config in /opt/conda/etc/jupyter and a course's nbgrader_config.py
+load later and could undo this.
 
 This uses the environment variables:
 - E2X_SHARED_PATHS: Colon-separated directories with shared materials. Autograded
