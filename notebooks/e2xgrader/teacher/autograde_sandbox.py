@@ -205,6 +205,8 @@ def restrict(abi, read_paths, write_dirs, write_files, tcp_bind_ports, restrict_
 # e.g. in the shared exchange. It can still remove permissions (chmod 0 on the
 # gradebook stops grading until fixed); blocking that would also block normal
 # code, as nbgrader makes autograded files 0444 and copies inherit that mode.
+# io_uring is unavailable (ENOSYS, so programs fall back to plain syscalls): its
+# operations are not syscalls, so seccomp would not see e.g. IORING_OP_SETXATTR.
 PR_SET_SECCOMP = 22
 SECCOMP_MODE_FILTER = 2
 SECCOMP_RET_ALLOW = 0x7FFF0000
@@ -223,6 +225,7 @@ SECCOMP_TABLES = {
         # setxattr, lsetxattr, fsetxattr, removexattr, lremovexattr, fremovexattr,
         # setxattrat, removexattrat
         "xattr": (188, 189, 190, 197, 198, 199, 463, 466),
+        "io_uring": (425, 426, 427),  # io_uring_setup, io_uring_enter, io_uring_register
     },
     AUDIT_ARCH_I386: {
         "mode_arg1": (15, 94),  # chmod, fchmod
@@ -230,6 +233,7 @@ SECCOMP_TABLES = {
         # lchown, fchown, chown (16-bit ids), lchown32, fchown32, chown32, fchownat
         "chown": (16, 95, 182, 198, 207, 212, 298),
         "xattr": (226, 227, 228, 235, 236, 237, 463, 466),
+        "io_uring": (425, 426, 427),
     },
 }
 BPF_LD_W_ABS = 0x20
@@ -268,7 +272,8 @@ def _seccomp_program():
         if arch == AUDIT_ARCH_X86_64:
             ins(BPF_JGE_K, X32_SYSCALL_BIT, jt="enosys")  # x32 ABI
         for group, target in (("mode_arg1", "mode-arg1"), ("mode_arg2", "mode-arg2"),
-                              ("chown", "eperm"), ("xattr", "eopnotsupp")):
+                              ("chown", "eperm"), ("xattr", "eopnotsupp"),
+                              ("io_uring", "enosys")):
             for nr in table[group]:
                 ins(BPF_JEQ_K, nr, jt=target)
         ins(BPF_RET_K, SECCOMP_RET_ALLOW)

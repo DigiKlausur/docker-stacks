@@ -99,7 +99,7 @@ What autograded code can do:
 | | Allowed | Blocked |
 |---|---|---|
 | Files | Read system paths (`/usr`, `/opt`, `/etc`, …) and `E2X_SHARED_PATHS`. Write its own `autograded/<student>/<assignment>` folder, a private temp directory and `/dev/shm`. | Everything under `/home` (course directory, gradebook, other submissions), `/tmp`, `/srv` (exchange), `/root`, `/run`, `/mnt`, `/media`. Other processes' `/proc` entries. |
-| Permissions | `chmod` its own files, without group/other write or setuid/setgid/sticky bits. New files get `umask 022`. | Making any file group- or world-writable or setuid, `chown`, setting or removing xattrs (ACLs). Landlock cannot restrict these, so a seccomp filter blocks them. |
+| Permissions | `chmod` its own files, without group/other write or setuid/setgid/sticky bits. New files get `umask 022`. | Making any file group- or world-writable or setuid, `chown`, setting or removing xattrs (ACLs). Landlock cannot restrict these, so a seccomp filter blocks them. io_uring is unavailable, as its operations would bypass that filter. |
 | Network | Its kernel's own ports | All other TCP, binding and connecting |
 | Processes | Its own child processes | Signals to processes outside the sandbox. Gaining privileges (`sudo`, setuid binaries). |
 | Environment | | Hub tokens and other secrets (`JUPYTERHUB_*`, names containing `TOKEN`, `SECRET`, `PASSWORD`, …) are removed. |
