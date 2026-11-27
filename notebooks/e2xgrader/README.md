@@ -52,7 +52,7 @@ These images can be customized using environment variables. For all modes the fo
 * `E2X_DRAWIO_DOMAIN`: The domain to use for the diagram editor (default: None). If None is set then `https://embed.diagrams.net/` is used.
 * `E2X_DRAWIO_ORIGIN`: The origin to use for the diagram editor (default: None). If None is set then `https://embed.diagrams.net/` is used.
 
-* `E2X_SHARED_PATHS`: Colon-separated directories with shared materials, like `PATH` (default: None). In teacher mode, autograded code may read them, except `$HOME` itself and its parents, hidden folders in `$HOME` (`.ssh`, `.local`, …) and paths overlapping the course directory or the exchange (see [Sandboxed Autograding](#sandboxed-autograding)). Folders in `$HOME`, such as a shared volume mounted at `~/shared`, are fine.
+* `E2X_SHARED_PATHS`: Colon-separated directories with shared materials, like `PATH` (default: None). In teacher mode, autograded code may read them, except `$HOME` itself and its parents, hidden folders in `$HOME` (`.ssh`, `.local`, …) and paths overlapping the exchange, which are skipped. If a shared path overlaps the course being graded, autograding refuses to start (see [Sandboxed Autograding](#sandboxed-autograding)). Folders in `$HOME`, such as a shared volume mounted at `~/shared`, are fine.
 
 ### Teacher Target
 
@@ -103,7 +103,12 @@ What autograded code can do:
 | Processes | Its own child processes | Signals to processes outside the sandbox. Gaining privileges (`sudo`, setuid binaries). |
 | Environment | | Hub tokens and other secrets (`JUPYTERHUB_*`, names containing `TOKEN`, `SECRET`, `PASSWORD`, …) are removed. |
 
-The sandbox fails closed: if Landlock is unavailable or older than ABI 6 (Linux 6.12), or a notebook does not run inside an `/autograded/` folder, the kernel does not start and autograding reports "Kernel died". It never falls back to running unsandboxed.
+The sandbox fails closed: the kernel does not start and autograding reports "Kernel died" if
+* Landlock is unavailable or older than ABI 6 (Linux 6.12),
+* a notebook does not run inside an `/autograded/` folder, or
+* the course directory would be readable, because a shared path or a system directory contains it or lies inside it. The course directory is the part of the notebook's folder before `/autograded/`, so this also catches a course outside the hidden top-level directories.
+
+It never falls back to running unsandboxed.
 
 ### Checking It
 
@@ -129,7 +134,7 @@ Settings of `SandboxedKernelManager`:
 | Setting | Default | Teacher image |
 |---|---|---|
 | `min_abi` | `1` | `6`: requires signal scoping |
-| `extra_read_paths` | `[]` | `E2X_SHARED_PATHS`, without `$HOME` and its parents, hidden folders in `$HOME` and paths overlapping the course directory or the exchange |
+| `extra_read_paths` | `[]` | `E2X_SHARED_PATHS`, without `$HOME` and its parents, hidden folders in `$HOME` and paths overlapping the exchange |
 | `ld_preload` | `[]` | `/usr/local/lib/libtmpfile_tmpdir.so`: makes `tmpfile()` use the private temp directory, because glibc's always uses the hidden `/tmp` ([teacher/tmpfile_tmpdir.c](teacher/tmpfile_tmpdir.c); xeus-cpp needs it) |
 | `deny_top` | `home:root:run:tmp:srv:mnt:media` | default |
 | `cwd_must_contain` | `/autograded/` | default |
@@ -140,7 +145,6 @@ Never add the course directory, `$HOME` or the exchange to `extra_read_paths`.
 ### Limitations
 
 * A course's own `nbgrader_config.py` loads last. If it sets `c.Autograde.autograde_preprocessors`, it replaces the sandboxed pipeline.
-* The course directory must be inside one of the hidden top-level directories (`/home` by default). Anywhere else, autograded code can read (not write) the gradebook and other submissions.
 * Kernels must be installed system-wide. Kernelspecs or environments under `/home` cannot start in the sandbox, including kernelspecs in `~/.local/share/jupyter/kernels` of a persistent home, which take precedence over the image's.
 * Not covered: UDP, CPU and memory use (only `NBGRADER_EXECUTE_TIMEOUT` limits a run), students faking their own test results, and student HTML/JavaScript output rendered in the formgrader.
 * Validating (`nbgrader validate`, the Validate button) is not sandboxed: it runs outside `/autograded/`.

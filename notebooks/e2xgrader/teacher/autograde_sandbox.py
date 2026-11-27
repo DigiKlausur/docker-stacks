@@ -20,9 +20,10 @@ the kernel and every process it spawns:
   * cannot gain privileges (no_new_privs: sudo / setuid binaries are inert)
   * gets an environment without hub tokens / credentials
 
-Fail closed: if Landlock is unavailable, the working directory looks wrong, or
-the kernel would be started by a non-local provisioner, starting the kernel
-fails, so autograding errors out instead of running unsandboxed.
+Fail closed: if Landlock is unavailable, the working directory looks wrong, the
+course directory (the part of the working directory before /autograded/) would
+be readable, or the kernel would be started by a non-local provisioner, starting
+the kernel fails, so autograding errors out instead of running unsandboxed.
 
 Usage with nbgrader / e2xgrader (module must be importable by the grader):
 
@@ -221,6 +222,11 @@ def _scrub_env(environ):
             and not any(s in k.upper() for s in DROP_ENV_SUBSTRINGS)}
 
 
+def overlaps(path, other):
+    """True if one of the two absolute paths is the other or contains it."""
+    return os.path.commonpath([path, other]) in (path, other)
+
+
 def wrapper_main(argv):
     import argparse
 
@@ -259,6 +265,14 @@ def wrapper_main(argv):
         _die(f"working directory {cwd!r} is too broad")
     if a.cwd_must_contain and a.cwd_must_contain not in cwd + "/":
         _die(f"working directory {cwd!r} does not contain {a.cwd_must_contain!r}")
+    # The course directory (gradebook, source/, other submissions) must stay
+    # unreadable. Its root is the part of the cwd before cwd_must_contain
+    # (<course>/autograded/<student>/<assignment>); the first match gives the
+    # shallowest, most cautious root. Taken from the cwd rather than from config,
+    # so it is the course actually being graded.
+    course = None
+    if a.cwd_must_contain:
+        course = (cwd + "/")[:(cwd + "/").index(a.cwd_must_contain)] or "/"
 
     # --- private scratch space; connection file moves in there ---------------
     private = tempfile.mkdtemp(prefix="autograde-sandbox-")
@@ -304,6 +318,12 @@ def wrapper_main(argv):
             continue
         read_paths.append(os.path.join("/", entry))
     read_paths += a.extra_read
+    # A system dir or shared path containing the course, or inside it, would expose
+    # it: refuse instead (e.g. a course outside the denied top-level dirs).
+    if course:
+        for path in read_paths:
+            if overlaps(os.path.realpath(path), course):
+                _die(f"read access to {path!r} would expose the course directory {course!r}")
     # the kernel executable itself may live in a denied tree (e.g. ~/.local/bin)
     write_dirs = [cwd, private] + (["/dev/shm"] if os.path.isdir("/dev/shm") else [])
     # pty support (bash/pexpect-based kernels, gdb, ...). Safe: TIOCSTI keystroke

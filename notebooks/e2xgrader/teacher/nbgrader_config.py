@@ -8,8 +8,9 @@ This uses the environment variables:
 - E2X_SHARED_PATHS: Colon-separated directories with shared materials. Autograded
   code may read them. Skipped, so the sandbox never exposes them: $HOME itself
   and its parents, hidden folders in $HOME (.ssh, .local, ...), and paths
-  overlapping the course directory or the exchange.
-- NBGRADER_COURSE_DIR, NBGRADER_EXCHANGE_DIR: see /etc/jupyter/nbgrader_config.py.
+  overlapping the exchange. If a shared path overlaps the course being graded,
+  the sandbox refuses to start the kernel.
+- NBGRADER_EXCHANGE_DIR: see /etc/jupyter/nbgrader_config.py.
 
 Errors in this file are only logged by nbgrader, and the file is then skipped,
 leaving autograding unsandboxed. The Dockerfile therefore checks at build time
@@ -18,6 +19,7 @@ that the swap below is in place. Keep everything else here free of exceptions.
 import os
 import sys
 
+from autograde_sandbox import overlaps
 from e2xgrader.config import configure_base
 from traitlets.config import Config
 
@@ -53,18 +55,15 @@ c.SandboxedKernelManager.ld_preload = ["/usr/local/lib/libtmpfile_tmpdir.so"]
 # ------------------------ #
 # Shared materials         #
 # ------------------------ #
-def _overlaps(path, other):
-    """True if one path is the other or contains it."""
-    return os.path.commonpath([path, other]) in (path, other)
+def _shared_path_problem(real, home, exchange):
+    """Why autograded code must not read this shared path, or None if it may.
 
-
-def _shared_path_problem(real, home, course, exchange):
-    """Why autograded code must not read this shared path, or None if it may."""
+    Overlap with the course directory is checked by the sandbox at kernel start,
+    against the course actually being graded.
+    """
     if os.path.commonpath([real, home]) == real:
         return "is $HOME or one of its parents"
-    if _overlaps(real, course):
-        return "overlaps the course directory"
-    if _overlaps(real, exchange):
+    if overlaps(real, exchange):
         return "overlaps the exchange"
     # Folders in $HOME are fine (e.g. a shared volume mounted at ~/shared), hidden
     # ones are not: that is where keys and runtime files live (.ssh, .local, ...).
@@ -76,14 +75,13 @@ def _shared_path_problem(real, home, course, exchange):
 
 def _safe_shared_paths():
     home = os.path.realpath(os.path.expanduser("~"))
-    course = os.path.realpath(os.path.expanduser(os.getenv("NBGRADER_COURSE_DIR") or os.getcwd()))
     exchange = os.path.realpath(os.getenv("NBGRADER_EXCHANGE_DIR", "/srv/nbgrader/exchange"))
     safe = []
     for path in os.getenv("E2X_SHARED_PATHS", "").split(os.pathsep):
         if not path:
             continue
         real = os.path.realpath(os.path.expanduser(path))
-        problem = _shared_path_problem(real, home, course, exchange)
+        problem = _shared_path_problem(real, home, exchange)
         if problem:
             sys.stderr.write(f"[autograde-sandbox] not exposing shared path {path!r}: {problem}\n")
             continue

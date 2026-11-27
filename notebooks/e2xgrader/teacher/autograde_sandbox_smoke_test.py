@@ -13,12 +13,13 @@ JUPYTERHUB_API_TOKEN (must be unset); the Python probe also tries to read its
 parent's /proc/<pid>/environ (must fail). Kernels without a probe (e.g.
 java_syntax_kernel, which does not run code) only have to start in the sandbox.
 Julia kernels are skipped. Afterwards, every file outside the student's own
-folder must be unchanged, and a kernel started outside /autograded/ must be
-refused.
+folder must be unchanged, and a kernel must be refused when started outside
+/autograded/ or when a shared path would make the course directory readable.
 
 Exit codes: 0 all passed, or Landlock unavailable (reported, nothing tested);
 1 a check failed.
 """
+import copy
 import hashlib
 import os
 import subprocess
@@ -132,6 +133,15 @@ def run(config, kernel_name, language, cells, cwd):
     return "".join(out.get("text", "") for cell in nb.cells for out in cell.get("outputs", []))
 
 
+def refused(config, kernel_name, language, cwd):
+    """True if the sandbox refuses to start the kernel in cwd."""
+    try:
+        run(config, kernel_name, language, [""], cwd)
+    except Exception:
+        return True
+    return False
+
+
 def check_kernel(config, name, spec, course, alice, before):
     cells = probe_cells(spec)
     try:
@@ -189,13 +199,16 @@ def main():
                 print(f"    {problem}")
             failed |= bool(problems)
 
-        # Outside /autograded/, the sandbox must refuse to start any kernel.
-        try:
-            run(config, names[0], ksm.get_kernel_spec(names[0]).language, [""], course)
-            print("FAIL kernel started outside /autograded/")
-            failed = True
-        except Exception:
-            print("PASS kernel refused outside /autograded/")
+        # The sandbox must refuse to start any kernel outside /autograded/, and when
+        # a shared path would make the course directory readable.
+        exposing = copy.deepcopy(config)
+        exposing.SandboxedKernelManager.extra_read_paths = [course]
+        language = ksm.get_kernel_spec(names[0]).language
+        for label, cfg, cwd in [("outside /autograded/", config, course),
+                                ("with the course directory readable", exposing, alice)]:
+            ok = refused(cfg, names[0], language, cwd)
+            print(f"{'PASS' if ok else 'FAIL'} kernel refused {label}")
+            failed |= not ok
 
     return 1 if failed else 0
 
