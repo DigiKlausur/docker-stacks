@@ -207,6 +207,10 @@ RUN install -o root -g root -m 644 /tmp/autograde_sandbox.py \
     rm /tmp/autograde_sandbox.py && \
     python -I -c 'from autograde_sandbox import SandboxedExecute, SandboxedKernelManager'
 
+# Smoke test: runs every kernel in the sandbox and checks it cannot escape.
+# Run it in a teacher container: autograde-sandbox-smoke-test
+COPY --chmod=755 teacher/autograde_sandbox_smoke_test.py /usr/local/bin/autograde-sandbox-smoke-test
+
 # Teacher-only nbgrader config: autograde with SandboxedExecute. nbgrader only logs
 # errors in config files and skips them, which would leave autograding unsandboxed,
 # so the build loads the config and fails unless the swap is in place.
