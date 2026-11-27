@@ -6,8 +6,9 @@ A course's own nbgrader_config.py still loads last and could undo this.
 
 This uses the environment variables:
 - E2X_SHARED_PATHS: Colon-separated directories with shared materials. Autograded
-  code may read them. Paths overlapping $HOME, the course directory or the
-  exchange are skipped, so the sandbox never exposes them.
+  code may read them. Skipped, so the sandbox never exposes them: $HOME itself
+  and its parents, hidden folders in $HOME (.ssh, .local, ...), and paths
+  overlapping the course directory or the exchange.
 - NBGRADER_COURSE_DIR, NBGRADER_EXCHANGE_DIR: see /etc/jupyter/nbgrader_config.py.
 
 Errors in this file are only logged by nbgrader, and the file is then skipped,
@@ -53,7 +54,24 @@ c.SandboxedKernelManager.ld_preload = ["/usr/local/lib/libtmpfile_tmpdir.so"]
 # Shared materials         #
 # ------------------------ #
 def _overlaps(path, other):
-    return path == other or path.startswith(other + os.sep) or other.startswith(path + os.sep)
+    """True if one path is the other or contains it."""
+    return os.path.commonpath([path, other]) in (path, other)
+
+
+def _shared_path_problem(real, home, course, exchange):
+    """Why autograded code must not read this shared path, or None if it may."""
+    if os.path.commonpath([real, home]) == real:
+        return "is $HOME or one of its parents"
+    if _overlaps(real, course):
+        return "overlaps the course directory"
+    if _overlaps(real, exchange):
+        return "overlaps the exchange"
+    # Folders in $HOME are fine (e.g. a shared volume mounted at ~/shared), hidden
+    # ones are not: that is where keys and runtime files live (.ssh, .local, ...).
+    if os.path.commonpath([real, home]) == home and any(
+            part.startswith(".") for part in os.path.relpath(real, home).split(os.sep)):
+        return "is a hidden folder in $HOME"
+    return None
 
 
 def _safe_shared_paths():
@@ -65,10 +83,9 @@ def _safe_shared_paths():
         if not path:
             continue
         real = os.path.realpath(os.path.expanduser(path))
-        if real == "/" or home.startswith(real + os.sep) or real == home \
-                or _overlaps(real, course) or _overlaps(real, exchange):
-            sys.stderr.write(f"[autograde-sandbox] not exposing shared path {path!r}: "
-                             "overlaps $HOME, the course directory or the exchange\n")
+        problem = _shared_path_problem(real, home, course, exchange)
+        if problem:
+            sys.stderr.write(f"[autograde-sandbox] not exposing shared path {path!r}: {problem}\n")
             continue
         safe.append(real)
     return safe

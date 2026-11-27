@@ -52,7 +52,7 @@ These images can be customized using environment variables. For all modes the fo
 * `E2X_DRAWIO_DOMAIN`: The domain to use for the diagram editor (default: None). If None is set then `https://embed.diagrams.net/` is used.
 * `E2X_DRAWIO_ORIGIN`: The origin to use for the diagram editor (default: None). If None is set then `https://embed.diagrams.net/` is used.
 
-* `E2X_SHARED_PATHS`: Colon-separated directories with shared materials, like `PATH` (default: None). In teacher mode, autograded code may read them; paths overlapping `$HOME`, the course directory or the exchange are skipped (see [Sandboxed Autograding](#sandboxed-autograding)).
+* `E2X_SHARED_PATHS`: Colon-separated directories with shared materials, like `PATH` (default: None). In teacher mode, autograded code may read them, except `$HOME` itself and its parents, hidden folders in `$HOME` (`.ssh`, `.local`, …) and paths overlapping the course directory or the exchange (see [Sandboxed Autograding](#sandboxed-autograding)). Folders in `$HOME`, such as a shared volume mounted at `~/shared`, are fine.
 
 ### Teacher Target
 
@@ -129,7 +129,7 @@ Settings of `SandboxedKernelManager`:
 | Setting | Default | Teacher image |
 |---|---|---|
 | `min_abi` | `1` | `6`: requires signal scoping |
-| `extra_read_paths` | `[]` | `E2X_SHARED_PATHS`, without paths overlapping `$HOME`, the course directory or the exchange |
+| `extra_read_paths` | `[]` | `E2X_SHARED_PATHS`, without `$HOME` and its parents, hidden folders in `$HOME` and paths overlapping the course directory or the exchange |
 | `ld_preload` | `[]` | `/usr/local/lib/libtmpfile_tmpdir.so`: makes `tmpfile()` use the private temp directory, because glibc's always uses the hidden `/tmp` ([teacher/tmpfile_tmpdir.c](teacher/tmpfile_tmpdir.c); xeus-cpp needs it) |
 | `deny_top` | `home:root:run:tmp:srv:mnt:media` | default |
 | `cwd_must_contain` | `/autograded/` | default |
