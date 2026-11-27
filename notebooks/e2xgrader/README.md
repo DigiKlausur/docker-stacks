@@ -111,6 +111,23 @@ The sandbox fails closed: the kernel does not start and autograding reports "Ker
 
 It never falls back to running unsandboxed.
 
+### Threat Model
+
+The sandbox is meant to stop autograded code from:
+* changing other students' submissions, the gradebook or other course files,
+* reading the course directory (solutions in `source/`, other submissions, the gradebook),
+* reading the grader's JupyterHub token or other secrets from the environment,
+* using the network, and
+* making the grader's files more accessible to others, e.g. world-writable files in the exchange.
+
+It is not meant to stop:
+* disrupting grading (denial of service), e.g. by removing permissions, filling the disk or using up CPU and memory,
+* attacks that need the grader to do something at the same time, e.g. reading keystrokes from a terminal the grader has open while autograding runs,
+* exploits of kernel bugs, and
+* students faking their own test results.
+
+Autograded code still runs as the grader's Unix user, so the sandbox is a set of filters around that user, not a separate identity. Complete isolation needs a separate identity per submission, e.g. running each submission in its own pod. When reviewing changes or reports: anything that bypasses one of the protections above gets fixed; everything else is documented under [Limitations](#limitations).
+
 ### Checking It
 
 * Landlock support of the node, inside a teacher container:
@@ -148,6 +165,7 @@ Never add the course directory, `$HOME` or the exchange to `extra_read_paths`.
 * A course's own `nbgrader_config.py` loads last. If it sets `c.Autograde.autograde_preprocessors`, it replaces the sandboxed pipeline.
 * Kernels must be installed system-wide. Kernelspecs or environments under `/home` cannot start in the sandbox, including kernelspecs in `~/.local/share/jupyter/kernels` of a persistent home, which take precedence over the image's.
 * Permissions can still be *removed* from files the grader owns: `chmod 0` or `chmod 444` on the gradebook stops grading until the permissions are fixed. The seccomp filter only blocks making files more accessible, because blocking removal would break normal code: nbgrader makes autograded files `0444`, and copies keep that mode. Timestamps (`touch`, `utime`) are not restricted either.
+* Autograded code can open the grader's other terminals in `/dev/pts`, e.g. a Jupyter terminal that is open while autograding runs, and read keystrokes from it or write to it. Preventing this would mean replacing the readable `/dev` with an explicit list of devices, which risks breaking kernels and tools that use terminals.
 * Not covered: UDP, CPU and memory use (only `NBGRADER_EXECUTE_TIMEOUT` limits a run), students faking their own test results, and student HTML/JavaScript output rendered in the formgrader.
 * Validating (`nbgrader validate`, the Validate button) is not sandboxed: it runs outside `/autograded/`.
 * ipykernel cannot bind its IOPub pipe, so output of forked child processes is not captured. It also logs a harmless traceback at shutdown, because it cannot list processes in `/proc`.
