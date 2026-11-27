@@ -9,7 +9,8 @@ Usage (inside a teacher image):  autograde-sandbox-smoke-test
 
 Per kernel, a probe tries to read its own data.csv (must work), append to the
 gradebook and to another student's folder (must fail) and read
-JUPYTERHUB_API_TOKEN (must be unset). Kernels without a probe (e.g.
+JUPYTERHUB_API_TOKEN (must be unset); the Python probe also tries to read its
+parent's /proc/<pid>/environ (must fail). Kernels without a probe (e.g.
 java_syntax_kernel, which does not run code) only have to start in the sandbox.
 Julia kernels are skipped. Afterwards, every file outside the student's own
 folder must be unchanged, and a kernel started outside /autograded/ must be
@@ -33,7 +34,10 @@ from jupyter_client.kernelspec import KernelSpecManager
 SECRET = "smoke-test-secret"
 DATA = "alice-data"
 
-PYTHON_PROBE = f"""\
+# Any readable parent environment fails: /proc/<pid>/environ only shows a process'
+# initial environment, so the test's own SECRET (set later) would not show up in it
+# even when the grader's real credentials would.
+PYTHON_PROBE = """\
 import os
 print("READ", open("data.csv").read().strip())
 for name, path in [("GRADEBOOK", "../../../gradebook.db"), ("BOB", "../../bob/pwned")]:
@@ -44,8 +48,9 @@ for name, path in [("GRADEBOOK", "../../../gradebook.db"), ("BOB", "../../bob/pw
         print(name, "BLOCKED")
 print("TOKEN", os.environ.get("JUPYTERHUB_API_TOKEN", "UNSET"))
 try:
-    with open(f"/proc/{{os.getppid()}}/environ", "rb") as f:
-        print("PARENT_ENV", "LEAKED" if b"{SECRET}" in f.read() else "CLEAN")
+    with open(f"/proc/{os.getppid()}/environ", "rb") as f:
+        f.read()
+    print("PARENT_ENV READABLE")
 except OSError:
     print("PARENT_ENV BLOCKED")
 """
@@ -136,7 +141,7 @@ def check_kernel(config, name, spec, course, alice, before):
     problems = []
     if cells is not None:
         problems += [f"missing {line!r} in output" for line in EXPECTED if line not in output]
-        if "WRITABLE" in output or "LEAKED" in output or SECRET in output:
+        if "WRITABLE" in output or "READABLE" in output or SECRET in output:
             problems.append("sandbox escape reported in output")
     if snapshot(course, alice) != before:
         problems.append("files outside the student's folder changed")
