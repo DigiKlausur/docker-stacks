@@ -44,6 +44,10 @@ c.Autograde.autograde_preprocessors = [
 # Refuse to run without signal scoping (ABI 6); all our nodes support it.
 c.SandboxedKernelManager.min_abi = 6
 
+# glibc's tmpfile() always uses /tmp, which the sandbox hides (xeus-cpp crashes on
+# its first cell). This shim makes it use the kernel's private TMPDIR instead.
+c.SandboxedKernelManager.ld_preload = ["/usr/local/lib/libtmpfile_tmpdir.so"]
+
 
 # ------------------------ #
 # Shared materials         #

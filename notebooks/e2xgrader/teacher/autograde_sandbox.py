@@ -38,11 +38,13 @@ Usage with nbgrader / e2xgrader (module must be importable by the grader):
     # c.SandboxedKernelManager.extra_read_paths = ["/srv/datasets"]
     # c.SandboxedKernelManager.cwd_must_contain = "/autograded/"
     # c.SandboxedKernelManager.allow_network = False
+    # c.SandboxedKernelManager.ld_preload = ["/usr/local/lib/libtmpfile_tmpdir.so"]
 
 Check host support:   python autograde_sandbox.py --check
 Wrapper (normally invoked by SandboxedKernelManager):
     python -I /path/to/autograde_sandbox.py --connection-file F [--extra-read P]...
-        [--deny-top a:b:c] [--cwd-must-contain S] [--allow-network] -- KERNEL ARGV...
+        [--deny-top a:b:c] [--cwd-must-contain S] [--allow-network] [--preload LIB]...
+        -- KERNEL ARGV...
 """
 import ctypes
 import errno
@@ -236,7 +238,11 @@ def wrapper_main(argv):
     ap.add_argument("--cwd-must-contain", default="/autograded/")
     ap.add_argument("--allow-network", action="store_true")
     ap.add_argument("--min-abi", type=int, default=1)
+    ap.add_argument("--preload", action="append", default=[])
     a = ap.parse_args(opts)
+    for lib in a.preload:
+        if not os.path.isfile(lib):
+            _die(f"preload library {lib!r} not found")
 
     abi, err = landlock_abi()
     if abi < max(1, a.min_abi):
@@ -276,6 +282,11 @@ def wrapper_main(argv):
     # JVM-based kernels ignore TMPDIR; point java.io.tmpdir at the private dir
     jto = env.get("JAVA_TOOL_OPTIONS", "")
     env["JAVA_TOOL_OPTIONS"] = (jto + f" -Djava.io.tmpdir={env['TMPDIR']} -XX:-UsePerfData").strip()
+    # Preloaded libraries, e.g. a tmpfile() that honors TMPDIR (glibc's always uses
+    # the hidden /tmp). Inherited by every process the kernel starts.
+    preload = a.preload + ([env["LD_PRELOAD"]] if env.get("LD_PRELOAD") else [])
+    if preload:
+        env["LD_PRELOAD"] = ":".join(preload)
 
     # --- what is visible -----------------------------------------------------
     deny = set(filter(None, a.deny_top.split(":")))
@@ -339,6 +350,7 @@ if AsyncKernelManager is not None:
         cwd_must_contain = Unicode("/autograded/", help="Refuse to start unless cwd contains this").tag(config=True)
         allow_network = Bool(False, help="Do not restrict TCP").tag(config=True)
         min_abi = Integer(1, help="Minimum Landlock ABI, e.g. 4 to require network blocking").tag(config=True)
+        ld_preload = List(Unicode(), help="Libraries to preload into the kernel (LD_PRELOAD)").tag(config=True)
 
         def _wrapper_prefix(self):
             # Absolute path + isolated mode (-I): never "-m", which would put the
@@ -351,6 +363,8 @@ if AsyncKernelManager is not None:
                    "--min-abi", str(self.min_abi)]
             for p in self.extra_read_paths:
                 cmd += ["--extra-read", p]
+            for lib in self.ld_preload:
+                cmd += ["--preload", lib]
             if self.allow_network:
                 cmd.append("--allow-network")
             return cmd + ["--"]
