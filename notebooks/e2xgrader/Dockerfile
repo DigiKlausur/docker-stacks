@@ -167,6 +167,14 @@ ADD --checksum=sha256:4f723b2691ad8638a9df960e0421d346d7315083e3583a334f33362280
     https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb \
     /wkhtmltox.deb
 
+# tmpfile() that honors TMPDIR, preloaded into autograde sandbox kernels (see
+# teacher/tmpfile_tmpdir.c). Own stage, so gcc never ends up in an image layer.
+# Same Ubuntu as the base image, so it builds against the same glibc.
+FROM ubuntu:26.04 AS tmpfile-tmpdir
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libc6-dev
+COPY teacher/tmpfile_tmpdir.c /src/tmpfile_tmpdir.c
+RUN gcc -shared -fPIC -O2 -Wall -Werror -o /libtmpfile_tmpdir.so /src/tmpfile_tmpdir.c
+
 FROM base AS teacher
 
 LABEL org.opencontainers.image.title="e2xgrader-notebook:teacher"
@@ -197,6 +205,40 @@ RUN e2xgrader activate teacher --sys-prefix
 
 USER root
 RUN rm -rf /tmp/teacher_requirements.txt
+
+# Landlock sandbox for autograding (see teacher/autograde_sandbox.py). Root-owned in
+# the conda env's site-packages, so the grader imports it as autograde_sandbox. The
+# import check fails the build if nbgrader's Execute preprocessor moves.
+COPY teacher/autograde_sandbox.py /tmp/autograde_sandbox.py
+RUN install -o root -g root -m 644 /tmp/autograde_sandbox.py \
+        "$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/" && \
+    rm /tmp/autograde_sandbox.py && \
+    python -I -c 'from autograde_sandbox import SandboxedExecute, SandboxedKernelManager'
+
+# Smoke test: runs every kernel in the sandbox and checks it cannot escape.
+# Run it in a teacher container: autograde-sandbox-smoke-test
+COPY --chmod=755 teacher/autograde_sandbox_smoke_test.py /usr/local/bin/autograde-sandbox-smoke-test
+
+# tmpfile() shim for sandboxed kernels (preloaded via nbgrader_config.py). The check
+# fails the build unless tmpfile() with the shim creates its file in $TMPDIR.
+COPY --from=tmpfile-tmpdir --chmod=644 /libtmpfile_tmpdir.so /usr/local/lib/libtmpfile_tmpdir.so
+RUN d=$(mktemp -d) && \
+    TMPDIR="$d" LD_PRELOAD=/usr/local/lib/libtmpfile_tmpdir.so python -I -c 'import ctypes, os; \
+libc = ctypes.CDLL(None); libc.tmpfile.restype = ctypes.c_void_p; \
+libc.fileno.argtypes = [ctypes.c_void_p]; fd = libc.fileno(libc.tmpfile()); \
+assert os.readlink(f"/proc/self/fd/{fd}").startswith(os.environ["TMPDIR"] + "/")' && \
+    rmdir "$d"
+
+# Teacher-only nbgrader config: autograde with SandboxedExecute. nbgrader only logs
+# errors in config files and skips them, which would leave autograding unsandboxed,
+# so the build loads nbgrader's merged config and fails unless the swap is in place.
+COPY teacher/nbgrader_config.py /tmp/nbgrader_config.py
+RUN test ! -e /opt/conda/etc/jupyter/nbgrader_config.py && \
+    install -o root -g root -m 644 /tmp/nbgrader_config.py /opt/conda/etc/jupyter/ && \
+    rm /tmp/nbgrader_config.py && \
+    python -I -c 'from e2xcore.utils.utils import get_nbgrader_config; \
+c = get_nbgrader_config(); \
+assert "autograde_sandbox.SandboxedExecute" in c.Autograde.autograde_preprocessors, c.Autograde'
 
 USER $NB_USER
 

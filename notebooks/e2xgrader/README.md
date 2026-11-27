@@ -52,6 +52,8 @@ These images can be customized using environment variables. For all modes the fo
 * `E2X_DRAWIO_DOMAIN`: The domain to use for the diagram editor (default: None). If None is set then `https://embed.diagrams.net/` is used.
 * `E2X_DRAWIO_ORIGIN`: The origin to use for the diagram editor (default: None). If None is set then `https://embed.diagrams.net/` is used.
 
+* `E2X_SHARED_PATHS`: Colon-separated directories with shared materials, like `PATH` (default: None). In teacher mode, autograded code may read them, except `$HOME` itself and its parents, hidden folders in `$HOME` (`.ssh`, `.local`, …) and paths overlapping the exchange, which are skipped. If a shared path overlaps the course being graded, autograding refuses to start (see [Sandboxed Autograding](#sandboxed-autograding)). Folders in `$HOME`, such as a shared volume mounted at `~/shared`, are fine.
+
 ### Teacher Target
 
 The `teacher` target builds from the `base` stage and:
@@ -59,6 +61,7 @@ The `teacher` target builds from the `base` stage and:
 * Installs wkhtml2pdf and [pdf_feedback_exporter](https://github.com/DigiKlausur/e2xgradingtools) for generating PDF versions of student feedback files
 * Installs RISE for Jupyter Notebook slide shows
 * Installs [e2x_exam_sheets](https://github.com/DigiKlausur/e2xgradingtools) for generating seating cards and login sheets for exams
+* Runs autograding in a Landlock sandbox (see [Sandboxed Autograding](#sandboxed-autograding))
 * Activates e2xgrader in teacher mode
 
 ### Student Target
@@ -84,6 +87,91 @@ In student exam mode the following additional environment variables can be used 
 * `E2X_BACKUP_MAX_FILES`: The maximum number of backup files to keep per notebook (default: 10)
 * `E2X_BACKUP_MAX_SIZE_MB`: The maximum size of backup files in megabytes
 * `E2X_MIN_SECONDS_BETWEEN_BACKUPS`: The minimum number of seconds between backups for the same notebook
+
+## Sandboxed Autograding
+
+In `teacher` images, autograding runs every student notebook in a sandbox, from the formgrader as well as with `nbgrader autograde`. Without it, student code runs as the grader, with access to the course directory, the gradebook, every other submission and the grader's JupyterHub token.
+
+The sandbox uses [Landlock](https://docs.kernel.org/userspace-api/landlock.html), a Linux security module that needs no root, capabilities or user namespaces, so it works in a normal JupyterHub pod. It wraps whatever kernel a notebook uses, so it works for every kernel without changing kernelspecs. The code is in [teacher/autograde_sandbox.py](teacher/autograde_sandbox.py).
+
+What autograded code can do:
+
+| | Allowed | Blocked |
+|---|---|---|
+| Files | Read system paths (`/usr`, `/opt`, `/etc`, …) and `E2X_SHARED_PATHS`. Write its own `autograded/<student>/<assignment>` folder, a private temp directory and `/dev/shm`. | Everything under `/home` (course directory, gradebook, other submissions), `/tmp`, `/srv` (exchange), `/root`, `/run`, `/mnt`, `/media`. Other processes' `/proc` entries. |
+| Permissions | `chmod` its own files, without group/other write or setuid/setgid/sticky bits. New files get `umask 022`. | Making any file group- or world-writable or setuid, `chown`, setting or removing xattrs (ACLs). Landlock cannot restrict these, so a seccomp filter blocks them. io_uring is unavailable, as its operations would bypass that filter. |
+| Network | Its kernel's own ports | All other TCP, binding and connecting |
+| Processes | Its own child processes | Signals to processes outside the sandbox. Gaining privileges (`sudo`, setuid binaries). |
+| Environment | | Hub tokens and other secrets (`JUPYTERHUB_*`, names containing `TOKEN`, `SECRET`, `PASSWORD`, …) are removed. |
+
+The sandbox fails closed: the kernel does not start and autograding reports "Kernel died" if
+* Landlock is unavailable or older than ABI 6 (Linux 6.12), or the seccomp filter cannot be installed (it exists for x86_64 only),
+* a notebook does not run inside an `/autograded/` folder, or
+* the course directory would be readable, because a shared path or a system directory contains it or lies inside it. The course directory is the part of the notebook's folder before `/autograded/`, so this also catches a course outside the hidden top-level directories.
+
+It never falls back to running unsandboxed.
+
+### Threat Model
+
+The sandbox is meant to stop autograded code from:
+* changing other students' submissions, the gradebook or other course files,
+* reading the course directory (solutions in `source/`, other submissions, the gradebook),
+* reading the grader's JupyterHub token or other secrets from the environment,
+* using the network, and
+* making the grader's files more accessible to others, e.g. world-writable files in the exchange.
+
+It is not meant to stop:
+* disrupting grading (denial of service), e.g. by removing permissions, filling the disk or using up CPU and memory,
+* attacks that need the grader to do something at the same time, e.g. reading keystrokes from a terminal the grader has open while autograding runs,
+* exploits of kernel bugs, and
+* students faking their own test results.
+
+Autograded code still runs as the grader's Unix user, so the sandbox is a set of filters around that user, not a separate identity. Complete isolation needs a separate identity per submission, e.g. running each submission in its own pod. When reviewing changes or reports: anything that bypasses one of the protections above gets fixed; everything else is documented under [Limitations](#limitations).
+
+### Checking It
+
+* Landlock support of the node, inside a teacher container:
+  ```bash
+  python -I "$(python -c 'import autograde_sandbox; print(autograde_sandbox.__file__)')" --check
+  ```
+* The whole setup with every installed kernel (results on stdout, kernel output on stderr; exits 1 if a check fails):
+  ```bash
+  autograde-sandbox-smoke-test 2>/dev/null
+  ```
+* During autograding, every kernel start logs a line like this to the output of `nbgrader autograde` or the grader's server log. If it is missing, autograding is not sandboxed.
+  ```
+  [autograde-sandbox] Landlock ABI 6 active (fs=True, net=True, signals=True, perms=True); writable: …/autograded/<student>/<assignment>; kernel: /opt/conda/bin/python3
+  ```
+
+### Configuration
+
+The teacher image installs [teacher/nbgrader_config.py](teacher/nbgrader_config.py) to `/opt/conda/etc/jupyter/`. It replaces nbgrader's `Execute` preprocessor with `autograde_sandbox.SandboxedExecute` in the autograde pipeline only. (`c.Execute.kernel_manager_class` does not work: nbgrader's `Execute` overrides it.) The build fails if nbgrader's merged config does not contain the sandboxed pipeline.
+
+Settings of `SandboxedKernelManager`:
+
+| Setting | Default | Teacher image |
+|---|---|---|
+| `min_abi` | `1` | `6`: requires signal scoping |
+| `extra_read_paths` | `[]` | `E2X_SHARED_PATHS`, without `$HOME` and its parents, hidden folders in `$HOME` and paths overlapping the exchange |
+| `ld_preload` | `[]` | `/usr/local/lib/libtmpfile_tmpdir.so`: makes `tmpfile()` use the private temp directory, because glibc's always uses the hidden `/tmp` ([teacher/tmpfile_tmpdir.c](teacher/tmpfile_tmpdir.c); xeus-cpp needs it) |
+| `deny_top` | `home:root:run:tmp:srv:mnt:media` | default |
+| `cwd_must_contain` | `/autograded/` | default |
+| `allow_network` | `False` | default |
+
+Never add the course directory, `$HOME` or the exchange to `extra_read_paths`.
+
+### Limitations
+
+* A course's own `nbgrader_config.py` loads last. If it sets `c.Autograde.autograde_preprocessors`, it replaces the sandboxed pipeline.
+* Kernels must be installed system-wide. Kernelspecs or environments under `/home` cannot start in the sandbox, including kernelspecs in `~/.local/share/jupyter/kernels` of a persistent home, which take precedence over the image's.
+* Permissions can still be *removed* from files the grader owns: `chmod 0` or `chmod 444` on the gradebook stops grading until the permissions are fixed. The seccomp filter only blocks making files more accessible, because blocking removal would break normal code: nbgrader makes autograded files `0444`, and copies keep that mode. Timestamps (`touch`, `utime`) are not restricted either.
+* Autograded code can open the grader's other terminals in `/dev/pts`, e.g. a Jupyter terminal that is open while autograding runs, and read keystrokes from it or write to it. Preventing this would mean replacing the readable `/dev` with an explicit list of devices, which risks breaking kernels and tools that use terminals.
+* Not covered: UDP, CPU and memory use (only `NBGRADER_EXECUTE_TIMEOUT` limits a run), students faking their own test results, and student HTML/JavaScript output rendered in the formgrader.
+* Validating (`nbgrader validate`, the Validate button) is not sandboxed: it runs outside `/autograded/`.
+* ipykernel cannot bind its IOPub pipe, so output of forked child processes is not captured. It also logs a harmless traceback at shutdown, because it cannot list processes in `/proc`.
+* Every run leaves a small `/tmp/autograde-sandbox-*` directory behind.
+* Secrets are removed from the environment by name (a denylist). Add the names of any other secrets you put into the environment to `DROP_ENV_PREFIXES` / `DROP_ENV_SUBSTRINGS` in [teacher/autograde_sandbox.py](teacher/autograde_sandbox.py).
+* Julia kernels are not tested.
 
 ## Usage
 
