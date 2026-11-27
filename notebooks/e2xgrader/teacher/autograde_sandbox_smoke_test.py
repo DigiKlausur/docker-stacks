@@ -9,7 +9,7 @@ Usage (inside a teacher image):  autograde-sandbox-smoke-test
 
 Per kernel, a probe tries to read its own data.csv (must work), append to the
 gradebook and to another student's folder (must fail), chmod its own file (must
-work) and make the gradebook world-writable (must fail), and read
+work) and make the gradebook world-writable (its mode must not change), and read
 JUPYTERHUB_API_TOKEN (must be unset); the Python probe also tries to read its
 parent's /proc/<pid>/environ (must fail). Kernels without a probe (e.g.
 java_syntax_kernel, which does not run code) only have to start in the sandbox.
@@ -53,11 +53,12 @@ try:
     print("OWN_CHMOD OK")
 except OSError:
     print("OWN_CHMOD FAILED")
+mode = os.stat("../../../gradebook.db").st_mode
 try:
     os.chmod("../../../gradebook.db", 0o666)
-    print("CHMOD ALLOWED")
 except OSError:
-    print("CHMOD BLOCKED")
+    pass
+print("CHMOD", "BLOCKED" if os.stat("../../../gradebook.db").st_mode == mode else "ALLOWED")
 print("TOKEN", os.environ.get("JUPYTERHUB_API_TOKEN", "UNSET"))
 try:
     with open(f"/proc/{os.getppid()}/environ", "rb") as f:
@@ -86,7 +87,11 @@ static int probe(void) {
         if (out) fclose(out);
     }
     printf("OWN_CHMOD %s\n", chmod("data.csv", 0755) == 0 ? "OK" : "FAILED");
-    printf("CHMOD %s\n", chmod("../../../gradebook.db", 0666) == 0 ? "ALLOWED" : "BLOCKED");
+    struct stat before = {0}, after = {0};
+    stat("../../../gradebook.db", &before);
+    chmod("../../../gradebook.db", 0666);
+    stat("../../../gradebook.db", &after);
+    printf("CHMOD %s\n", after.st_mode == before.st_mode ? "BLOCKED" : "ALLOWED");
     const char *token = getenv("JUPYTERHUB_API_TOKEN");
     printf("TOKEN %s\n", token ? token : "UNSET");
     fflush(stdout);
